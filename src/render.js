@@ -182,10 +182,9 @@ const renderTile = async (style, tilePath, zoom, x, y) => {
   // MapLibre native documentation: https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
   const map = new maplibre.Map({
     request: requestHandler(tilePath),
-    ratio: 1, // Pixel ratio
+    ratio: 1,
   });
 
-  // Load the provided style
   map.load(style);
 
   // Render the map to a buffer
@@ -349,7 +348,6 @@ export const renderMBTiles = async (
     });
   }
 
-  // Call generateMBTiles to create and fill the MBTiles file
   try {
     await generateMBTiles(style, tilePath, bounds, minZoom, maxZoom, output);
   } catch (error) {

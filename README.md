@@ -1,6 +1,6 @@
 # mbgl-tile-renderer
 
-This NodeJS map tile renderer can be used to headlessly generate a rendered map from a style and tile sources. The map tiles are stored in mbtiles format.
+This headless Node.js MapGL renderer can generate composite, styled raster tiles from a stylesheet and multiple tile sources. The map tiles are stored in mbtiles format.
 
 It uses [Maplibre-GL Native](https://www.npmjs.com/package/@maplibre/maplibre-gl-native) to render tiles, [Sharp](https://www.npmjs.com/package/sharp) to save them as an image, and Mapbox's [mbtiles Node package](https://www.npmjs.com/package/@mapbox/mbtiles) to compile them into an mbtiles database.
 
@@ -13,11 +13,11 @@ Node version: 18.17.0 or higher (Sharp requires this at minimum).
 ## CLI options
 
 *  `-s` or `--style`: Map style (required)
-*  `-b` or `--bounds`:` Bounding box in WSEN format, comma separated (required)
+*  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
 *  `-Z` or `--maxzoom`: Maximum zoom level (required)
 *  `-t` or `--tilepath`: Path where the input tiles are located (required)
-*  `-o` or `--output`:  Name of the output mbtiles file
+*  `-o` or `--output`: Name of the output mbtiles file
 
 ## Example usage
 
