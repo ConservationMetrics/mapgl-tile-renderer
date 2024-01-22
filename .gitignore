@@ -1,0 +1,8 @@
+.env
+.env.*
+.nvmrc
+
+node_modules/*
+
+/outputs/*
+!/outputs/.keep

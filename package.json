@@ -1,0 +1,24 @@
+{
+  "name": "mbgl-tile-renderer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A tile renderer for Maplibre GL JS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "mbgl-tile-renderer": "./index.js"
+  },
+  "dependencies": {
+    "@mapbox/mbtiles": "^0.12.1",
+    "@maplibre/maplibre-gl-native": "^5.3.0",
+    "commander": "^11.1.0",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7",
+    "sharp": "^0.33.2"
+  },
+  "keywords": [],
+  "author": "Rudo Kemper",
+  "license": "GPL-3.0"
+}
