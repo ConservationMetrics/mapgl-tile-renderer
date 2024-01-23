@@ -16,13 +16,13 @@ Node version: 18.17.0 or higher (Sharp requires this at minimum).
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
 *  `-Z` or `--maxzoom`: Maximum zoom level (required)
-*  `-t` or `--tilepath`: Path where the input tiles are located (required)
+*  `-i` or `--input`: Path where any source inputs (e.g. xyz, mbtiles, geojson) are located
 *  `-o` or `--output`: Name of the output mbtiles file
 
 ## Example usage
 
 ```bash
-$ node src/cli.js --style tests/fixtures/alert/style.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 14 --tilepath tests/fixtures/alert/tiles --output alert
+$ node src/cli.js --style tests/fixtures/alert/style-with-tiles.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 14 --tilepath tests/fixtures/alert/tiles --output alert
 
 $ node src/cli.js --style tests/fixtures/lofoten/style.json --bounds "12.46810,67.61450,15.43150,68.49630" -Z 12 --tilepath tests/fixtures/lofoten --output lofoten
 ```

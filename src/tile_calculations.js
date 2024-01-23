@@ -29,3 +29,26 @@ export const convertTilesToCoordinates = (x, y, zoom) => {
     const lat = latRad * 180.0 / Math.PI;
     return { lon, lat };
 }
+
+// Calculates mercator-normalized center coordinates of a tile at a given zoom level.
+// More about mercator tile normalization: https://maplibre.org/maplibre-native/docs/book/design/coordinate-system.html
+export const calculateNormalizedCenterCoords = (x, y, zoom) => {
+    // Calculate longitude and latitude from tile x, y, and zoom
+    const nw = convertTilesToCoordinates(x, y, zoom);
+    const se = convertTilesToCoordinates(x + 1, y + 1, zoom);
+
+    // Normalize latitude to the Mercator projection
+    const mercatorNwY = Math.log(
+        Math.tan(Math.PI / 4 + (nw.lat * Math.PI) / 360)
+    );
+    const mercatorSeY = Math.log(
+        Math.tan(Math.PI / 4 + (se.lat * Math.PI) / 360)
+    );
+    const avgMercatorY = (mercatorNwY + mercatorSeY) / 2;
+    const centerLat = (Math.atan(Math.exp(avgMercatorY)) * 360) / Math.PI - 90;
+
+    // Longitude remains a simple average
+    const centerLon = (nw.lon + se.lon) / 2;
+
+    return [centerLon, centerLat];
+}
