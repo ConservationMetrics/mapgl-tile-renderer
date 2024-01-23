@@ -12,22 +12,22 @@ const parseListToFloat = (text) => text.split(',').map(Number)
 program
   .version(packageJson.version)
   .name("mbgl-tile-render")
-  .requiredOption("-s, --style <type>", "Map style (required)")
+  .requiredOption("-s, --style <type>", "Location of your map style (required)")
   .requiredOption("-b, --bounds <type>", "Bounding box in WSEN format, comma separated (required)", parseListToFloat)
   .option("-z, --minzoom <number>", "Minimum zoom level (default 0)", parseInt, 0)
   .requiredOption("-Z, --maxzoom <number>", "Maximum zoom level (required)", parseInt)
-  .requiredOption("-t, --tilepath <type>", "Tile path (required)")
+  .requiredOption("-i, --input <type>", "Input directory where any source files are located")
   .option("-o, --output <type>", "Output name (default 'output')", "output")
 
 program.parse(process.argv);
 
 const options = program.opts();
 
-const styleFile = options.style;
+const styleFilename = options.style;
 const bounds = options.bounds;
 const minZoom = options.minzoom;
 const maxZoom = options.maxzoom;
-const tilePath = options.tilepath;
+const sourceDir = options.input;
 const outputName = options.output;
 
 if (minZoom !== null && (minZoom < 0 || minZoom > 22)) {
@@ -68,15 +68,16 @@ if (bounds !== null) {
 }
 
 console.log('\n\n-------- Creating Maplibre GL map tiles --------')
-console.log('style: %j', styleFile)
+console.log('style: %j', styleFilename)
 console.log('bounds: %j', bounds)
 console.log('minZoom: %j', minZoom)
 console.log('maxZoom: %j', maxZoom)
-console.log('tilePath: %j', tilePath)
+console.log('source path: %j', sourceDir)
 console.log('output: %j', outputName)
 console.log('------------------------------------------------')
 
-const stylePath = path.resolve(process.cwd(), styleFile)
+const stylePath = path.resolve(process.cwd(), styleFilename)
+const styleDir = path.dirname(stylePath)
 const style = JSON.parse(fs.readFileSync(stylePath, 'utf-8'))
 
-renderMBTiles(style, bounds, minZoom, maxZoom, tilePath, outputName)
+renderMBTiles(style, bounds, minZoom, maxZoom, sourceDir, styleDir, outputName)
