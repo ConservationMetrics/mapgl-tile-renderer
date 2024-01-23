@@ -5,8 +5,10 @@ import MBTiles from "@mapbox/mbtiles";
 
 // Validations for source URLs
 const TILE_REGEXP = RegExp("mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)");
+const XYZ_REGEXP = /(\d+)\/(\d+)\/(\d+)\.(jpg|png|pbf)$/;
 const isMBTilesURL = (url) => url.startsWith("mbtiles://");
 const isGeoJSONURL = (url) => url.endsWith(".geojson");
+const isXYZDirURL = (url) => /\/\d+\/\d+\/\d+/.test(url);
 
 // Split out mbtiles service name from the URL
 const resolveNamefromURL = (url) => url.split("://")[1].split("/")[0];
@@ -72,32 +74,8 @@ const getLocalGlyph = (styleDir, url, callback) => {
   });
 };
 
-// Given a URL to a local GeoJSON file, get the GeoJSON for that to load correct tiles.
-const getLocalGeoJSON = (sourceDir, url, callback) => {
-  /*
-   * @param {String} geojsonPath - path containing GeoJSON files.
-   * @param {String} url - url of a data source in style.json file.
-   * @param {function} callback - function to call with (err, {data}).
-   */
-  const geojsonFilename = path.normalize(
-    path.format({
-      dir: sourceDir,
-      name: url
-    })
-  );
-
-  fs.readFile(geojsonFilename, (err, data) => {
-    if (err) {
-      callback(err);
-      return null;
-    }
-    callback(null, { data });
-    return null;
-  });
-};
-
 // Given a URL to a local mbtiles file, get the TileJSON for that to load correct tiles.
-const getLocalTileJSON = (sourceDir, url, callback) => {
+const getLocalMBTileJSON = (sourceDir, url, callback) => {
   /*
    * @param {String} sourceDir - path containing mbtiles files.
    * @param {String} url - url of a data source in style.json file.
@@ -140,7 +118,7 @@ const getLocalTileJSON = (sourceDir, url, callback) => {
 };
 
 // Fetch a tile from a local mbtiles file.
-const getLocalTile = (sourceDir, url, callback) => {
+const getLocalMBTile = (sourceDir, url, callback) => {
   /*
    * @param {String} sourceDir - path containing mbtiles files.
    * @param {String} url - url of a data source in style.json file.
@@ -179,6 +157,62 @@ const getLocalTile = (sourceDir, url, callback) => {
   });
 };
 
+// Fetch a tile from a local XYZ directory.
+const getLocalXYZTile = (sourceDir, url, callback) => {
+  /*
+    * @param {String} sourceDir - path containing XYZ tiles.
+    * @param {String} url - url of a data source in style.json file.
+    * @param {function} callback - function to call with (err, {data}).
+    */
+  const matches = url.match(XYZ_REGEXP);
+  if (!matches) {
+    callback(new Error('Invalid URL format'));
+    return;
+  }
+  const [ , z, x, y, ext] = matches;
+  const xyzDir = path.normalize(
+    path.format({
+      dir: sourceDir,
+      name: url.split("://")[1],
+    })
+  );
+
+  const tilePath = path.join(xyzDir, z, x, `${y}.${ext}`);
+
+  fs.readFile(tilePath, (err, data) => {
+    if (err) {
+      callback(null, {});
+      return;
+    }
+
+    callback(null, { data });
+  });
+};
+
+// Given a URL to a local GeoJSON file, get the GeoJSON for that to load correct tiles.
+const getLocalGeoJSON = (sourceDir, url, callback) => {
+  /*
+   * @param {String} geojsonPath - path containing GeoJSON files.
+   * @param {String} url - url of a data source in style.json file.
+   * @param {function} callback - function to call with (err, {data}).
+   */
+  const geojsonFilename = path.normalize(
+    path.format({
+      dir: sourceDir,
+      name: url
+    })
+  );
+
+  fs.readFile(geojsonFilename, (err, data) => {
+    if (err) {
+      callback(err);
+      return null;
+    }
+    callback(null, { data });
+    return null;
+  });
+};
+
 // requestHandler constructs a request handler for the map to load resources.
 // More about request types (kinds): https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
 export const requestHandler = (sourceDir, styleDir) => ({ url, kind }, callback) => {
@@ -187,7 +221,9 @@ export const requestHandler = (sourceDir, styleDir) => ({ url, kind }, callback)
         case 2: {
           // source
           if (isMBTilesURL(url)) {
-              getLocalTileJSON(sourceDir, url, callback);
+              getLocalMBTileJSON(sourceDir, url, callback);
+          } else if (isXYZDirURL(url)) {
+              getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
               getLocalGeoJSON(sourceDir, url, callback);
           } else {
@@ -199,7 +235,9 @@ export const requestHandler = (sourceDir, styleDir) => ({ url, kind }, callback)
         case 3: {
           // tile
           if (isMBTilesURL(url)) {
-              getLocalTile(sourceDir, url, callback);
+              getLocalMBTile(sourceDir, url, callback);
+          } else if (isXYZDirURL(url)) {
+              getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
               getLocalGeoJSON(sourceDir, url, callback);
           } else {
