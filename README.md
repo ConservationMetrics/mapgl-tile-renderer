@@ -16,15 +16,17 @@ Node version: 18.17.0 or higher (Sharp requires this at minimum).
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
 *  `-Z` or `--maxzoom`: Maximum zoom level (required)
-*  `-i` or `--input`: Path where any source inputs (e.g. xyz, mbtiles, geojson) are located
+*  `-i` or `--input`: Path where any source inputs (e.g. mbtiles, xyz, geojson) are located
 *  `-o` or `--output`: Name of the output mbtiles file
 
 ## Example usage
 
 ```bash
-$ node src/cli.js --style tests/fixtures/alert/style-with-tiles.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 14 --tilepath tests/fixtures/alert/tiles --output alert
+$ node src/cli.js --style tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 14 --tilepath tests/fixtures/alert/tiles --output alert
 
-$ node src/cli.js --style tests/fixtures/lofoten/style.json --bounds "12.46810,67.61450,15.43150,68.49630" -Z 12 --tilepath tests/fixtures/lofoten --output lofoten
+$ node src/cli.js --style tests/fixtures/lofoten/style-with-tiles.json --bounds "12.46810,67.61450,15.43150,68.49630" -Z 12 --tilepath tests/fixtures/lofoten --output lofoten
+
+$ node src/cli.js --style tests/fixtures/xyz/style.json --bounds "12.46810,67.61450,15.43150,68.49630" -Z 8 --input tests/fixtures/xyz/tiles
 ```
 
 These commands will use one of the styles and tilesets from the fixtures to generate an mbtiles file in the outputs directory. The alert output will show a vector polygon overlaid in transparent red over satellite imagery, as can be seen in the stylesheet.

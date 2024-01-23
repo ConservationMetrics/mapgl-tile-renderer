@@ -3,9 +3,12 @@
     "sources": {
         "raster_source": {
             "type": "raster",
-            "url": "mbtiles://lofoten-osm",
-            "tileSize": 256,
-            "maxzoom": 15
+            "scheme": "xyz",
+            "tilejson": "2.2.0",
+            "tiles": [
+                "tiles/{z}/{x}/{y}.jpg"
+            ],
+            "tileSize": 256
         }
     },
     "layers": [
