@@ -1,6 +1,5 @@
 {
     "version": 8,
-    "sprite": "sprites/sprite",
     "glyphs": "fonts/{fontstack}/{range}.pbf",
     "sources": {
         "vector_source": {
