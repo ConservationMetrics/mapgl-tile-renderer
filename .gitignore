@@ -6,3 +6,4 @@ node_modules/*
 
 /outputs/*
 !/outputs/.keep
+.history
