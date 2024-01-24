@@ -2,7 +2,7 @@
 // determine X and Y position (column) of a tile in a grid based on geographic longitude 
 // in the Web Mercator projection. 
 // See: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Lon./lat._to_tile_numbers
-const convertCoordinatesToTiles = (lon, lat, zoom) => {
+export const convertCoordinatesToTiles = (lon, lat, zoom) => {
     const n = Math.pow(2, zoom);
     const x = Math.floor(((lon + 180) / 360) * n);
     const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
