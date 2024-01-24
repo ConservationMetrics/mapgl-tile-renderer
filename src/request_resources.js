@@ -43,7 +43,7 @@ const getLocalSpriteImage = (styleDir, url, callback) => {
 // Given a URL to a local sprite JSON, get the JSON data.
 const getLocalSpriteJSON = (styleDir, url, callback) => {
   const spriteJsonPath = path.join(styleDir, `${url}`);
-  
+
   // TODO: currently, any styles with sprites defined will
   // fail to render. The callback in this function does
   // correctly return a buffer of the sprite JSON, but
@@ -160,21 +160,21 @@ const getLocalMBTile = (sourceDir, url, callback) => {
 // Fetch a tile from a local XYZ directory.
 const getLocalXYZTile = (sourceDir, url, callback) => {
   /*
-    * @param {String} sourceDir - path containing XYZ tiles.
-    * @param {String} url - url of a data source in style.json file.
-    * @param {function} callback - function to call with (err, {data}).
-    */
+   * @param {String} sourceDir - path containing XYZ tiles.
+   * @param {String} url - url of a data source in style.json file.
+   * @param {function} callback - function to call with (err, {data}).
+   */
   const matches = url.match(XYZ_REGEXP);
   if (!matches) {
-    callback(new Error('Invalid URL format'));
+    callback(new Error("Invalid URL format"));
     return;
   }
-  const [ , z, x, y, ext] = matches;
+  const [, z, x, y, ext] = matches;
   const xyzDir = path.normalize(
     path.format({
       dir: sourceDir,
       name: url.split("://")[1],
-    })
+    }),
   );
 
   const tilePath = path.join(xyzDir, z, x, `${y}.${ext}`);
@@ -198,8 +198,8 @@ const getLocalGeoJSON = (sourceDir, url, callback) => {
   const geojsonFilename = path.normalize(
     path.format({
       dir: sourceDir,
-      name: url
-    })
+      name: url,
+    }),
   );
 
   fs.readFile(geojsonFilename, (err, data) => {
@@ -214,34 +214,36 @@ const getLocalGeoJSON = (sourceDir, url, callback) => {
 
 // requestHandler constructs a request handler for the map to load resources.
 // More about request types (kinds) in MapLibre: https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
-export const requestHandler = (styleDir, sourceDir) => ({ url, kind }, callback) => {
+export const requestHandler =
+  (styleDir, sourceDir) =>
+  ({ url, kind }, callback) => {
     try {
       switch (kind) {
         case 2: {
           // source
           if (isMBTilesURL(url)) {
-              getLocalMBTileJSON(sourceDir, url, callback);
+            getLocalMBTileJSON(sourceDir, url, callback);
           } else if (isXYZDirURL(url)) {
-              getLocalXYZTile(sourceDir, url, callback);
+            getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
-              getLocalGeoJSON(sourceDir, url, callback);
+            getLocalGeoJSON(sourceDir, url, callback);
           } else {
-              const msg = `Only local sources are currently supported. Received: ${url}`;
-              throw new Error(msg);
+            const msg = `Only local sources are currently supported. Received: ${url}`;
+            throw new Error(msg);
           }
           break;
         }
         case 3: {
           // tile
           if (isMBTilesURL(url)) {
-              getLocalMBTile(sourceDir, url, callback);
+            getLocalMBTile(sourceDir, url, callback);
           } else if (isXYZDirURL(url)) {
-              getLocalXYZTile(sourceDir, url, callback);
+            getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
-              getLocalGeoJSON(sourceDir, url, callback);
+            getLocalGeoJSON(sourceDir, url, callback);
           } else {
-              const msg = `Only local tiles are currently supported. Received: ${url}`;
-              throw new Error(msg);
+            const msg = `Only local tiles are currently supported. Received: ${url}`;
+            throw new Error(msg);
           }
           break;
         }
@@ -261,8 +263,8 @@ export const requestHandler = (styleDir, sourceDir) => ({ url, kind }, callback)
           break;
         }
         default: {
-            const msg = `Request kind not handled: ${kind}`;
-            throw new Error(msg);
+          const msg = `Request kind not handled: ${kind}`;
+          throw new Error(msg);
         }
       }
     } catch (err) {

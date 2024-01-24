@@ -3,9 +3,16 @@ import path from "path";
 import maplibre from "@maplibre/maplibre-gl-native";
 import MBTiles from "@mapbox/mbtiles";
 
-import { calculateTileRangeForBounds, calculateNormalizedCenterCoords } from "./tile_calculations.js";
+import {
+  calculateTileRangeForBounds,
+  calculateNormalizedCenterCoords,
+} from "./tile_calculations.js";
 import { requestHandler } from "./request_resources.js";
-import { generateStyle, generateJPG, downloadRemoteTiles } from "./generate_resources.js";
+import {
+  generateStyle,
+  generateJPG,
+  downloadRemoteTiles,
+} from "./generate_resources.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -42,7 +49,12 @@ const renderTile = async (style, styleDir, sourceDir, zoom, x, y) => {
   map.load(style);
 
   // Render the map to a buffer
-  const buffer = await renderMap(map, { zoom: zoom, center: center, height: tileSize, width: tileSize });
+  const buffer = await renderMap(map, {
+    zoom: zoom,
+    center: center,
+    height: tileSize,
+    width: tileSize,
+  });
 
   // Clean up the map instance to free resources
   map.release();
@@ -53,7 +65,16 @@ const renderTile = async (style, styleDir, sourceDir, zoom, x, y) => {
 };
 
 // Construct MBTiles file from a given style, bounds, and zoom range
-const constructMBTiles = async (style, styleDir, sourceDir, bounds, minZoom, maxZoom, tempDir, output) => {
+const constructMBTiles = async (
+  style,
+  styleDir,
+  sourceDir,
+  bounds,
+  minZoom,
+  maxZoom,
+  tempDir,
+  output,
+) => {
   const outputPath = `outputs/${output}.mbtiles`;
 
   // Create a new MBTiles file
@@ -74,14 +95,20 @@ const constructMBTiles = async (style, styleDir, sourceDir, bounds, minZoom, max
       if (err) {
         throw err;
       } else {
-        let metadata = { name: output, format: "jpg", minzoom: minZoom, maxzoom: maxZoom, type: "overlay" };
+        let metadata = {
+          name: output,
+          format: "jpg",
+          minzoom: minZoom,
+          maxzoom: maxZoom,
+          type: "overlay",
+        };
 
         // Check if metadata.json exists in the sourceDir
-        const metadataFile = path.join(sourceDir, 'metadata.json');
+        const metadataFile = path.join(sourceDir, "metadata.json");
         if (fs.existsSync(metadataFile)) {
           try {
             // Read and parse the metadata.json file
-            const metadataJson = fs.readFileSync(metadataFile, 'utf8');
+            const metadataJson = fs.readFileSync(metadataFile, "utf8");
             const metadataFromFile = JSON.parse(metadataJson);
 
             // Merge the file metadata with the default metadata
@@ -101,14 +128,24 @@ const constructMBTiles = async (style, styleDir, sourceDir, bounds, minZoom, max
     for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
       console.log(`Rendering zoom level ${zoom}...`);
       // Calculate tile range for this zoom level based on bounds
-      const { minX, minY, maxX, maxY } = calculateTileRangeForBounds(bounds, zoom);
+      const { minX, minY, maxX, maxY } = calculateTileRangeForBounds(
+        bounds,
+        zoom,
+      );
 
       // Iterate over tiles within the range
       for (let x = minX; x <= maxX; x++) {
         for (let y = minY; y <= maxY; y++) {
           try {
             // Render the tile
-            const tileBuffer = await renderTile(style, styleDir, sourceDir, zoom, x, y);
+            const tileBuffer = await renderTile(
+              style,
+              styleDir,
+              sourceDir,
+              zoom,
+              x,
+              y,
+            );
 
             // Write the tile to the MBTiles file
             mbtiles.putTile(zoom, x, y, tileBuffer, (err) => {
@@ -130,27 +167,46 @@ const constructMBTiles = async (style, styleDir, sourceDir, bounds, minZoom, max
       });
     });
   } finally {
-    // Delete the temporary tiles directory and style  
+    // Delete the temporary tiles directory and style
     if (tempDir !== null) {
       await fs.promises.rm(tempDir, { recursive: true });
     }
   }
 };
 
-export const initiateRendering = async (styleProvided, styleObject, styleDir, sourceDir, onlineSource, onlineSourceAPIKey, overlaySource, bounds, minZoom, maxZoom, output) => {
+export const initiateRendering = async (
+  styleProvided,
+  styleObject,
+  styleDir,
+  sourceDir,
+  onlineSource,
+  onlineSourceAPIKey,
+  overlaySource,
+  bounds,
+  minZoom,
+  maxZoom,
+  output,
+) => {
   console.log("Initiating rendering...");
 
   let style = styleObject;
-  let tempDir = null;  
+  let tempDir = null;
 
   // If no style is provided, let's generate everything that we need to render tiles.
   if (!styleProvided) {
-    tempDir = 'outputs/temp/'
+    tempDir = "outputs/temp/";
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
     // Download the remote source tiles
-    await downloadRemoteTiles(onlineSource, onlineSourceAPIKey, bounds, minZoom, maxZoom, tempDir);
+    await downloadRemoteTiles(
+      onlineSource,
+      onlineSourceAPIKey,
+      bounds,
+      minZoom,
+      maxZoom,
+      tempDir,
+    );
 
     // Save the overlay GeoJSON to a file, if provided
     if (overlaySource) {
@@ -160,11 +216,15 @@ export const initiateRendering = async (styleProvided, styleObject, styleDir, so
     // Generate and save a stylesheet from the online source and overlay source.
     if (style === null) {
       if (!onlineSource) {
-        const msg = "You must provide a online source if you are not providing your own style";
+        const msg =
+          "You must provide a online source if you are not providing your own style";
         throw new Error(msg);
       } else {
         style = generateStyle(onlineSource, overlaySource);
-        fs.writeFileSync(tempDir + "style.json", JSON.stringify(style, null, 2));
+        fs.writeFileSync(
+          tempDir + "style.json",
+          JSON.stringify(style, null, 2),
+        );
         console.log("Style file generated and saved.");
       }
     }
@@ -186,7 +246,7 @@ export const initiateRendering = async (styleProvided, styleObject, styleDir, so
           dir: sourceDir,
           name: name.split("://")[1],
           ext: ".mbtiles",
-        })
+        }),
       );
       if (!fs.existsSync(mbtileFilename)) {
         const msg = `Mbtiles file ${path.format({
@@ -199,7 +259,16 @@ export const initiateRendering = async (styleProvided, styleObject, styleDir, so
   }
 
   try {
-    await constructMBTiles(style, styleDir, sourceDir, bounds, minZoom, maxZoom, tempDir, output);
+    await constructMBTiles(
+      style,
+      styleDir,
+      sourceDir,
+      bounds,
+      minZoom,
+      maxZoom,
+      tempDir,
+      output,
+    );
   } catch (error) {
     console.error("Error generating MBTiles:", error);
   }
