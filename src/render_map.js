@@ -37,7 +37,12 @@ export const renderTile = async (style, styleDir, sourceDir, zoom, x, y) => {
   map.load(style);
 
   // Render the map to a buffer
-  const buffer = await renderMap(map, { zoom: zoom, center: center, height: tileSize, width: tileSize });
+  const buffer = await renderMap(map, {
+    zoom: zoom,
+    center: center,
+    height: tileSize,
+    width: tileSize,
+  });
 
   // Clean up the map instance to free resources
   map.release();
