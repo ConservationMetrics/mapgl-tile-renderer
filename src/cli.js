@@ -23,16 +23,16 @@ program
   })    
   .option("-l, --stylelocation <type>", "Location of your provided map style")
   .option("-i, --stylesources <type>", "Directory where any local source files specified in your provided style are located")
-  .option("-O, --onlinesource <type>", "Remote source type. Options: bing", function(value) {
+  .option("-O, --onlinesource <type>", "Online source type. Options: bing", function(value) {
     const validSources = ['bing'];
     value = value.toLowerCase();
     if (!validSources.includes(value)) {
-      throw new Error('Invalid remote source. It can only be bing.');
+      throw new Error('Invalid online source. It can only be bing.');
     }
     return value;
   })
-  .option("-k, --apikey <type>", "API key for a remote source (optional)")
-  .option("-a, --overlay <type>", "Feature layer to overlay on top of the remote source (must be a GeoJSON object)")
+  .option("-k, --apikey <type>", "API key for your online source (optional)")
+  .option("-a, --overlay <type>", "Feature layer to overlay on top of the online source (must be a GeoJSON object)")
   .requiredOption("-b, --bounds <type>", "Bounding box in WSEN format, comma separated (required)", parseListToFloat)
   .option("-z, --minzoom <number>", "Minimum zoom level (default 0)", parseInt, 0)
   .requiredOption("-Z, --maxzoom <number>", "Maximum zoom level (required)", parseInt)
@@ -58,7 +58,7 @@ if (styleProvided === 'yes' && (!styleLocation || !sourceDir)) {
 }
 
 if (styleProvided === 'no' && !onlineSource) {
-    raiseError('You must provide a remote source if you are not providing your own style')
+    raiseError('You must provide an online source if you are not providing your own style')
 }
 
 if (minZoom !== null && (minZoom < 0 || minZoom > 22)) {
@@ -112,7 +112,7 @@ console.log('\n\n-------- Creating Maplibre GL map tiles --------')
 console.log('style provided: %j', styleProvided)
 if (styleLocation) console.log('style location: %j', styleLocation)
 if (sourceDir) console.log('local source path: %j', sourceDir)
-if (onlineSource) console.log('remote source: %j', onlineSource)
+if (onlineSource) console.log('online source: %j', onlineSource)
 if (onlineSourceAPIKey) console.log('api key: %j', onlineSourceAPIKey)
 if (overlaySource) console.log('overlay source: %j', overlaySource)
 console.log('bounds: %j', bounds)

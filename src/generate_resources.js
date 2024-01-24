@@ -84,7 +84,7 @@ const downloadNaturalEarthTile = async (bounds, onlineSourceAPIKey, maxZoom, tem
   // Save metadata.json file with proper attribution according to the Bing terms of use
   const metadata = {
     name: "Bing",
-    description: 'Satellite imagery intersecting with the bounding box of the change detection alert GeoJSON',
+    description: 'Satellite imagery from Bing maps',
     version: '1.0.0',
     attribution: rasterImageryAttribution,
     format: 'jpg',

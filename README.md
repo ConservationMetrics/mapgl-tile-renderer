@@ -21,7 +21,7 @@ Options if `style` is "yes":
 
 Required options if `style` is "no":
 *  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing") (required)
-*  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the remote source (required)
+*  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source (required)
 *  `-k` or `--apikey`: API key that may be required for your online source
 *  
 Additional options:
@@ -38,7 +38,7 @@ Using a self-provided style:
 $ node src/cli.js --style "yes" --stylelocation tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --stylesources tests/fixtures/alert/sources
 ```
 
-From a remote source:
+From an online source:
 
 ```bash
 $ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "bing" --apikey YOUR_API_KEY_HERE
