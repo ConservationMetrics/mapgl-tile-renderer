@@ -5,30 +5,61 @@ import path from 'path';
 import { program } from"commander";
 import packageJson from '../package.json' assert { type: 'json' };
 
-import { renderMBTiles } from './render.js';
+import { initiateRendering } from './render.js';
 
 const parseListToFloat = (text) => text.split(',').map(Number)
 
 program
   .version(packageJson.version)
   .name("mbgl-tile-render")
-  .requiredOption("-s, --style <type>", "Location of your map style (required)")
+    .description("Render styled Maplibre GL map tiles")
+  .requiredOption("-s ,--style <type>", "Are you providing your own map style? If not, one will be generated using your sources. (required, 'yes' or 'no')", function(value) {
+    const validSources = ['yes', 'no'];
+    value = value.toLowerCase();
+    if (!validSources.includes(value)) {
+      throw new Error('Invalid answer. It can only be yes or no.');
+    }
+    return value;
+  })    
+  .option("-l, --stylelocation <type>", "Location of your provided map style")
+  .option("-i, --stylesources <type>", "Directory where any local source files specified in your provided style are located")
+  .option("-O, --onlinesource <type>", "Online source type. Options: bing", function(value) {
+    const validSources = ['bing'];
+    value = value.toLowerCase();
+    if (!validSources.includes(value)) {
+      throw new Error('Invalid online source. It can only be bing.');
+    }
+    return value;
+  })
+  .option("-k, --apikey <type>", "API key for your online source (optional)")
+  .option("-a, --overlay <type>", "Feature layer to overlay on top of the online source (must be a GeoJSON object)")
   .requiredOption("-b, --bounds <type>", "Bounding box in WSEN format, comma separated (required)", parseListToFloat)
   .option("-z, --minzoom <number>", "Minimum zoom level (default 0)", parseInt, 0)
   .requiredOption("-Z, --maxzoom <number>", "Maximum zoom level (required)", parseInt)
-  .requiredOption("-i, --input <type>", "Input directory where any source files are located")
   .option("-o, --output <type>", "Output name (default 'output')", "output")
 
 program.parse(process.argv);
 
 const options = program.opts();
 
-const styleFilename = options.style;
+const styleProvided = options.style;
+const styleLocation = options.stylelocation;
+const sourceDir = options.stylesources;
+const onlineSource = options.onlinesource;
+const onlineSourceAPIKey = options.apikey;
+const overlaySource = options.overlay;
 const bounds = options.bounds;
 const minZoom = options.minzoom;
 const maxZoom = options.maxzoom;
-const sourceDir = options.input;
-const outputName = options.output;
+const output = options.output;
+
+if (styleProvided === 'yes' && (!styleLocation || !sourceDir)) {
+    raiseError('You must provide a style location and a source directory if you are providing your own style')
+}
+
+if (styleProvided === 'no' && !onlineSource) {
+    raiseError('You must provide an online source if you are not providing your own style')
+}
 
 if (minZoom !== null && (minZoom < 0 || minZoom > 22)) {
     raiseError(`minZoom level is outside supported range (0-22): ${minZoom}`)
@@ -67,17 +98,27 @@ if (bounds !== null) {
     }
 }
 
+let style = null
+let styleDir = null
+
+if (styleProvided === 'yes') {
+    const stylePath = path.resolve(process.cwd(), styleLocation)
+    styleDir = path.dirname(stylePath)
+    style = JSON.parse(fs.readFileSync(stylePath, 'utf-8'))
+}
+
 console.log('\n\n-------- Creating Maplibre GL map tiles --------')
-console.log('style: %j', styleFilename)
+
+console.log('style provided: %j', styleProvided)
+if (styleLocation) console.log('style location: %j', styleLocation)
+if (sourceDir) console.log('local source path: %j', sourceDir)
+if (onlineSource) console.log('online source: %j', onlineSource)
+if (onlineSourceAPIKey) console.log('api key: %j', onlineSourceAPIKey)
+if (overlaySource) console.log('overlay source: %j', overlaySource)
 console.log('bounds: %j', bounds)
 console.log('minZoom: %j', minZoom)
 console.log('maxZoom: %j', maxZoom)
-console.log('source path: %j', sourceDir)
-console.log('output: %j', outputName)
+console.log('output: %j', output)
 console.log('------------------------------------------------')
 
-const stylePath = path.resolve(process.cwd(), styleFilename)
-const styleDir = path.dirname(stylePath)
-const style = JSON.parse(fs.readFileSync(stylePath, 'utf-8'))
-
-renderMBTiles(style, bounds, minZoom, maxZoom, sourceDir, styleDir, outputName)
+initiateRendering(styleProvided === 'yes', style, styleDir, sourceDir, onlineSource, onlineSourceAPIKey, overlaySource, bounds, minZoom, maxZoom, output)

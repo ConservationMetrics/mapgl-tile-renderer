@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
-import sharp from "sharp";
 import maplibre from "@maplibre/maplibre-gl-native";
 import MBTiles from "@mapbox/mbtiles";
 
 import { calculateTileRangeForBounds, calculateNormalizedCenterCoords } from "./tile_calculations.js";
 import { requestHandler } from "./request_resources.js";
+import { generateStyle, generateJPG, downloadRemoteTiles } from "./generate_resources.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -24,7 +24,7 @@ const renderMap = (map, options) => {
 };
 
 // Render map tile for a given style, zoom level, and tile coordinates
-const renderTile = async (style, sourceDir, styleDir, zoom, x, y) => {
+const renderTile = async (style, styleDir, sourceDir, zoom, x, y) => {
   const tileSize = 512;
 
   const center = calculateNormalizedCenterCoords(x, y, zoom);
@@ -35,7 +35,7 @@ const renderTile = async (style, sourceDir, styleDir, zoom, x, y) => {
   // and release the map instance after rendering.
   // MapLibre native documentation: https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
   const map = new maplibre.Map({
-    request: requestHandler(sourceDir, styleDir),
+    request: requestHandler(styleDir, sourceDir),
     ratio: 1,
   });
 
@@ -53,7 +53,7 @@ const renderTile = async (style, sourceDir, styleDir, zoom, x, y) => {
 };
 
 // Construct MBTiles file from a given style, bounds, and zoom range
-const generateMBTiles = async (style, sourceDir, styleDir, bounds, minZoom, maxZoom, output) => {
+const constructMBTiles = async (style, styleDir, sourceDir, bounds, minZoom, maxZoom, tempDir, output) => {
   const outputPath = `outputs/${output}.mbtiles`;
 
   // Create a new MBTiles file
@@ -68,90 +68,114 @@ const generateMBTiles = async (style, sourceDir, styleDir, bounds, minZoom, maxZ
     });
   });
 
-  // Start writing to the MBTiles file
-  mbtiles.startWriting((err) => {
-    if (err) {
-      throw err;
-    } else {
-      mbtiles.putInfo(
-        { name: output, format: "jpg", minzoom: minZoom, maxzoom: maxZoom, type: "overlay" },
-        (err) => {
-          if (err) throw err;
+  try {
+    // Start writing to the MBTiles file
+    mbtiles.startWriting((err) => {
+      if (err) {
+        throw err;
+      } else {
+        let metadata = { name: output, format: "jpg", minzoom: minZoom, maxzoom: maxZoom, type: "overlay" };
+
+        // Check if metadata.json exists in the sourceDir
+        const metadataFile = path.join(sourceDir, 'metadata.json');
+        if (fs.existsSync(metadataFile)) {
+          try {
+            // Read and parse the metadata.json file
+            const metadataJson = fs.readFileSync(metadataFile, 'utf8');
+            const metadataFromFile = JSON.parse(metadataJson);
+
+            // Merge the file metadata with the default metadata
+            metadata = { ...metadata, ...metadataFromFile };
+          } catch (err) {
+            console.error(`Error reading metadata.json file: ${err}`);
+          }
         }
-      );
-    }
-  });
 
-  // Iterate over zoom levels
-  for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
-    console.log(`Rendering zoom level ${zoom}...`);
-    // Calculate tile range for this zoom level based on bounds
-    const { minX, minY, maxX, maxY } = calculateTileRangeForBounds(bounds, zoom);
+        mbtiles.putInfo(metadata, (err) => {
+          if (err) throw err;
+        });
+      }
+    });
 
-    // Iterate over tiles within the range
-    for (let x = minX; x <= maxX; x++) {
-      for (let y = minY; y <= maxY; y++) {
-        try {
-          // Render the tile
-          const tileBuffer = await renderTile(style, sourceDir, styleDir, zoom, x, y);
+    // Iterate over zoom levels
+    for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
+      console.log(`Rendering zoom level ${zoom}...`);
+      // Calculate tile range for this zoom level based on bounds
+      const { minX, minY, maxX, maxY } = calculateTileRangeForBounds(bounds, zoom);
 
-          // Write the tile to the MBTiles file
-          mbtiles.putTile(zoom, x, y, tileBuffer, (err) => {
-            if (err) throw err;
-          });
-        } catch (error) {
-          console.error(`Error rendering tile ${zoom}/${x}/${y}: ${error}`);
+      // Iterate over tiles within the range
+      for (let x = minX; x <= maxX; x++) {
+        for (let y = minY; y <= maxY; y++) {
+          try {
+            // Render the tile
+            const tileBuffer = await renderTile(style, styleDir, sourceDir, zoom, x, y);
+
+            // Write the tile to the MBTiles file
+            mbtiles.putTile(zoom, x, y, tileBuffer, (err) => {
+              if (err) throw err;
+            });
+          } catch (error) {
+            console.error(`Error rendering tile ${zoom}/${x}/${y}: ${error}`);
+          }
         }
       }
     }
-  }
 
-  // Finish writing and close the MBTiles file
-  mbtiles.stopWriting((err) => {
-    if (err) throw err;
-    console.log("MBTiles file generation completed.");
-  });
-};
-
-// Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
-const generateJPG = async (buffer, width, height, ratio) => {
-  // Un-premultiply pixel values
-  // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
-  // https://github.com/mapbox/mapbox-gl-native/issues/9124
-  // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
-  // it out of RGB values
-
-  for (let i = 0; i < buffer.length; i += 4) {
-    const alpha = buffer[i + 3];
-    const norm = alpha / 255;
-    if (alpha === 0) {
-      buffer[i] = 0;
-      buffer[i + 1] = 0;
-      buffer[i + 2] = 0;
-    } else {
-      buffer[i] /= norm;
-      buffer[i + 1] = buffer[i + 1] / norm;
-      buffer[i + 2] = buffer[i + 2] / norm;
+    // Finish writing and close the MBTiles file
+    await new Promise((resolve, reject) => {
+      mbtiles.stopWriting((err) => {
+        if (err) reject(err);
+        console.log("MBTiles file generation completed.");
+        resolve();
+      });
+    });
+  } finally {
+    // Delete the temporary tiles directory and style  
+    if (tempDir !== null) {
+      await fs.promises.rm(tempDir, { recursive: true });
     }
   }
-
-  return sharp(buffer, {
-    raw: {
-      width: width * ratio,
-      height: height * ratio,
-      channels: 4,
-    },
-  })
-    .jpeg()
-    .toBuffer();
 };
 
-export const renderMBTiles = async (style, bounds, minZoom, maxZoom, sourceDir, styleDir, output) => {
-  console.log("Starting rendering...");
+export const initiateRendering = async (styleProvided, styleObject, styleDir, sourceDir, onlineSource, onlineSourceAPIKey, overlaySource, bounds, minZoom, maxZoom, output) => {
+  console.log("Initiating rendering...");
+
+  let style = styleObject;
+  let tempDir = null;  
+
+  // If no style is provided, let's generate everything that we need to render tiles.
+  if (!styleProvided) {
+    tempDir = 'outputs/temp/'
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    // Download the remote source tiles
+    await downloadRemoteTiles(onlineSource, onlineSourceAPIKey, bounds, minZoom, maxZoom, tempDir);
+
+    // Save the overlay GeoJSON to a file, if provided
+    if (overlaySource) {
+      fs.writeFileSync(tempDir + "overlay.geojson", overlaySource);
+    }
+
+    // Generate and save a stylesheet from the online source and overlay source.
+    if (style === null) {
+      if (!onlineSource) {
+        const msg = "You must provide a online source if you are not providing your own style";
+        throw new Error(msg);
+      } else {
+        style = generateStyle(onlineSource, overlaySource);
+        fs.writeFileSync(tempDir + "style.json", JSON.stringify(style, null, 2));
+        console.log("Style file generated and saved.");
+      }
+    }
+
+    sourceDir = tempDir + "tiles/";
+    styleDir = path.resolve(process.cwd(), tempDir);
+  }
 
   const localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP);
   if (localMbtilesMatches && !sourceDir) {
-    const msg = "Style has local mbtiles file sources, but no tilePath is set";
+    const msg = "Style has local mbtiles file sources, but no sourceDir is set";
     throw new Error(msg);
   }
 
@@ -175,10 +199,10 @@ export const renderMBTiles = async (style, bounds, minZoom, maxZoom, sourceDir, 
   }
 
   try {
-    await generateMBTiles(style, sourceDir, styleDir, bounds, minZoom, maxZoom, output);
+    await constructMBTiles(style, styleDir, sourceDir, bounds, minZoom, maxZoom, tempDir, output);
   } catch (error) {
     console.error("Error generating MBTiles:", error);
   }
 };
 
-export default renderMBTiles;
+export default initiateRendering;

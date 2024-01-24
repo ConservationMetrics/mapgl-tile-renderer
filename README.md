@@ -1,6 +1,6 @@
 # mbgl-tile-renderer
 
-This headless Node.js MapGL renderer can generate composite, styled raster tiles from a stylesheet and multiple tile sources. The map tiles are stored in mbtiles format.
+This headless Node.js MapGL renderer can generate either composite, styled raster tiles from a self-provided stylesheet and multiple tile sources, or raster tiles from an online source with an optional overlay. The map tiles are stored in mbtiles format.
 
 It uses [Maplibre-GL Native](https://www.npmjs.com/package/@maplibre/maplibre-gl-native) to render tiles, [Sharp](https://www.npmjs.com/package/sharp) to save them as an image, and Mapbox's [mbtiles Node package](https://www.npmjs.com/package/@mapbox/mbtiles) to compile them into an mbtiles database.
 
@@ -12,24 +12,37 @@ Node version: 18.17.0 or higher (Sharp requires this at minimum).
 
 ## CLI options
 
-*  `-s` or `--style`: Map style (required)
+* `-s` or `--style`: Are you providing your own style? If not, one will be generated using your sources. ("yes" or "no" answers only)
+
+Options if `style` is "yes":
+
+*  `-l` or `--stylelocation`: Location of your provided map style (required) 
+*  `-i` or `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located (required)
+
+Required options if `style` is "no":
+*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing") (required)
+*  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source (required)
+*  `-k` or `--apikey`: API key that may be required for your online source
+*  
+Additional options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
 *  `-Z` or `--maxzoom`: Maximum zoom level (required)
-*  `-i` or `--input`: Path where any source inputs (e.g. mbtiles, xyz, geojson) are located
 *  `-o` or `--output`: Name of the output mbtiles file
 
 ## Example usage
 
+Using a self-provided style:
+
 ```bash
-$ node src/cli.js --style tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 14 --tilepath tests/fixtures/alert/tiles --output alert
-
-$ node src/cli.js --style tests/fixtures/lofoten/style-with-tiles.json --bounds "12.46810,67.61450,15.43150,68.49630" -Z 12 --tilepath tests/fixtures/lofoten --output lofoten
-
-$ node src/cli.js --style tests/fixtures/xyz/style.json --bounds "12.46810,67.61450,15.43150,68.49630" -Z 8 --input tests/fixtures/xyz/tiles
+$ node src/cli.js --style "yes" --stylelocation tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --stylesources tests/fixtures/alert/sources
 ```
 
-These commands will use one of the styles and tilesets from the fixtures to generate an mbtiles file in the outputs directory. The alert output will show a vector polygon overlaid in transparent red over satellite imagery, as can be seen in the stylesheet.
+From an online source:
+
+```bash
+$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "bing" --apikey YOUR_API_KEY_HERE
+```
 
 ## Inspect the mbtile outputs
 
@@ -38,3 +51,9 @@ Three easy ways to examine and inspect the mbtiles:
 1. Upload them to a [Felt](https://felt.com) map.
 2. Use the [mbview](https://github.com/mapbox/mbview) tool to view them in the browser.
 3. Load them in [QGIS](https://qgis.org).
+
+## Licensing for online API sources
+
+This tool makes it possible to download tiles from various API sources for offline usage. Here are links to the licensing and API limitations for each source:
+
+1. Bing: [Terms of Use](https://www.microsoft.com/en-us/maps/bing-maps/product) and information on [accessing Bing Maps tiles](https://learn.microsoft.com/en-us/bingmaps/rest-services/directly-accessing-the-bing-maps-tiles)
