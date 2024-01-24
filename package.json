@@ -21,6 +21,11 @@
     "path": "^0.12.7",
     "sharp": "^0.33.2"
   },
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.4"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -34,10 +39,5 @@
   },
   "keywords": [],
   "author": "Rudo Kemper",
-  "license": "GPL-3.0",
-  "devDependencies": {
-    "husky": "^8.0.3",
-    "lint-staged": "^15.2.0",
-    "prettier": "^3.2.4"
-  }
+  "license": "GPL-3.0"
 }
