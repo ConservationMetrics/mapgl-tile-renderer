@@ -8,7 +8,9 @@ This tool started as an extension of [mbgl-renderer](https://github.com/consbio/
 
 ## Requirements
 
-Node version: 18.17.0 or higher (Sharp requires this at minimum).
+Node version: 18.17.0. 
+
+(Sharp requires 18.17.0 at minimum, and MapLibre Native is [currently only supported on stable releases of Node](https://github.com/maplibre/maplibre-native/issues/1058), 18 being the latest)
 
 ## CLI options
 
@@ -23,7 +25,7 @@ Required options if `style` is "no":
 *  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing") (required)
 *  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source (required)
 *  `-k` or `--apikey`: API key that may be required for your online source
-*  
+  
 Additional options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
