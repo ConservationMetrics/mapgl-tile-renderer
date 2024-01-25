@@ -42,13 +42,12 @@ export const initiateRendering = async (
       maxZoom,
       tempDir,
     );
-    console.log(`Tiles successfully downloaded from ${onlineSource}!`);
 
     // Save the overlay GeoJSON to a file, if provided
     if (overlaySource) {
       fs.writeFileSync(tempDir + "sources/overlay.geojson", overlaySource);
+      console.log(`Overlay GeoJSON saved to file!`);
     }
-    console.log(`Overlay GeoJSON saved to file!`);
 
     // Generate and save a stylesheet from the online source and overlay source.
     if (style === null) {

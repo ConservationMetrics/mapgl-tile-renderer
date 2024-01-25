@@ -36,22 +36,71 @@ const downloadXyzTile = async (xyzUrl, filename, onlineSourceAPIKey) => {
   }
 };
 
-// Download tiles from OpenStreetMap
-const downloadOSMTiles = async (bounds, maxZoom, tempDir) => {
+// Download tiles from Google Maps
+const downloadGoogleTiles = async (
+  bounds,
+  onlineSourceAPIKey,
+  minZoom,
+  maxZoom,
+  tempDir,
+) => {
   if (!bounds || bounds.length < 4) {
     console.error("Invalid bounds provided");
     return;
   }
 
-  const xyzOutputDir = tempDir + "tiles/";
+  // This code leverages the Google Maps API to get a session token
+  // for downloading satellite imagery tiles.
+
+  // const getSessionToken = async (onlineSourceAPIKey) => {
+  //   const sessionUrl = "https://tile.googleapis.com/v1/createSession";
+  //   const sessionData = {
+  //     mapType: "satellite",
+  //     language: "en-US",
+  //     region: "US",
+  //   };
+
+  //   try {
+  //     const response = await axios.post(sessionUrl, sessionData, {
+  //       headers: { "Content-Type": "application/json" },
+  //       params: { key: onlineSourceAPIKey },
+  //     });
+
+  //     if (response.status === 200) {
+  //       console.log(`Successfully got session token`);
+  //       return response.data.session;
+  //     } else {
+  //       console.log(
+  //         `Failed to get session token (Status code: ${response.status})`,
+  //       );
+  //       return null;
+  //     }
+  //   } catch (error) {
+  //     console.error(`Error getting session token`, error);
+  //     return null;
+  //   }
+  // };
+
+  // const sessionToken = await getSessionToken(onlineSourceAPIKey);
+  // if (!sessionToken) {
+  //   console.error("Failed to get session token. Exiting...");
+  //   return;
+  // }
+
+  // const googleImageryUrl = `https://tile.googleapis.com/v1/2dtiles/{z}/{x}/{y}?session=${sessionToken}?key=${onlineSourceAPIKey}`;
+
+  const googleImageryUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
+  const rasterImageryAttribution = "© Google";
+
+  const xyzOutputDir = tempDir + "sources/";
   if (!fs.existsSync(xyzOutputDir)) {
     fs.mkdirSync(xyzOutputDir, { recursive: true });
   }
 
-  console.log("Downloading OpenStreetMap XYZ tiles...");
+  console.log("Downloading satellite imagery raster XYZ tiles from Google...");
 
   // Iterate over zoom levels and tiles
-  for (let zoom = 1; zoom <= maxZoom; zoom++) {
+  for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
     let { x: minX, y: maxY } = convertCoordinatesToTiles(
       bounds[0],
       bounds[1],
@@ -67,24 +116,23 @@ const downloadOSMTiles = async (bounds, maxZoom, tempDir) => {
 
     for (let col = minX; col <= maxX; col++) {
       for (let row = minY; row <= maxY; row++) {
-        const xyzUrl = `https://a.tile.openstreetmap.org/${zoom}/${col}/${row}.png`;
+        const xyzUrl = googleImageryUrl
+          .replace("{z}", zoom)
+          .replace("{x}", col)
+          .replace("{y}", row);
         const filename = path.join(
           xyzOutputDir,
           `${zoom}`,
           `${col}`,
-          `${row}.png`,
+          `${row}.jpg`,
         );
         if (!fs.existsSync(path.dirname(filename))) {
           fs.mkdirSync(path.dirname(filename), { recursive: true });
         }
-        // Ideally, this would be done using Promise.all() to download 
-        // multiple tiles at once, but then we run into rate limiting 
-        // issues with the OSM API
-        // https://operations.osmfoundation.org/policies/tiles/
         const downloadSuccess = await downloadXyzTile(
           xyzUrl,
           filename,
-          null,
+          onlineSourceAPIKey,
         );
         if (downloadSuccess) tileCount++;
       }
@@ -92,20 +140,94 @@ const downloadOSMTiles = async (bounds, maxZoom, tempDir) => {
     console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
   }
 
-  // Save metadata.json file with proper attribution according to 
-  // the OSM terms of use
+  // Save metadata.json file with proper attribution according to
+  // the Google Maps terms of use
   const metadata = {
-    name: "OpenStreetMap",
-    description: "OpenStreetMap tiles",
+    name: "Google Maps",
+    description: "Satellite imagery from Google Maps",
     version: "1.0.0",
-    attribution: "© OpenStreetMap contributors",
-    format: "png",
+    attribution: rasterImageryAttribution,
+    format: "jpg",
     type: "overlay",
   };
 
   const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
   fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
-}
+
+  console.log(`Tiles successfully downloaded from Google!`);
+};
+
+// Download tiles from ESRI World Imagery
+const downloadEsriTiles = async (bounds, minZoom, maxZoom, tempDir) => {
+  if (!bounds || bounds.length < 4) {
+    console.error("Invalid bounds provided");
+    return;
+  }
+
+  const esriImageryUrl =
+    "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+  const rasterImageryAttribution = "© ESRI";
+
+  const xyzOutputDir = tempDir + "sources/";
+  if (!fs.existsSync(xyzOutputDir)) {
+    fs.mkdirSync(xyzOutputDir, { recursive: true });
+  }
+
+  console.log("Downloading satellite imagery raster XYZ tiles from ESRI...");
+
+  // Iterate over zoom levels and tiles
+  for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
+    let { x: minX, y: maxY } = convertCoordinatesToTiles(
+      bounds[0],
+      bounds[1],
+      zoom,
+    );
+    let { x: maxX, y: minY } = convertCoordinatesToTiles(
+      bounds[2],
+      bounds[3],
+      zoom,
+    );
+
+    let tileCount = 0;
+
+    for (let col = minX; col <= maxX; col++) {
+      for (let row = minY; row <= maxY; row++) {
+        const xyzUrl = esriImageryUrl
+          .replace("{z}", zoom)
+          .replace("{x}", col)
+          .replace("{y}", row);
+        const filename = path.join(
+          xyzOutputDir,
+          `${zoom}`,
+          `${col}`,
+          `${row}.jpg`,
+        );
+        if (!fs.existsSync(path.dirname(filename))) {
+          fs.mkdirSync(path.dirname(filename), { recursive: true });
+        }
+        const downloadSuccess = await downloadXyzTile(xyzUrl, filename);
+        if (downloadSuccess) tileCount++;
+      }
+    }
+    console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
+  }
+
+  // Save metadata.json file with proper attribution according to
+  // the Esri terms of use
+  const metadata = {
+    name: "Esri World Imagery",
+    description: "Satellite imagery from Esri World Imagery",
+    version: "1.0.0",
+    attribution: rasterImageryAttribution,
+    format: "jpg",
+    type: "overlay",
+  };
+
+  const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
+  fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
+
+  console.log(`Tiles successfully downloaded from Esri!`);
+};
 
 // Download satellite imagery tiles from Bing Maps
 const downloadNaturalEarthTiles = async (
@@ -133,7 +255,7 @@ const downloadNaturalEarthTiles = async (
   );
 
   // Iterate over zoom levels and tiles
-  // Much of the below code is adapted from Microsoft's 
+  // Much of the below code is adapted from Microsoft's
   // Bing Maps Tile System documentation:
   // https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system
   for (let zoom = 1; zoom <= maxZoom; zoom++) {
@@ -172,22 +294,18 @@ const downloadNaturalEarthTiles = async (
         if (!fs.existsSync(path.dirname(filename))) {
           fs.mkdirSync(path.dirname(filename), { recursive: true });
         }
-        // Ideally, this would be done using Promise.all() to download 
-        // multiple tiles at once, but then we run into rate limiting 
+        // Ideally, this would be done using Promise.all() to download
+        // multiple tiles at once, but then we run into rate limiting
         // issues with the Bing Maps API
         // https://learn.microsoft.com/en-us/bingmaps/getting-started/bing-maps-api-best-practices
-        const downloadSuccess = await downloadXyzTile(
-          xyzUrl,
-          filename,
-          onlineSourceAPIKey,
-        );
+        const downloadSuccess = await downloadXyzTile(xyzUrl, filename);
         if (downloadSuccess) tileCount++;
       }
     }
     console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
   }
 
-  // Save metadata.json file with proper attribution according to 
+  // Save metadata.json file with proper attribution according to
   // the Bing terms of use
   const metadata = {
     name: "Bing",
@@ -200,6 +318,8 @@ const downloadNaturalEarthTiles = async (
 
   const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
   fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
+
+  console.log(`Tiles successfully downloaded from Bing!`);
 };
 
 // Handler for downloading remote tiles from different sources
@@ -223,8 +343,18 @@ export const downloadRemoteTiles = (
           );
           resolve();
           break;
-        case "osm":
-          await downloadOSMTiles(bounds, minZoom, maxZoom, tempDir);
+        case "esri":
+          await downloadEsriTiles(bounds, minZoom, maxZoom, tempDir);
+          resolve();
+          break;
+        case "google":
+          await downloadGoogleTiles(
+            bounds,
+            onlineSourceAPIKey,
+            minZoom,
+            maxZoom,
+            tempDir,
+          );
           resolve();
           break;
         default:
@@ -236,7 +366,7 @@ export const downloadRemoteTiles = (
   });
 };
 
-// Generate a Mapbox GL style JSON object from a remote source 
+// Generate a Mapbox GL style JSON object from a remote source
 // and an additional source.
 export const generateStyle = (onlineSource, overlaySource) => {
   const style = {
@@ -302,9 +432,9 @@ export const generateStyle = (onlineSource, overlaySource) => {
 // Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
 export const generateJPG = async (buffer, width, height, ratio) => {
   // Un-premultiply pixel values
-  // Mapbox GL buffer contains premultiplied values, which are not handled 
+  // Mapbox GL buffer contains premultiplied values, which are not handled
   // correctly by sharp https://github.com/mapbox/mapbox-gl-native/issues/9124
-  // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 
+  // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255
   // scale and divide it out of RGB values
 
   for (let i = 0; i < buffer.length; i += 4) {
