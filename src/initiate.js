@@ -1,11 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-import {
-  downloadRemoteTiles,
-  generateStyle,
-  generateMBTiles,
-} from "./generate_resources.js";
+import { generateStyle, generateMBTiles } from "./generate_resources.js";
+import { requestOnlineTiles } from "./download_resources.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -34,7 +31,7 @@ export const initiateRendering = async (
       fs.mkdirSync(tempDir, { recursive: true });
     }
     // Download tiles from the online source
-    await downloadRemoteTiles(
+    await requestOnlineTiles(
       onlineSource,
       onlineSourceAPIKey,
       bounds,
