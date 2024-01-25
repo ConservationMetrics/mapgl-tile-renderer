@@ -36,8 +36,79 @@ const downloadXyzTile = async (xyzUrl, filename, onlineSourceAPIKey) => {
   }
 };
 
+// Download tiles from OpenStreetMap
+const downloadOSMTiles = async (bounds, maxZoom, tempDir) => {
+  if (!bounds || bounds.length < 4) {
+    console.error("Invalid bounds provided");
+    return;
+  }
+
+  const xyzOutputDir = tempDir + "tiles/";
+  if (!fs.existsSync(xyzOutputDir)) {
+    fs.mkdirSync(xyzOutputDir, { recursive: true });
+  }
+
+  console.log("Downloading OpenStreetMap XYZ tiles...");
+
+  // Iterate over zoom levels and tiles
+  for (let zoom = 1; zoom <= maxZoom; zoom++) {
+    let { x: minX, y: maxY } = convertCoordinatesToTiles(
+      bounds[0],
+      bounds[1],
+      zoom,
+    );
+    let { x: maxX, y: minY } = convertCoordinatesToTiles(
+      bounds[2],
+      bounds[3],
+      zoom,
+    );
+
+    let tileCount = 0;
+
+    for (let col = minX; col <= maxX; col++) {
+      for (let row = minY; row <= maxY; row++) {
+        const xyzUrl = `https://a.tile.openstreetmap.org/${zoom}/${col}/${row}.png`;
+        const filename = path.join(
+          xyzOutputDir,
+          `${zoom}`,
+          `${col}`,
+          `${row}.png`,
+        );
+        if (!fs.existsSync(path.dirname(filename))) {
+          fs.mkdirSync(path.dirname(filename), { recursive: true });
+        }
+        // Ideally, this would be done using Promise.all() to download 
+        // multiple tiles at once, but then we run into rate limiting 
+        // issues with the OSM API
+        // https://operations.osmfoundation.org/policies/tiles/
+        const downloadSuccess = await downloadXyzTile(
+          xyzUrl,
+          filename,
+          null,
+        );
+        if (downloadSuccess) tileCount++;
+      }
+    }
+    console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
+  }
+
+  // Save metadata.json file with proper attribution according to 
+  // the OSM terms of use
+  const metadata = {
+    name: "OpenStreetMap",
+    description: "OpenStreetMap tiles",
+    version: "1.0.0",
+    attribution: "© OpenStreetMap contributors",
+    format: "png",
+    type: "overlay",
+  };
+
+  const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
+  fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
+}
+
 // Download satellite imagery tiles from Bing Maps
-const downloadNaturalEarthTile = async (
+const downloadNaturalEarthTiles = async (
   bounds,
   onlineSourceAPIKey,
   maxZoom,
@@ -62,7 +133,8 @@ const downloadNaturalEarthTile = async (
   );
 
   // Iterate over zoom levels and tiles
-  // Much of the below code is adapted from Microsoft's Bing Maps Tile System documentation:
+  // Much of the below code is adapted from Microsoft's 
+  // Bing Maps Tile System documentation:
   // https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system
   for (let zoom = 1; zoom <= maxZoom; zoom++) {
     let { x: minX, y: maxY } = convertCoordinatesToTiles(
@@ -100,8 +172,9 @@ const downloadNaturalEarthTile = async (
         if (!fs.existsSync(path.dirname(filename))) {
           fs.mkdirSync(path.dirname(filename), { recursive: true });
         }
-        // Ideally, this would be done using Promise.all() to download multiple tiles at once,
-        // But then we run into rate limiting issues with the Bing Maps API
+        // Ideally, this would be done using Promise.all() to download 
+        // multiple tiles at once, but then we run into rate limiting 
+        // issues with the Bing Maps API
         // https://learn.microsoft.com/en-us/bingmaps/getting-started/bing-maps-api-best-practices
         const downloadSuccess = await downloadXyzTile(
           xyzUrl,
@@ -114,7 +187,8 @@ const downloadNaturalEarthTile = async (
     console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
   }
 
-  // Save metadata.json file with proper attribution according to the Bing terms of use
+  // Save metadata.json file with proper attribution according to 
+  // the Bing terms of use
   const metadata = {
     name: "Bing",
     description: "Satellite imagery from Bing maps",
@@ -141,12 +215,16 @@ export const downloadRemoteTiles = (
     try {
       switch (onlineSource) {
         case "bing":
-          await downloadNaturalEarthTile(
+          await downloadNaturalEarthTiles(
             bounds,
             onlineSourceAPIKey,
             maxZoom,
             tempDir,
           );
+          resolve();
+          break;
+        case "osm":
+          await downloadOSMTiles(bounds, minZoom, maxZoom, tempDir);
           resolve();
           break;
         default:
@@ -158,7 +236,8 @@ export const downloadRemoteTiles = (
   });
 };
 
-// Generate a Mapbox GL style JSON object from a remote source and an additional source.
+// Generate a Mapbox GL style JSON object from a remote source 
+// and an additional source.
 export const generateStyle = (onlineSource, overlaySource) => {
   const style = {
     version: 8,
@@ -223,10 +302,10 @@ export const generateStyle = (onlineSource, overlaySource) => {
 // Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
 export const generateJPG = async (buffer, width, height, ratio) => {
   // Un-premultiply pixel values
-  // Mapbox GL buffer contains premultiplied values, which are not handled correctly by sharp
-  // https://github.com/mapbox/mapbox-gl-native/issues/9124
-  // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 scale and divide
-  // it out of RGB values
+  // Mapbox GL buffer contains premultiplied values, which are not handled 
+  // correctly by sharp https://github.com/mapbox/mapbox-gl-native/issues/9124
+  // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255 
+  // scale and divide it out of RGB values
 
   for (let i = 0; i < buffer.length; i += 4) {
     const alpha = buffer[i + 3];
