@@ -8,6 +8,7 @@ import packageJson from "../package.json" assert { type: "json" };
 import { initiateRendering } from "./initiate.js";
 
 const parseListToFloat = (text) => text.split(",").map(Number);
+const onlineSources = ["bing", "esri", "google"];
 
 program
   .version(packageJson.version)
@@ -32,12 +33,14 @@ program
   )
   .option(
     "-O, --onlinesource <type>",
-    "Online source type. Options: bing",
+    `Online source type. Options: ${onlineSources}`,
     function (value) {
-      const validSources = ["bing"];
       value = value.toLowerCase();
-      if (!validSources.includes(value)) {
-        throw new Error("Invalid online source. It can only be bing.");
+      if (!onlineSources.includes(value)) {
+        throw new Error(
+          "Invalid online source. It can only be one of these: ",
+          onlineSources,
+        );
       }
       return value;
     },

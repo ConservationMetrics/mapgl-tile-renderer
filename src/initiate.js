@@ -1,11 +1,8 @@
 import fs from "fs";
 import path from "path";
 
-import {
-  downloadRemoteTiles,
-  generateStyle,
-  generateMBTiles,
-} from "./generate_resources.js";
+import { generateStyle, generateMBTiles } from "./generate_resources.js";
+import { requestOnlineTiles } from "./download_resources.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -34,7 +31,7 @@ export const initiateRendering = async (
       fs.mkdirSync(tempDir, { recursive: true });
     }
     // Download tiles from the online source
-    await downloadRemoteTiles(
+    await requestOnlineTiles(
       onlineSource,
       onlineSourceAPIKey,
       bounds,
@@ -42,13 +39,12 @@ export const initiateRendering = async (
       maxZoom,
       tempDir,
     );
-    console.log(`Tiles successfully downloaded from ${onlineSource}!`);
 
     // Save the overlay GeoJSON to a file, if provided
     if (overlaySource) {
       fs.writeFileSync(tempDir + "sources/overlay.geojson", overlaySource);
+      console.log(`Overlay GeoJSON saved to file!`);
     }
-    console.log(`Overlay GeoJSON saved to file!`);
 
     // Generate and save a stylesheet from the online source and overlay source.
     if (style === null) {
