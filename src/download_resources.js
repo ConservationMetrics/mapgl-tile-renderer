@@ -34,6 +34,7 @@ const downloadOnlineXyzTile = async (xyzUrl, filename, apiKey) => {
 const downloadOnlineTiles = async (
   source,
   apiKey,
+  mapboxStyle,
   bounds,
   minZoom,
   maxZoom,
@@ -44,20 +45,33 @@ const downloadOnlineTiles = async (
     return;
   }
 
-  let imageryUrl, imageryAttribution;
+  let imageryUrl, imageryAttribution, imagerySourceName;
   switch (source) {
     case "google":
       imageryUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
       imageryAttribution = "© Google";
+      imagerySourceName = "Google Hybrid";
       break;
     case "esri":
       imageryUrl =
         "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
       imageryAttribution = "© ESRI";
+      imagerySourceName = "ESRI World Imagery";
       break;
     case "bing":
       imageryUrl = "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1";
       imageryAttribution = "© Microsoft (Bing Maps)";
+      imagerySourceName = "Bing Maps Satellite";
+      break;
+    case "mapbox-satellite":
+      imageryUrl = `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=${apiKey}`;
+      imageryAttribution = "© Mapbox";
+      imagerySourceName = "Mapbox Satellite";
+      break;
+    case "mapbox-style":
+      imageryUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
+      imageryAttribution = "© Mapbox";
+      imagerySourceName = "Mapbox Custom Style";
       break;
     default:
       console.error("Invalid source provided");
@@ -69,9 +83,7 @@ const downloadOnlineTiles = async (
     fs.mkdirSync(xyzOutputDir, { recursive: true });
   }
 
-  console.log(
-    `Downloading satellite imagery raster XYZ tiles from ${source.charAt(0).toUpperCase() + source.slice(1)}...`,
-  );
+  console.log(`Downloading raster XYZ tiles from ${imagerySourceName}...`);
 
   // Iterate over zoom levels and tiles
   for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
@@ -140,8 +152,8 @@ const downloadOnlineTiles = async (
   // Save metadata.json file with proper attribution according to
   // each source's terms of use
   const metadata = {
-    name: `${source.charAt(0).toUpperCase() + source.slice(1)} Maps`,
-    description: `Satellite imagery from ${source.charAt(0).toUpperCase() + source.slice(1)} Maps`,
+    name: imagerySourceName,
+    description: `Raster XYZ tiles from ${imagerySourceName}`,
     version: "1.0.0",
     attribution: imageryAttribution,
     format: "jpg",
@@ -151,15 +163,14 @@ const downloadOnlineTiles = async (
   const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
   fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
 
-  console.log(
-    `Tiles successfully downloaded from ${source.charAt(0).toUpperCase() + source.slice(1)}!`,
-  );
+  console.log(`Tiles successfully downloaded from ${imagerySourceName}!`);
 };
 
 // Handler for requesting tiles from different online sources
 export const requestOnlineTiles = (
   onlineSource,
   onlineSourceAPIKey,
+  mapboxStyle,
   bounds,
   minZoom,
   maxZoom,
@@ -170,6 +181,7 @@ export const requestOnlineTiles = (
       await downloadOnlineTiles(
         onlineSource,
         onlineSourceAPIKey,
+        mapboxStyle,
         bounds,
         minZoom,
         maxZoom,

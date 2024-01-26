@@ -13,6 +13,7 @@ export const initiateRendering = async (
   sourceDir,
   onlineSource,
   onlineSourceAPIKey,
+  mapboxStyle,
   overlaySource,
   bounds,
   minZoom,
@@ -34,6 +35,7 @@ export const initiateRendering = async (
     await requestOnlineTiles(
       onlineSource,
       onlineSourceAPIKey,
+      mapboxStyle,
       bounds,
       minZoom,
       maxZoom,

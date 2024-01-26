@@ -22,10 +22,12 @@ Options if `style` is "yes":
 *  `-i` or `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located (required)
 
 Required options if `style` is "no":
-*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google") (required)
+*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google", "mapbox", "mapbox-satellite") (required)
 *  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source (required)
 *  `-k` or `--apikey`: API key that may be required for your online source
-  
+If you selected "mapbox" for `--onlinesource`:
+*  `-m` or `--mapboxstyle`: The Mapbox style you want to use (required) Format: <yourusername>/<styleid>
+
 Additional options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
@@ -67,3 +69,4 @@ This tool makes it possible to download tiles from various API sources for offli
 1. Bing Satellite: API [Terms of Use](https://www.microsoft.com/en-us/maps/bing-maps/product) and information on [accessing Bing Maps tiles](https://learn.microsoft.com/en-us/bingmaps/rest-services/directly-accessing-the-bing-maps-tiles)
 2. Esri World Imagery (for Export): [Terms of use](https://www.arcgis.com/home/item.html?id=226d23f076da478bba4589e7eae95952)
 3. Google Hybrid: API [Terms of Use](https://developers.google.com/maps/documentation/tile/policies)
+4. Mapbox: Raster Tiles API [Pricing](https://www-mapbox.webflow.io/pricing#tile)

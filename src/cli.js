@@ -7,8 +7,19 @@ import packageJson from "../package.json" assert { type: "json" };
 
 import { initiateRendering } from "./initiate.js";
 
+const raiseError = (msg) => {
+  console.error("ERROR:", msg);
+  process.exit(1);
+};
+
 const parseListToFloat = (text) => text.split(",").map(Number);
-const onlineSources = ["bing", "esri", "google"];
+const onlineSources = [
+  "bing",
+  "esri",
+  "google",
+  "mapbox-satellite",
+  "mapbox-style",
+];
 
 program
   .version(packageJson.version)
@@ -38,14 +49,17 @@ program
       value = value.toLowerCase();
       if (!onlineSources.includes(value)) {
         throw new Error(
-          "Invalid online source. It can only be one of these: ",
-          onlineSources,
+          `Invalid online source. It can only be one of these: ${onlineSources}`,
         );
       }
       return value;
     },
   )
   .option("-k, --apikey <type>", "API key for your online source (optional)")
+  .option(
+    "-m, --mapboxstyle <type>",
+    "Mapbox style URL (required if using mapbox for onlinesource)",
+  )
   .option(
     "-a, --overlay <type>",
     "Feature layer to overlay on top of the online source (must be a GeoJSON object)",
@@ -77,6 +91,7 @@ const styleLocation = options.stylelocation;
 const sourceDir = options.stylesources;
 const onlineSource = options.onlinesource;
 const onlineSourceAPIKey = options.apikey;
+const mapboxStyle = options.mapboxstyle;
 const overlaySource = options.overlay;
 const bounds = options.bounds;
 const minZoom = options.minzoom;
@@ -93,6 +108,30 @@ if (styleProvided === "no" && !onlineSource) {
   raiseError(
     "You must provide an online source if you are not providing your own style",
   );
+}
+
+if (
+  (onlineSource === "mapbox" || onlineSource === "mapbox-satellite") &&
+  !onlineSourceAPIKey
+) {
+  raiseError(
+    "You must provide an API key if you are using Mapbox as your online source",
+  );
+}
+
+if (onlineSource === "mapbox" && !mapboxStyle) {
+  raiseError(
+    "You must provide a Mapbox style URL if you are using Mapbox as your online source",
+  );
+}
+
+if (mapboxStyle) {
+  const mapboxStyleFormat = /^[\w-]+\/[\w-]+$/;
+  if (!mapboxStyleFormat.test(mapboxStyle)) {
+    raiseError(
+      "Mapbox style URL must be in a valid format: <yourusername>/<styleid>",
+    );
+  }
 }
 
 if (minZoom !== null && (minZoom < 0 || minZoom > 22)) {
@@ -148,6 +187,7 @@ if (styleLocation) console.log("style location: %j", styleLocation);
 if (sourceDir) console.log("local source path: %j", sourceDir);
 if (onlineSource) console.log("online source: %j", onlineSource);
 if (onlineSourceAPIKey) console.log("api key: %j", onlineSourceAPIKey);
+if (options.mapboxStyle) console.log("mapbox style: %j", options.mapboxStyle);
 if (overlaySource) console.log("overlay source: %j", overlaySource);
 console.log("bounds: %j", bounds);
 console.log("minZoom: %j", minZoom);
@@ -162,6 +202,7 @@ initiateRendering(
   sourceDir,
   onlineSource,
   onlineSourceAPIKey,
+  mapboxStyle,
   overlaySource,
   bounds,
   minZoom,
