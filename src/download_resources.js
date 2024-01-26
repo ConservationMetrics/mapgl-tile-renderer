@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import axios from "axios";
+import pLimit from "p-limit";
 
 import { convertCoordinatesToTiles } from "./tile_calculations.js";
 
@@ -85,6 +86,8 @@ const downloadOnlineTiles = async (
 
   console.log(`Downloading raster XYZ tiles from ${imagerySourceName}...`);
 
+  const limit = pLimit(5);
+
   // Iterate over zoom levels and tiles
   for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
     let { x: minX, y: maxY } = convertCoordinatesToTiles(
@@ -99,6 +102,8 @@ const downloadOnlineTiles = async (
     );
 
     let tileCount = 0;
+
+    let promises = [];
 
     for (let col = minX; col <= maxX; col++) {
       for (let row = minY; row <= maxY; row++) {
@@ -135,17 +140,15 @@ const downloadOnlineTiles = async (
           fs.mkdirSync(path.dirname(filename), { recursive: true });
         }
 
-        // Ideally, this could be done using Promise.all() to download
-        // multiple tiles at once, but then we run into rate limiting
-        // issues with the Bing Maps API (and likely others)
-        const downloadSuccess = await downloadOnlineXyzTile(
-          xyzUrl,
-          filename,
-          apiKey,
+        promises.push(
+          limit(() => downloadOnlineXyzTile(xyzUrl, filename, apiKey)),
         );
-        if (downloadSuccess) tileCount++;
       }
     }
+    const results = await Promise.all(promises);
+
+    tileCount = results.filter((result) => result).length;
+
     console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
   }
 
