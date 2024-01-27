@@ -8,9 +8,9 @@ This tool started as an extension of [mbgl-renderer](https://github.com/consbio/
 
 ## Requirements
 
-Node version: 18.17.0. 
+Node version: 18.17.0 to 20.x.x. 
 
-(Sharp requires 18.17.0 at minimum, and MapLibre Native is [currently only supported on stable releases of Node](https://github.com/maplibre/maplibre-native/issues/1058), 18 being the latest)
+(Sharp requires 18.17.0 at minimum, and MapLibre Native is [currently only supported on stable releases of Node](https://github.com/maplibre/maplibre-native/issues/1058), 20 being the latest)
 
 ## CLI options
 
