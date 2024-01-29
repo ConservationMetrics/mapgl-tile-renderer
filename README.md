@@ -21,6 +21,7 @@ Node version: 18.17.0 to 20.x.x.
 * Google Hybrid
 * Mapbox - your own style
 * Mapbox Satellite
+* Planet PlanetScope monthly visual basemap (via NICFI)
 
 To use these services, you are responsible for providing an API token as needed. You may also consult the terms of service and API limitations for each service below.
 
@@ -36,7 +37,7 @@ Required options if `style` is "yes":
 *  `-i` or `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located
 
 Required options if `style` is "no":
-*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google", "mapbox", "mapbox-satellite")
+*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet-monthly-visual")
 *  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source
 *  `-k` or `--apikey`: API key that may be required for your online source
 If you selected "mapbox" for `--onlinesource`:
@@ -56,16 +57,28 @@ Using a self-provided style:
 $ node src/cli.js --style "yes" --stylelocation tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --stylesources tests/fixtures/alert/sources
 ```
 
-From an online source:
+From an online source (Bing):
 
 ```bash
 $ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "bing" --apikey YOUR_API_KEY_HERE
 ```
 
-Online source with GeoJSON overlay:
+From an online source (Mapbox):
 
 ```bash
-$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "bing" --apikey YOUR_API_KEY_HERE --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
+$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "mapbox" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+```
+
+From an online source (Planet):
+
+```bash
+$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "planet-monthly-visual" --monthyear 2023-12 --apikey YOUR_API_KEY_HERE
+```
+
+Online source (Esri) with GeoJSON overlay:
+
+```bash
+$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "esri" --apikey YOUR_API_KEY_HERE --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
 ```
 
 ## Inspect the mbtile outputs
@@ -84,3 +97,4 @@ This tool makes it possible to download tiles from various API sources for offli
 2. Esri World Imagery (for Export): [Terms of use](https://www.arcgis.com/home/item.html?id=226d23f076da478bba4589e7eae95952)
 3. Google Hybrid: API [Terms of Use](https://developers.google.com/maps/documentation/tile/policies)
 4. Mapbox: Raster Tiles API [Pricing](https://www-mapbox.webflow.io/pricing#tile)
+5. Planet Basemaps API [Overview](https://developers.planet.com/docs/basemaps/tile-services/)

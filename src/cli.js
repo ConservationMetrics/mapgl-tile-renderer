@@ -19,6 +19,7 @@ const onlineSources = [
   "google",
   "mapbox-satellite",
   "mapbox-style",
+  "planet-monthly-visual",
 ];
 
 program
@@ -61,6 +62,11 @@ program
     "Mapbox style URL (required if using mapbox for onlinesource)",
   )
   .option(
+    "-p, --monthyear <type>",
+    "The month and year (in YYYY-MM format) of the Planet Monthly Visual Basemap to use (required if using planet-monthly-visual for onlinesource)",
+  )
+
+  .option(
     "-a, --overlay <type>",
     "Feature layer to overlay on top of the online source (must be a GeoJSON object)",
   )
@@ -92,11 +98,14 @@ const sourceDir = options.stylesources;
 const onlineSource = options.onlinesource;
 const onlineSourceAPIKey = options.apikey;
 const mapboxStyle = options.mapboxstyle;
+const monthYear = options.monthyear;
 const overlaySource = options.overlay;
 const bounds = options.bounds;
 const minZoom = options.minzoom;
 const maxZoom = options.maxzoom;
 const output = options.output;
+
+// Validations for CLI options
 
 if (styleProvided === "yes" && (!styleLocation || !sourceDir)) {
   raiseError(
@@ -111,12 +120,26 @@ if (styleProvided === "no" && !onlineSource) {
 }
 
 if (
-  (onlineSource === "mapbox" || onlineSource === "mapbox-satellite") &&
+  (onlineSource === "mapbox" ||
+    onlineSource === "mapbox-satellite" ||
+    onlineSource === "planet-monthly-visual") &&
   !onlineSourceAPIKey
 ) {
+  raiseError(`You must provide an API key for ${onlineSource}`);
+}
+
+if (onlineSource === "planet-monthly-visual" && !monthYear) {
   raiseError(
-    "You must provide an API key if you are using Mapbox as your online source",
+    "You must provide a month and year (YYYY-MM) for the Planet Monthly Visual Basemap",
   );
+}
+
+// Ensure monthYear is in the right format
+if (monthYear) {
+  const monthYearFormat = /^\d{4}-\d{2}$/;
+  if (!monthYearFormat.test(monthYear)) {
+    raiseError("Month and year must be in YYYY-MM format");
+  }
 }
 
 if (onlineSource === "mapbox" && !mapboxStyle) {
@@ -187,7 +210,8 @@ if (styleLocation) console.log("style location: %j", styleLocation);
 if (sourceDir) console.log("local source path: %j", sourceDir);
 if (onlineSource) console.log("online source: %j", onlineSource);
 if (onlineSourceAPIKey) console.log("api key: %j", onlineSourceAPIKey);
-if (options.mapboxStyle) console.log("mapbox style: %j", options.mapboxStyle);
+if (mapboxStyle) console.log("mapbox style: %j", mapboxStyle);
+if (monthYear) console.log("month and year: %j", monthYear);
 if (overlaySource) console.log("overlay source: %j", overlaySource);
 console.log("bounds: %j", bounds);
 console.log("minZoom: %j", minZoom);
@@ -203,6 +227,7 @@ initiateRendering(
   onlineSource,
   onlineSourceAPIKey,
   mapboxStyle,
+  monthYear,
   overlaySource,
   bounds,
   minZoom,

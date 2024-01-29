@@ -6,11 +6,19 @@ import pLimit from "p-limit";
 import { convertCoordinatesToTiles } from "./tile_calculations.js";
 
 // Download XYZ tile
-const downloadOnlineXyzTile = async (xyzUrl, filename, apiKey) => {
+const downloadOnlineXyzTile = async (source, xyzUrl, filename, apiKey) => {
   if (fs.existsSync(filename)) return false;
 
   const config = { responseType: "arraybuffer" };
-  if (apiKey) {
+
+  if (source === "planet-monthly-visual") {
+    // Use HTTP Basic Authentication for Planet API
+    config.auth = {
+      username: apiKey,
+      password: "", // Password should be empty, per documentation https://developers.planet.com/docs/basemaps/tile-services/
+    };
+  } else if (apiKey) {
+    // For other sources, use Bearer token if apiKey is provided
     config.headers = { Authorization: `Bearer ${apiKey}` };
   }
 
@@ -36,6 +44,7 @@ const downloadOnlineTiles = async (
   source,
   apiKey,
   mapboxStyle,
+  monthYear,
   bounds,
   minZoom,
   maxZoom,
@@ -73,6 +82,11 @@ const downloadOnlineTiles = async (
       imageryUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
       imageryAttribution = "© Mapbox";
       imagerySourceName = "Mapbox Custom Style";
+      break;
+    case "planet-monthly-visual":
+      imageryUrl = `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_${monthYear}_mosaic/gmap/{z}/{x}/{y}?api_key=${apiKey}`;
+      imageryAttribution = "© Planet Labs";
+      imagerySourceName = `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`;
       break;
     default:
       console.error("Invalid source provided");
@@ -141,7 +155,7 @@ const downloadOnlineTiles = async (
         }
 
         promises.push(
-          limit(() => downloadOnlineXyzTile(xyzUrl, filename, apiKey)),
+          limit(() => downloadOnlineXyzTile(source, xyzUrl, filename, apiKey)),
         );
       }
     }
@@ -174,6 +188,7 @@ export const requestOnlineTiles = (
   onlineSource,
   onlineSourceAPIKey,
   mapboxStyle,
+  monthYear,
   bounds,
   minZoom,
   maxZoom,
@@ -185,6 +200,7 @@ export const requestOnlineTiles = (
         onlineSource,
         onlineSourceAPIKey,
         mapboxStyle,
+        monthYear,
         bounds,
         minZoom,
         maxZoom,
