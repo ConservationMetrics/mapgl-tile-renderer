@@ -81,6 +81,20 @@ Online source (Esri) with GeoJSON overlay:
 $ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "esri" --apikey YOUR_API_KEY_HERE --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
 ```
 
+### With Docker
+
+First build the Docker image locally:
+
+```bash
+docker build -t mbgl-tile-renderer .
+```
+
+Then run:
+
+```
+docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --remotesource "mapbox" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+```
+
 ## Inspect the mbtile outputs
 
 Three easy ways to examine and inspect the mbtiles:
