@@ -1,8 +1,10 @@
 # mbgl-tile-renderer
 
-This headless Node.js MapGL renderer can generate either composite, styled raster tiles from a self-provided stylesheet and multiple tile sources, or raster tiles from an online source with an optional overlay. The map tiles are stored in mbtiles format.
+This headless Node.js MapGL renderer generates styled raster tiles in an MBTiles format. It can work with a self-provided stylesheet and tile sources, or an online source with an optional overlay. 
 
 It uses [Maplibre-GL Native](https://www.npmjs.com/package/@maplibre/maplibre-gl-native) to render tiles, [Sharp](https://www.npmjs.com/package/sharp) to save them as an image, and Mapbox's [mbtiles Node package](https://www.npmjs.com/package/@mapbox/mbtiles) to compile them into an mbtiles database.
+
+The intention of this tool is to create offline background maps for use in mobile data collection applications such as [Mapeo](https://mapeo.app/), [ODK Collect](https://getodk.org/), and [KoboToolbox Collect](https://www.kobotoolbox.org/).
 
 This tool started as an extension of [mbgl-renderer](https://github.com/consbio/mbgl-renderer), which was built to export single static map images. Our thanks go out to the contributors of that project.
 
@@ -12,21 +14,33 @@ Node version: 18.17.0 to 20.x.x.
 
 (Sharp requires 18.17.0 at minimum, and MapLibre Native is [currently only supported on stable releases of Node](https://github.com/maplibre/maplibre-native/issues/1058), 20 being the latest)
 
+## Supported online sources
+
+* Bing Imagery (Virtual Earth)
+* ESRI World Imagery
+* Google Hybrid
+* Mapbox - your own style
+* Mapbox Satellite
+
+To use these services, you are responsible for providing an API token as needed. You may also consult the terms of service and API limitations for each service below.
+
+Please note that depending on your bounding box and maximum zoom level, this tool has the capability to send a lot of requests. You should first use a tool like the [Mapbox offline tile count estimator](https://docs.mapbox.com/playground/offline-estimator/) to ensure that your request will be reasonable, and in the case of any sources with an API limit, won't end up costing you.
+
 ## CLI options
 
 * `-s` or `--style`: Are you providing your own style? If not, one will be generated using your sources. ("yes" or "no" answers only)
 
-Options if `style` is "yes":
+Required options if `style` is "yes":
 
-*  `-l` or `--stylelocation`: Location of your provided map style (required) 
-*  `-i` or `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located (required)
+*  `-l` or `--stylelocation`: Location of your provided map style
+*  `-i` or `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located
 
 Required options if `style` is "no":
-*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google", "mapbox", "mapbox-satellite") (required)
-*  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source (required)
+*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google", "mapbox", "mapbox-satellite")
+*  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source
 *  `-k` or `--apikey`: API key that may be required for your online source
 If you selected "mapbox" for `--onlinesource`:
-*  `-m` or `--mapboxstyle`: The Mapbox style you want to use (required) Format: <yourusername>/<styleid>
+*  `-m` or `--mapboxstyle`: The Mapbox style you want to use. Format: `<yourusername>/<styleid>`
 
 Additional options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
