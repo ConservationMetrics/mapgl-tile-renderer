@@ -50,14 +50,6 @@ export const initiateRendering = async (
       console.log(`Overlay GeoJSON saved to file!`);
     }
 
-    // Set the tileSize of the online source. Mapbox Raster API provides 512px tiles.
-    let tileSize;
-    if (onlineSource === "mapbox-style") {
-      tileSize = 512;
-    } else {
-      tileSize = 256;
-    }
-
     // Generate and save a stylesheet from the online source and overlay source.
     if (style === null) {
       if (!onlineSource) {
@@ -65,7 +57,7 @@ export const initiateRendering = async (
           "You must provide a online source if you are not providing your own style";
         throw new Error(msg);
       } else {
-        style = generateStyle(onlineSource, overlaySource, tileSize);
+        style = generateStyle(onlineSource, overlaySource);
         fs.writeFileSync(
           tempDir + "style.json",
           JSON.stringify(style, null, 2),

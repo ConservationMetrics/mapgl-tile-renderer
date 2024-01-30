@@ -8,16 +8,16 @@ import { renderTile } from "./render_map.js";
 
 // Generate a Mapbox GL style JSON object from a remote source
 // and an additional source.
-export const generateStyle = (onlineSource, overlaySource, tileSize) => {
+export const generateStyle = (onlineSource, overlaySource) => {
   const style = {
     version: 8,
     sources: {
-      [onlineSource]: {
+      [`${onlineSource}`]: {
         type: "raster",
         scheme: "xyz",
         tilejson: "2.2.0",
         tiles: [`sources/{z}/{x}/{y}.jpg`],
-        tileSize: tileSize,
+        tileSize: 256,
       },
     },
     layers: [
@@ -29,9 +29,9 @@ export const generateStyle = (onlineSource, overlaySource, tileSize) => {
         },
       },
       {
-        id: onlineSource,
+        id: `${onlineSource}`,
         type: "raster",
-        source: onlineSource,
+        source: `${onlineSource}`,
         paint: {},
       },
     ],
