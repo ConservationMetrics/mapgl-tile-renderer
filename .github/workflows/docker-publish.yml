@@ -40,9 +40,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Docker Hub Description
+        if: github.event_name == 'release'
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: communityfirst/mbgl-tile-renderer
-          short-description: 'Headless Node.js MapGL renderer for generating styled raster tiles in MBTiles format, supporting various online sources and custom styles.'
+          short-description: 'Node.js MapGL renderer for styled raster tiles in MBTiles format.'
