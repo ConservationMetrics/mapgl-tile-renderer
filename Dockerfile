@@ -9,16 +9,16 @@ RUN apt update && apt install -y libcurl4-openssl-dev libglfw3-dev libuv1-dev li
 RUN apt install -y clang git cmake ccache ninja-build pkg-config
 COPY package*.json /app/
 ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION v18.17.0
+ENV NODE_VERSION v20.11.0
 RUN mkdir -p /usr/local/nvm && apt-get update && echo "y" | apt-get install curl
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 RUN /bin/bash -c "source $NVM_DIR/nvm.sh && nvm install $NODE_VERSION && nvm use --delete-prefix $NODE_VERSION"
 ENV NODE_PATH $NVM_DIR/versions/node/$NODE_VERSION/bin
 ENV PATH $NODE_PATH:$PATH
 RUN npm install
-EXPOSE 80
 ENV DISPLAY=:99.0
-RUN start-stop-daemon --start --pidfile /tmp/xvfb.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
+RUN start-stop-daemon --start --pidfile ~/xvfb.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
 COPY ./src/* /app/src/
-CMD [ "node", "src/cli.js" ]
-HEALTHCHECK CMD curl --fail http://localhost:80/health || exit 1
+COPY entrypoint.sh /app
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT [ "/app/entrypoint.sh" ]
