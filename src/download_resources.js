@@ -6,12 +6,12 @@ import pLimit from "p-limit";
 import { convertCoordinatesToTiles } from "./tile_calculations.js";
 
 // Download XYZ tile
-const downloadOnlineXyzTile = async (source, xyzUrl, filename, apiKey) => {
+const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
   if (fs.existsSync(filename)) return false;
 
   const config = { responseType: "arraybuffer" };
 
-  if (source === "planet-monthly-visual") {
+  if (style === "planet-monthly-visual") {
     // Use HTTP Basic Authentication for Planet API
     config.auth = {
       username: apiKey,
@@ -41,7 +41,7 @@ const downloadOnlineXyzTile = async (source, xyzUrl, filename, apiKey) => {
 
 // Download XYZ tiles from a given source
 const downloadOnlineTiles = async (
-  source,
+  style,
   apiKey,
   mapboxStyle,
   monthYear,
@@ -56,7 +56,7 @@ const downloadOnlineTiles = async (
   }
 
   let imageryUrl, imageryAttribution, imagerySourceName;
-  switch (source) {
+  switch (style) {
     case "google":
       imageryUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
       imageryAttribution = "© Google";
@@ -73,17 +73,17 @@ const downloadOnlineTiles = async (
       imageryAttribution = "© Microsoft (Bing Maps)";
       imagerySourceName = "Bing Maps Satellite";
       break;
+    case "mapbox":
+      imageryUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
+      imageryAttribution = "© Mapbox";
+      imagerySourceName = "Mapbox Custom Style";
+      break;
     case "mapbox-satellite":
       imageryUrl = `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=${apiKey}`;
       imageryAttribution = "© Mapbox";
       imagerySourceName = "Mapbox Satellite";
       break;
-    case "mapbox-style":
-      imageryUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
-      imageryAttribution = "© Mapbox";
-      imagerySourceName = "Mapbox Custom Style";
-      break;
-    case "planet-monthly-visual":
+    case "planet":
       imageryUrl = `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_${monthYear}_mosaic/gmap/{z}/{x}/{y}?api_key=${apiKey}`;
       imageryAttribution = "© Planet Labs";
       imagerySourceName = `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`;
@@ -122,7 +122,7 @@ const downloadOnlineTiles = async (
     for (let col = minX; col <= maxX; col++) {
       for (let row = minY; row <= maxY; row++) {
         let xyzUrl;
-        if (source === "bing") {
+        if (style === "bing") {
           // Adapted from Microsoft's Bing Maps Tile System documentation:
           // https://learn.microsoft.com/en-us/bingmaps/articles/bing-maps-tile-system
           // Calculate quadkey for Bing
@@ -155,7 +155,7 @@ const downloadOnlineTiles = async (
         }
 
         promises.push(
-          limit(() => downloadOnlineXyzTile(source, xyzUrl, filename, apiKey)),
+          limit(() => downloadOnlineXyzTile(style, xyzUrl, filename, apiKey)),
         );
       }
     }
@@ -185,8 +185,8 @@ const downloadOnlineTiles = async (
 
 // Handler for requesting tiles from different online sources
 export const requestOnlineTiles = (
-  onlineSource,
-  onlineSourceAPIKey,
+  style,
+  apiKey,
   mapboxStyle,
   monthYear,
   bounds,
@@ -197,8 +197,8 @@ export const requestOnlineTiles = (
   return new Promise(async (resolve, reject) => {
     try {
       await downloadOnlineTiles(
-        onlineSource,
-        onlineSourceAPIKey,
+        style,
+        apiKey,
         mapboxStyle,
         monthYear,
         bounds,

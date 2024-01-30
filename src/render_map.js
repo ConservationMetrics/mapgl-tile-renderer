@@ -19,7 +19,14 @@ const renderMap = (map, options) => {
 };
 
 // Render map tile for a given style, zoom level, and tile coordinates
-export const renderTile = async (style, styleDir, sourceDir, zoom, x, y) => {
+export const renderTile = async (
+  styleObject,
+  styleDir,
+  sourceDir,
+  zoom,
+  x,
+  y,
+) => {
   const tileSize = 512;
 
   const center = calculateNormalizedCenterCoords(x, y, zoom);
@@ -34,7 +41,7 @@ export const renderTile = async (style, styleDir, sourceDir, zoom, x, y) => {
     ratio: 1,
   });
 
-  map.load(style);
+  map.load(styleObject);
 
   // Render the map to a buffer
   const buffer = await renderMap(map, {
