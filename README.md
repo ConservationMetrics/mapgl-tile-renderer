@@ -81,6 +81,34 @@ Online source (Esri) with GeoJSON overlay:
 $ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "esri" --apikey YOUR_API_KEY_HERE --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
 ```
 
+### With Docker
+
+To run with Docker simply run:
+```bash
+docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "mapbox-style" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+
+```
+This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mbgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
+
+- `-it`: This option ensures that the Docker container runs in interactive mode, allowing you to interact with the command-line interface.
+- `--rm`: This option automatically removes the container when it exits, which helps to clean up and save disk space.
+- `-v "$(pwd)":/app/outputs`: This mounts the current working directory (`$(pwd)`) to the `/app/outputs` directory inside the container, allowing the container to write the output files to your local file system.
+- `communityfirst/mbgl-tile-renderer`: This is the name of the Docker image that contains the mbgl-tile-renderer tool.
+Make sure to replace the placeholder values with your actual information before running the command.
+
+
+To run locally first build the Docker image:
+
+```bash
+docker build -t mbgl-tile-renderer .
+```
+
+Then run:
+
+```
+docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "mapbox-style" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+```
+
 ## Inspect the mbtile outputs
 
 Three easy ways to examine and inspect the mbtiles:
