@@ -1,11 +1,21 @@
-#!/bin/bash
+#!/bin/sh
 
 # Start Xvfb
-echo "Starting Xvfb..."
-start-stop-daemon --start --pidfile /tmp/xvfb.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
+echo "Starting Xvfb"
+Xvfb ${DISPLAY} -screen 0 "1024x768x24" -ac +extension GLX +render -noreset  -nolisten tcp  &
+Xvfb_pid="$!"
+echo "Waiting for Xvfb (PID: $Xvfb_pid) to be ready..."
 
-sleep 5
-echo "Xvfb started"
+timeout=10 # Timeout in seconds
+start_time=$(date +%s)
+while ! xdpyinfo -display ${DISPLAY} > /dev/null 2>&1; do
+    sleep 0.1
+    now=$(date +%s)
+    if [ $(($now - $start_time)) -ge $timeout ]; then
+        echo "Xvfb server didn't start within the timeout period. Exiting..."
+        exit 1
+    fi
+done
+echo "Xvfb is running"
 
-# Run your application
 node src/cli.js "$@"

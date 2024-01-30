@@ -5,7 +5,7 @@ RUN groupadd --gid 1000 node \
 
 WORKDIR /app
 
-RUN apt update && apt install -y libcurl4-openssl-dev libglfw3-dev libuv1-dev libpng-dev libicu-dev libjpeg-turbo8-dev libwebp-dev xvfb
+RUN apt update && apt install -y libcurl4-openssl-dev libglfw3-dev libuv1-dev libpng-dev libicu-dev libjpeg-turbo8-dev libwebp-dev xvfb x11-utils
 RUN apt install -y clang git cmake ccache ninja-build pkg-config
 COPY package*.json /app/
 ENV NVM_DIR /usr/local/nvm
