@@ -12,12 +12,12 @@ export const generateStyle = (style, overlay) => {
   const styleObject = {
     version: 8,
     sources: {
-      [`${style}`]: {
+      [style]: {
         type: "raster",
         scheme: "xyz",
         tilejson: "2.2.0",
         tiles: [`sources/{z}/{x}/{y}.jpg`],
-        tileSize: 256,
+        tileSize: tileSize,
       },
     },
     layers: [
@@ -29,9 +29,9 @@ export const generateStyle = (style, overlay) => {
         },
       },
       {
-        id: `${style}`,
+        id: `style`,
         type: "raster",
-        source: `${style}`,
+        source: `style`,
         paint: {},
       },
     ],
