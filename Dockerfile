@@ -20,5 +20,6 @@ ENV DISPLAY=:99.0
 RUN start-stop-daemon --start --pidfile ~/xvfb.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset
 COPY ./src/* /app/src/
 COPY entrypoint.sh /app
+COPY ./tests/* /app/tests/
 RUN chmod +x /app/entrypoint.sh
 ENTRYPOINT [ "/app/entrypoint.sh" ]
