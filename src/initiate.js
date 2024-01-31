@@ -50,7 +50,7 @@ export const initiateRendering = async (
 
     // Set the tileSize of the online source. Mapbox Raster API provides 512px tiles.
     let tileSize;
-    if (onlineSource === "mapbox-style") {
+    if (style === "mapbox-style") {
       tileSize = 512;
     } else {
       tileSize = 256;
@@ -58,7 +58,7 @@ export const initiateRendering = async (
 
     // Generate and save a stylesheet from the online source and overlay source.
     if (styleObject === null) {
-      styleObject = generateStyle(style, overlay);
+      styleObject = generateStyle(style, overlay, tileSize);
       fs.writeFileSync(tempDir + "style.json", JSON.stringify(style, null, 2));
       console.log("Style file generated and saved!");
     }
@@ -67,7 +67,7 @@ export const initiateRendering = async (
     styleDir = path.resolve(process.cwd(), tempDir);
   }
 
-  const localMbtilesMatches = JSON.stringify(style).match(MBTILES_REGEXP);
+  const localMbtilesMatches = JSON.stringify(styleObject).match(MBTILES_REGEXP);
   if (localMbtilesMatches && !sourceDir) {
     const msg = "Style has local mbtiles file sources, but no sourceDir is set";
     throw new Error(msg);
