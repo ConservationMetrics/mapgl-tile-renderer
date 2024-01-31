@@ -11,7 +11,7 @@ const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
 
   const config = { responseType: "arraybuffer" };
 
-  if (style === "planet-monthly-visual") {
+  if (style === "planet") {
     // Use HTTP Basic Authentication for Planet API
     config.auth = {
       username: apiKey,
