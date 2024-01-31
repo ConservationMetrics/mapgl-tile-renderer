@@ -18,4 +18,11 @@ while ! xdpyinfo -display ${DISPLAY} > /dev/null 2>&1; do
 done
 echo "Xvfb is running"
 
-node src/cli.js "$@"
+# Check if QueueName env var (e.g. for Azure) is set
+if [ "$QueueName" = "mappacker-requests" ]; then
+    # Run the queue service
+    node src/queueservice.js
+else
+    # Default to the CLI API
+    node src/cli.js "$@"
+fi
