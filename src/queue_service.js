@@ -31,7 +31,7 @@ const processQueueMessages = async () => {
         // Extract the required keys
         const {
           style,
-          styleObject,
+          styleObject = null,
           styleDir = null,
           sourceDir = null,
           apiKey,

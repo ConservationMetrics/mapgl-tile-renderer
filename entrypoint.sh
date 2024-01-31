@@ -21,7 +21,7 @@ echo "Xvfb is running"
 # Check if QueueName env var (e.g. for Azure) is set
 if [ "$QueueName" = "mappacker-requests" ]; then
     # Run the queue service
-    node src/queueservice.js
+    node src/queue_service.js
 else
     # Default to the CLI API
     node src/cli.js "$@"
