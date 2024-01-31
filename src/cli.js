@@ -13,13 +13,13 @@ const raiseError = (msg) => {
 };
 
 const parseListToFloat = (text) => text.split(",").map(Number);
-const onlineSources = [
+const validOnlineStyles = [
   "bing",
   "esri",
   "google",
+  "mapbox",
   "mapbox-satellite",
-  "mapbox-style",
-  "planet-monthly-visual",
+  "planet",
 ];
 
 program
@@ -28,51 +28,41 @@ program
   .description("Render styled Maplibre GL map tiles")
   .requiredOption(
     "-s ,--style <type>",
-    "Are you providing your own map style? If not, one will be generated using your sources. (required, 'yes' or 'no')",
-    function (value) {
-      const validSources = ["yes", "no"];
-      value = value.toLowerCase();
-      if (!validSources.includes(value)) {
-        throw new Error("Invalid answer. It can only be yes or no.");
-      }
-      return value;
-    },
-  )
-  .option("-l, --stylelocation <type>", "Location of your provided map style")
-  .option(
-    "-i, --stylesources <type>",
-    "Directory where any local source files specified in your provided style are located",
-  )
-  .option(
-    "-O, --onlinesource <type>",
-    `Online source type. Options: ${onlineSources}`,
+    `Specify the style source. Use 'self' for a self-provided style or one of the following for an online source: ${validOnlineStyles}`,
     function (value) {
       value = value.toLowerCase();
-      if (!onlineSources.includes(value)) {
+      if (!validOnlineStyles.includes(value) && value !== "self") {
         throw new Error(
-          `Invalid online source. It can only be one of these: ${onlineSources}`,
+          `Invalid style. It can only be one of these: self,${validOnlineStyles}`,
         );
       }
       return value;
     },
   )
-  .option("-k, --apikey <type>", "API key for your online source (optional)")
   .option(
-    "-m, --mapboxstyle <type>",
-    "Mapbox style URL (required if using mapbox for onlinesource)",
+    "-l, --stylelocation <type>",
+    "If using a self-provided style: location of your map style",
   )
   .option(
-    "-p, --monthyear <type>",
-    "The month and year (in YYYY-MM format) of the Planet Monthly Visual Basemap to use (required if using planet-monthly-visual for onlinesource)",
+    "-d, --stylesources <type>",
+    "If using a self-provided style: directory where your local source files are located",
   )
-
+  .option(
+    "-k, --apikey <type>",
+    "(Optional) If using an online source: API key that may be required",
+  )
   .option(
     "-a, --overlay <type>",
-    "Feature layer to overlay on top of the online source (must be a GeoJSON object)",
+    "(Optional) If using an online source: feature layer to overlay on top of the online source (must be a GeoJSON object)",
+  )
+  .option("-m, --mapboxstyle <type>", "Mapbox style URL")
+  .option(
+    "-p, --monthyear <type>",
+    "The month and year (in YYYY-MM format) of the Planet Monthly Visual Basemap to use",
   )
   .requiredOption(
     "-b, --bounds <type>",
-    "Bounding box in WSEN format, comma separated (required)",
+    "(Required) Bounding box in WSEN format, comma separated",
     parseListToFloat,
   )
   .option(
@@ -83,7 +73,7 @@ program
   )
   .requiredOption(
     "-Z, --maxzoom <number>",
-    "Maximum zoom level (required)",
+    "(Required) Maximum zoom level",
     parseInt,
   )
   .option("-o, --output <type>", "Output name (default 'output')", "output");
@@ -92,14 +82,13 @@ program.parse(process.argv);
 
 const options = program.opts();
 
-const styleProvided = options.style;
+const style = options.style;
 const styleLocation = options.stylelocation;
 const sourceDir = options.stylesources;
-const onlineSource = options.onlinesource;
-const onlineSourceAPIKey = options.apikey;
+const apiKey = options.apikey;
 const mapboxStyle = options.mapboxstyle;
 const monthYear = options.monthyear;
-const overlaySource = options.overlay;
+const overlay = options.overlay;
 const bounds = options.bounds;
 const minZoom = options.minzoom;
 const maxZoom = options.maxzoom;
@@ -107,30 +96,22 @@ const output = options.output;
 
 // Validations for CLI options
 
-if (styleProvided === "yes" && (!styleLocation || !sourceDir)) {
+if (style === "self" && (!styleLocation || !sourceDir)) {
   raiseError(
-    "You must provide a style location and a source directory if you are providing your own style",
-  );
-}
-
-if (styleProvided === "no" && !onlineSource) {
-  raiseError(
-    "You must provide an online source if you are not providing your own style",
+    "You must provide a style location using the --stylelocation flag, and a source directory using the --stylesources flag, if you are providing your own style",
   );
 }
 
 if (
-  (onlineSource === "mapbox" ||
-    onlineSource === "mapbox-satellite" ||
-    onlineSource === "planet-monthly-visual") &&
-  !onlineSourceAPIKey
+  (style === "mapbox" || style === "mapbox-satellite" || style === "planet") &&
+  !apiKey
 ) {
-  raiseError(`You must provide an API key for ${onlineSource}`);
+  raiseError(`You must provide an API key for ${style}`);
 }
 
-if (onlineSource === "planet-monthly-visual" && !monthYear) {
+if (style === "planet" && !monthYear) {
   raiseError(
-    "You must provide a month and year (YYYY-MM) for the Planet Monthly Visual Basemap",
+    "You must provide a month and year (YYYY-MM) using the --monthyear flag for the Planet Monthly Visual Basemap",
   );
 }
 
@@ -142,9 +123,9 @@ if (monthYear) {
   }
 }
 
-if (onlineSource === "mapbox" && !mapboxStyle) {
+if (style === "mapbox" && !mapboxStyle) {
   raiseError(
-    "You must provide a Mapbox style URL if you are using Mapbox as your online source",
+    "You must provide a Mapbox style URL using the --mapboxstyle flag if you are using Mapbox as your online source",
   );
 }
 
@@ -194,25 +175,24 @@ if (bounds !== null) {
   }
 }
 
-let style = null;
 let styleDir = null;
+let styleObject = null;
 
-if (styleProvided === "yes") {
+if (style === "self") {
   const stylePath = path.resolve(process.cwd(), styleLocation);
   styleDir = path.dirname(stylePath);
-  style = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
+  styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
 }
 
 console.log("\n\n-------- Creating Maplibre GL map tiles --------");
 
-console.log("style provided: %j", styleProvided);
+console.log("style to use: %j", style);
 if (styleLocation) console.log("style location: %j", styleLocation);
 if (sourceDir) console.log("local source path: %j", sourceDir);
-if (onlineSource) console.log("online source: %j", onlineSource);
-if (onlineSourceAPIKey) console.log("api key: %j", onlineSourceAPIKey);
+if (apiKey) console.log("api key: %j", apiKey);
 if (mapboxStyle) console.log("mapbox style: %j", mapboxStyle);
 if (monthYear) console.log("month and year: %j", monthYear);
-if (overlaySource) console.log("overlay source: %j", overlaySource);
+if (overlay) console.log("overlay source: %j", overlay);
 console.log("bounds: %j", bounds);
 console.log("minZoom: %j", minZoom);
 console.log("maxZoom: %j", maxZoom);
@@ -220,15 +200,14 @@ console.log("output: %j", output);
 console.log("------------------------------------------------");
 
 initiateRendering(
-  styleProvided === "yes",
   style,
+  styleObject,
   styleDir,
   sourceDir,
-  onlineSource,
-  onlineSourceAPIKey,
+  apiKey,
   mapboxStyle,
   monthYear,
-  overlaySource,
+  overlay,
   bounds,
   minZoom,
   maxZoom,

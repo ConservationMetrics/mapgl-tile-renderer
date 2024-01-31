@@ -8,11 +8,11 @@ import { renderTile } from "./render_map.js";
 
 // Generate a Mapbox GL style JSON object from a remote source
 // and an additional source.
-export const generateStyle = (onlineSource, overlaySource) => {
-  const style = {
+export const generateStyle = (style, overlay) => {
+  const styleObject = {
     version: 8,
     sources: {
-      [`${onlineSource}`]: {
+      [`${style}`]: {
         type: "raster",
         scheme: "xyz",
         tilejson: "2.2.0",
@@ -29,21 +29,21 @@ export const generateStyle = (onlineSource, overlaySource) => {
         },
       },
       {
-        id: `${onlineSource}`,
+        id: `${style}`,
         type: "raster",
-        source: `${onlineSource}`,
+        source: `${style}`,
         paint: {},
       },
     ],
   };
   // For now, we are styling an additional source with a
   // transparent red fill and red outline.
-  if (overlaySource) {
-    style.sources["overlay"] = {
+  if (overlay) {
+    styleObject.sources["overlay"] = {
       type: "geojson",
       data: `overlay.geojson`,
     };
-    style.layers.push({
+    styleObject.layers.push({
       id: "polygon-layer",
       type: "fill",
       source: "overlay",
@@ -54,7 +54,7 @@ export const generateStyle = (onlineSource, overlaySource) => {
         "fill-opacity": 0.5,
       },
     });
-    style.layers.push({
+    styleObject.layers.push({
       id: "line-layer",
       type: "line",
       source: "overlay",
@@ -66,7 +66,7 @@ export const generateStyle = (onlineSource, overlaySource) => {
       },
     });
   }
-  return style;
+  return styleObject;
 };
 
 // Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
@@ -104,7 +104,7 @@ export const generateJPG = async (buffer, width, height, ratio) => {
 
 // Generate MBTiles file from a given style, bounds, and zoom range
 export const generateMBTiles = async (
-  style,
+  styleObject,
   styleDir,
   sourceDir,
   bounds,
@@ -177,7 +177,7 @@ export const generateMBTiles = async (
           try {
             // Render the tile
             const tileBuffer = await renderTile(
-              style,
+              styleObject,
               styleDir,
               sourceDir,
               zoom,

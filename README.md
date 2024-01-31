@@ -29,15 +29,21 @@ Please note that depending on your bounding box and maximum zoom level, this too
 
 ## CLI options
 
-* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet-monthly-visual". For "mapbox", also provide your style ID using `-m` or `--mapboxstyle` in the format `<yourusername>/<styleid>`.
+* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet".
 
 If using a self-provided style (`--style self`):
 *  `--stylelocation`: Location of your provided map style
 *  `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located
 
-If using an online source (`--style` with any online source name):
+If using an online style (`--style` with any online style name):
 *  `-a` or `--overlay`: (Optional) Provide a GeoJSON object for a feature layer to overlay on top of the online source
 *  `-k` or `--apikey`: (Optional) API key that may be required for your online source
+
+If your style is `mapbox`:
+* `-m` or `--mapboxstyle` in the format `<yourusername>/<styleid>`
+
+If your style is `planet-monthly-visual`:
+* `-p` or `--monthyear`: The month and year (in YYYY-MM format) of the Planet Monthly Visual Basemap to use
 
 Common options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
@@ -50,7 +56,7 @@ Common options:
 Using a self-provided style:
 
 ```bash
-$ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --stylesources tests/fixtures/alert/sources
+$ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
 ```
 
 From an online source (Bing):
@@ -62,19 +68,19 @@ $ node src/cli.js --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z
 From an online source (Mapbox):
 
 ```bash
-$ node src/cli.js --style mapbox --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+$ node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
 ```
 
 From an online source (Planet):
 
 ```bash
-$ node src/cli.js --style planet-monthly-visual --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --apikey YOUR_API_KEY_HERE
+$ node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
 ```
 
 Online source (Esri) with GeoJSON overlay:
 
 ```bash
-$ node src/cli.js --style esri --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --apikey YOUR_API_KEY_HERE --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
+$ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
 ```
 
 ## Inspect the mbtile outputs
