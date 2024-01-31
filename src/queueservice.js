@@ -30,32 +30,30 @@ const processQueueMessages = async () => {
 
         // Extract the required keys
         const {
-          styleProvided,
+          style,
           styleObject,
-          styleDir,
-          sourceDir,
-          onlineSource,
-          onlineSourceAPIKey,
+          styleDir = null,
+          sourceDir = null,
+          apiKey,
           mapboxStyle,
           monthYear,
-          overlaySource,
+          overlay,
           bounds,
-          minZoom,
+          minZoom = 0,
           maxZoom,
-          output,
+          output = "output",
         } = messageData;
 
         // Pass the extracted keys to initiateRendering
         await initiateRendering(
-          styleProvided,
+          style,
           styleObject,
           styleDir,
           sourceDir,
-          onlineSource,
-          onlineSourceAPIKey,
+          apiKey,
           mapboxStyle,
           monthYear,
-          overlaySource,
+          overlay,
           bounds,
           minZoom,
           maxZoom,
