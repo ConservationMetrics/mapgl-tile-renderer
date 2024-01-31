@@ -206,8 +206,8 @@ export const generateMBTiles = async (
     });
   } finally {
     // Delete the temporary tiles directory and style
-    if (tempDir !== null) {
-      await fs.promises.rm(tempDir, { recursive: true });
-    }
+    // if (tempDir !== null) {
+    //   await fs.promises.rm(tempDir, { recursive: true });
+    // }
   }
 };

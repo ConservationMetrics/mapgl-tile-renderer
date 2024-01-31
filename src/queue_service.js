@@ -1,4 +1,9 @@
 import { QueueServiceClient } from "@azure/storage-queue";
+import fs from "fs";
+import path from "path";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
 import { initiateRendering } from "./initiate.js";
 
 // Connection string and queue names
@@ -7,13 +12,27 @@ const sourceQueueName = "mappacker-requests";
 const destinationQueueName = "jg-mp-test-out";
 
 // Create QueueClients
-const queueServiceClient =
-  QueueServiceClient.fromConnectionString(connStr);
+const queueServiceClient = QueueServiceClient.fromConnectionString(connStr);
 const sourceQueueClient = queueServiceClient.getQueueClient(sourceQueueName);
 const destinationQueueClient =
   queueServiceClient.getQueueClient(destinationQueueName);
 
 const processQueueMessages = async () => {
+  // TODO: erase this dummy code when the rendering is implemented
+  // Write dummy text file to /maps/
+  // const __filename = fileURLToPath(import.meta.url);
+  // const __dirname = dirname(__filename);
+
+  // const dirPath = path.join("/", "maps");
+  // const filePath = path.join(dirPath, "dummy.txt");
+
+  // // Ensure the directory exists
+  // fs.mkdirSync(dirPath, { recursive: true });
+
+  // // Now write the file
+  // console.log(`Writing dummy file to ${filePath}`)
+  // fs.writeFileSync(filePath, "dummy");
+
   while (true) {
     // Receive message
     const response = await sourceQueueClient.receiveMessages({
@@ -23,12 +42,16 @@ const processQueueMessages = async () => {
 
     if (message) {
       try {
-        console.log(`Received message: '${message.messageText}'`);
+        const decodedMessageText = Buffer.from(
+          message.messageText,
+          "base64",
+        ).toString("utf8");
+        console.log(`Received message (decoded): '${decodedMessageText}'`);
 
         // Parse the message text as JSON
-        const messageData = JSON.parse(message.messageText);
+        const messageData = JSON.parse(decodedMessageText);
 
-        // Extract the required keys
+        // Extract the required values
         const {
           style,
           styleObject = null,
@@ -44,7 +67,7 @@ const processQueueMessages = async () => {
           output = "output",
         } = messageData;
 
-        // Pass the extracted keys to initiateRendering
+        // Pass the extracted values to initiateRendering
         await initiateRendering(
           style,
           styleObject,
@@ -57,17 +80,18 @@ const processQueueMessages = async () => {
           bounds,
           minZoom,
           maxZoom,
-          output
+          output,
         );
 
         // Send completion message
         const completionMessage = `Finished rendering map`;
+        console.log(completionMessage);
         await destinationQueueClient.sendMessage(completionMessage);
       } finally {
         // Delete the message from the source queue
         await sourceQueueClient.deleteMessage(
           message.messageId,
-          message.popReceipt
+          message.popReceipt,
         );
       }
     } else {
