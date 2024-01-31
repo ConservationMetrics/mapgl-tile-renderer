@@ -29,21 +29,23 @@ Please note that depending on your bounding box and maximum zoom level, this too
 
 ## CLI options
 
-* `-s` or `--style`: Are you providing your own style? If not, one will be generated using your sources. ("yes" or "no" answers only)
+* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet".
 
-Required options if `style` is "yes":
+If using a self-provided style (`--style self`):
+*  `--stylelocation`: Location of your provided map style
+*  `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located
 
-*  `-l` or `--stylelocation`: Location of your provided map style
-*  `-i` or `--stylesources`: Directory where any local source files (GeoJSON, XYZ directory, MBTiles) specified in your provided style are located
+If using an online style (`--style` with any online style name):
+*  `-a` or `--overlay`: (Optional) Provide a GeoJSON object for a feature layer to overlay on top of the online source
+*  `-k` or `--apikey`: (Optional) API key that may be required for your online source
 
-Required options if `style` is "no":
-*  `-O` or `--onlinesource`: Specify an online source to be used as a background map (currently supported: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet-monthly-visual")
-*  `-a` or `--overlay`: Provide an GeoJSON object for a feature layer to overlay on top of the online source
-*  `-k` or `--apikey`: API key that may be required for your online source
-If you selected "mapbox" for `--onlinesource`:
-*  `-m` or `--mapboxstyle`: The Mapbox style you want to use. Format: `<yourusername>/<styleid>`
+If your style is `mapbox`:
+* `-m` or `--mapboxstyle` in the format `<yourusername>/<styleid>`
 
-Additional options:
+If your style is `planet-monthly-visual`:
+* `-p` or `--monthyear`: The month and year (in YYYY-MM format) of the Planet Monthly Visual Basemap to use
+
+Common options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
 *  `-Z` or `--maxzoom`: Maximum zoom level (required)
@@ -54,40 +56,42 @@ Additional options:
 Using a self-provided style:
 
 ```bash
-$ node src/cli.js --style "yes" --stylelocation tests/fixtures/alert/style-with-geojson.json --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --stylesources tests/fixtures/alert/sources
+$ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
 ```
 
 From an online source (Bing):
 
 ```bash
-$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "bing" --apikey YOUR_API_KEY_HERE
+$ node src/cli.js --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --apikey YOUR_API_KEY_HERE
 ```
 
 From an online source (Mapbox):
 
 ```bash
-$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "mapbox-style" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+$ node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
 ```
 
 From an online source (Planet):
 
 ```bash
-$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "planet-monthly-visual" --monthyear 2023-12 --apikey YOUR_API_KEY_HERE
+$ node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
+
 ```
 
 Online source (Esri) with GeoJSON overlay:
 
 ```bash
-$ node src/cli.js --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "esri" --apikey YOUR_API_KEY_HERE --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
+$ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
 ```
 
 ### With Docker
 
 To run with Docker simply run:
+
 ```bash
 docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "mapbox-style" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
-
 ```
+
 This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mbgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
 
 - `-it`: This option ensures that the Docker container runs in interactive mode, allowing you to interact with the command-line interface.
