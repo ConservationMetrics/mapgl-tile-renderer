@@ -56,9 +56,9 @@ jobs:
       - name: Test run of Docker image with Esri source and GeoJSON overlay
         run: |
           docker run --rm ${{ steps.meta.outputs.tags }} --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
-      # - name: Test run of Docker image with Mapbox source
-      #   run: |
-      #     docker run --rm ${{ steps.meta.outputs.tags }} --style mapbox --mapboxstyle ${{ secrets.MAPBOX_STYLE }} --apikey ${{ secrets.MAPBOX_API_KEY }}  --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10
-      # - name: Test run of Docker image with Planet source
-      #   run: |
-      #     docker run --rm ${{ steps.meta.outputs.tags }} --style planet --monthyear 2013-12 --apikey ${{ secrets.PLANET_API_KEY }}  --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5
+      - name: Test run of Docker image with Mapbox source
+        run: |
+          docker run --rm ${{ steps.meta.outputs.tags }} --style mapbox --mapboxstyle ${{ secrets.MAPBOX_STYLE }} --apikey ${{ secrets.MAPBOX_API_KEY }}  --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10
+      - name: Test run of Docker image with Planet source
+        run: |
+          docker run --rm ${{ steps.meta.outputs.tags }} --style planet --monthyear 2013-12 --apikey ${{ secrets.PLANET_API_KEY }}  --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5
