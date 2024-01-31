@@ -49,4 +49,4 @@ jobs:
           short-description: 'Node.js MapGL renderer for styled raster tiles in MBTiles format.'
       - name: Test run of Docker image with command
         run: |
-          docker run --rm communityfirst/mbgl-tile-renderer:${{ steps.meta.outputs.tags[0] }} --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10
+          docker run --rm communityfirst/mbgl-tile-renderer:${{ steps.meta.outputs.tags }} --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10
