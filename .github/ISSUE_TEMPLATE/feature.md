@@ -11,10 +11,6 @@ labels: 'Type: Feature'
 ### User Stories & Acceptance Criteria
 
 
-### UI Sketch (or Screenshot from Auditor 1)
-
-
-
 ## Implementation Plan
 (may be added later, before work begins)
 

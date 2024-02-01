@@ -6,4 +6,6 @@ node_modules/*
 
 /outputs/*
 !/outputs/.keep
+*.mbtiles
+
 .history
