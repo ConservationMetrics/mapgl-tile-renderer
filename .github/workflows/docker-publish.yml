@@ -78,7 +78,7 @@ jobs:
           PLANET_API_KEY: ${{ secrets.PLANET_API_KEY }}
           PROTOMAPS_API_KEY: ${{ secrets.PROTOMAPS_API_KEY }}"
         run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.docker.outputs.tags }} ${MATRIX_COMMAND} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -o ${{ matrix.style }}-${{ needs.docker.outputs.version }}
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.docker.outputs.tags }} -s ${{ matrix.command }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -o ${{ matrix.style }}-${{ needs.docker.outputs.version }}
       - name: Upload mbtiles artifacts
         uses: actions/upload-artifact@v2
         with:
