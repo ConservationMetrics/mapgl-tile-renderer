@@ -63,7 +63,7 @@ Common options:
 *  `-o` or `--outputdir`: Output directory (default "outputs/")
 *  `-f` or `--filename`: Name of the output mbtiles file
 
-## Example usage
+## CLI example usage
 
 Using a self-provided style:
 
@@ -94,6 +94,21 @@ Online source (Esri) with GeoJSON overlay:
 
 ```bash
 $ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
+```
+
+## Azure Storage Queue example usage
+
+For Azure Storage Queue (and other queue services in the future), mbgl-tile-renderer expects a message with a JSON body, composed of the input options:
+
+```json
+{
+  "style": "bing",
+  "apiKey": "bing-api-key",
+  "bounds": "-54.28772,3.11460,-54.03630,3.35025",
+  "minZoom": 0,
+  "maxZoom": 8,
+  "output": "bing"
+}
 ```
 
 ## Docker
