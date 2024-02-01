@@ -1,13 +1,13 @@
 {
   "name": "mbgl-tile-renderer",
   "version": "1.0.0",
-  "type": "module",
   "description": "A tile renderer for Maplibre GL JS",
+  "type": "module",
   "main": "./src/cli.js",
   "scripts": {
     "lint": "prettier --write ./src",
     "prepare": "husky install",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "bin": {
     "mbgl-tile-renderer": "./src/cli.js"
@@ -24,8 +24,15 @@
     "sharp": "^0.33.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "babel-jest": "^29.7.0",
+    "dotenv": "^16.4.1",
+    "dotenv-flow": "^4.1.0",
     "husky": "^8.0.3",
+    "jest": "^29.7.0",
     "lint-staged": "^15.2.0",
+    "pixelmatch": "^5.3.0",
     "prettier": "^3.2.4"
   },
   "husky": {
@@ -39,7 +46,6 @@
       "git add"
     ]
   },
-  "keywords": [],
-  "author": "Rudo Kemper",
+  "repository": "https://github.com/conservationmetrics/mbgl-tile-renderer",
   "license": "MIT"
 }
