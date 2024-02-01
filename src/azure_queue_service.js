@@ -48,6 +48,17 @@ const processQueueMessages = async () => {
           outputFilename = "output",
         } = messageData;
 
+        // Check if style, maxZoom, or bounds are undefined
+        if (style === undefined) {
+          throw new Error("Style must be provided.");
+        }
+        if (maxZoom === undefined) {
+          throw new Error("Max zoom must be provided.");
+        }
+        if (bounds === undefined) {
+          throw new Error("Bounds must be provided.");
+        }
+
         const boundsArray = bounds.split(",").map(Number);
         const outputDir = "/maps";
 
