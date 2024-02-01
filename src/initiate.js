@@ -8,7 +8,6 @@ const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
 export const initiateRendering = async (
   style,
-  styleObject,
   styleDir,
   sourceDir,
   apiKey,
@@ -23,11 +22,18 @@ export const initiateRendering = async (
 ) => {
   console.log("Initiating rendering...");
 
-  let tempDir = null;
+  const tempDir = path.resolve(process.cwd(), "outputs/temp");
+  let stylePath = null;
+  let styleObject = null;
+
+  // If the style is self-hosted, let's read the style from the file.
+  if (style === "self") {
+    stylePath = path.resolve(process.cwd(), styleDir);
+    styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
+  }
 
   // If the style is not self-hosted, let's generate everything that we need to render tiles.
   if (style !== "self") {
-    tempDir = "outputs/temp";
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
@@ -64,7 +70,7 @@ export const initiateRendering = async (
         `${tempDir}/style.json`,
         JSON.stringify(styleObject, null, 2),
       );
-      console.log("Style file generated and saved!");
+      console.log("Stylesheet generated and saved!");
     }
 
     sourceDir = `${tempDir}/sources`;
@@ -73,7 +79,8 @@ export const initiateRendering = async (
 
   const localMbtilesMatches = JSON.stringify(styleObject).match(MBTILES_REGEXP);
   if (localMbtilesMatches && !sourceDir) {
-    const msg = "Style has local mbtiles file sources, but no sourceDir is set";
+    const msg =
+      "Styleheet has local mbtiles file sources, but no sourceDir is set";
     throw new Error(msg);
   }
 
@@ -90,7 +97,7 @@ export const initiateRendering = async (
         const msg = `Mbtiles file ${path.format({
           name,
           ext: ".mbtiles",
-        })} in style file is not found in: ${path.resolve(sourceDir)}`;
+        })} in stylesheet is not found in: ${path.resolve(sourceDir)}`;
         throw new Error(msg);
       }
     });
@@ -109,7 +116,7 @@ export const initiateRendering = async (
       outputFilename,
     );
   } catch (error) {
-    console.error("Error generating MBTiles:", error);
+    throw new Error("Error generating MBTiles:", error);
   }
 };
 

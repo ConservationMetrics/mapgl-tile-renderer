@@ -3,7 +3,10 @@ import path from "path";
 import axios from "axios";
 import pLimit from "p-limit";
 
-import { convertCoordinatesToTiles } from "./tile_calculations.js";
+import {
+  convertCoordinatesToTiles,
+  validateMinMaxValues,
+} from "./tile_calculations.js";
 
 // Download XYZ tile
 const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
@@ -28,13 +31,13 @@ const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
       fs.writeFileSync(filename, response.data);
       return true; // Return true if download was successful
     } else {
-      console.log(
+      console.warn(
         `Failed to download: ${xyzUrl} (Status code: ${response.status})`,
       );
       return false;
     }
   } catch (error) {
-    console.error(`Error downloading tile: ${xyzUrl}`, error);
+    console.error(`\x1b[33mError downloading tile: ${xyzUrl}\x1b[0m`, error);
     return false;
   }
 };
@@ -51,8 +54,7 @@ const downloadOnlineTiles = async (
   tempDir,
 ) => {
   if (!bounds || bounds.length < 4) {
-    console.error("Invalid bounds provided");
-    return;
+    throw new Error("Invalid bounds provided");
   }
 
   let imageryUrl, imageryAttribution, imagerySourceName;
@@ -102,6 +104,8 @@ const downloadOnlineTiles = async (
 
   const limit = pLimit(5);
 
+  let totalTileCount = 0;
+
   // Iterate over zoom levels and tiles
   for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
     let { x: minX, y: maxY } = convertCoordinatesToTiles(
@@ -114,6 +118,8 @@ const downloadOnlineTiles = async (
       bounds[3],
       zoom,
     );
+
+    validateMinMaxValues(minX, maxX, minY, maxY);
 
     let tileCount = 0;
 
@@ -153,6 +159,10 @@ const downloadOnlineTiles = async (
 
         if (!fs.existsSync(path.dirname(filename))) {
           fs.mkdirSync(path.dirname(filename), { recursive: true });
+        } else {
+          totalTileCount++;
+          console.log(`File already exists: ${filename}`);
+          continue;
         }
 
         promises.push(
@@ -163,8 +173,25 @@ const downloadOnlineTiles = async (
     const results = await Promise.all(promises);
 
     tileCount = results.filter((result) => result).length;
+    totalTileCount += tileCount;
 
-    console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
+    // There may be edge cases in which no tiles are downloaded for a specific zoom level
+    // For example, if the tile already exists in the temp dir from a previous download
+    // attempt, or if we encounter rate limiting, or if one of the APIs does not return tiles
+    // for a specific zoom level for some unforeseen reason. We might still want to continue
+    // generating an MBTiles in that case, so we log a warning instead of throwing an exception.
+    if (tileCount === 0) {
+      console.warn(`\x1b[33mNo tiles downloaded for zoom level ${zoom}\x1b[0m`);
+    } else {
+      console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
+    }
+  }
+
+  // We definitely do *not* want to proceed if no tiles were downloaded at all.
+  if (totalTileCount === 0) {
+    throw new Error("No tiles downloaded");
+  } else {
+    console.log(`Total tiles downloaded: ${totalTileCount}`);
   }
 
   // Save metadata.json file with proper attribution according to
@@ -179,9 +206,17 @@ const downloadOnlineTiles = async (
   };
 
   const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
-  fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
 
-  console.log(`Tiles successfully downloaded from ${imagerySourceName}!`);
+  try {
+    fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
+    console.log("Metadata file generated!");
+  } catch (error) {
+    throw new Error(`Error writing metadata file: ${metadataFilePath}`);
+  }
+
+  console.log(
+    `\x1b[32mXYZ tiles successfully downloaded from ${imagerySourceName}!\x1b[0m`,
+  );
 };
 
 // Handler for requesting tiles from different online sources

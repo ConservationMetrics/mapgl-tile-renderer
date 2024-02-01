@@ -1,3 +1,16 @@
+export const validateMinMaxValues = (minX, minY, maxX, maxY) => {
+  if (isNaN(minX) || isNaN(maxX) || isNaN(minY) || isNaN(maxY)) {
+    throw new Error("One or more tile coordinates are NaN");
+  }
+
+  if (minX > maxX) {
+    throw new Error("minX cannot be greater than maxX");
+  }
+  if (minY > maxY) {
+    throw new Error("minY cannot be greater than maxY");
+  }
+};
+
 // Converts lat/long value to a tile coordinate at a given zoom level, so as to
 // determine X and Y position (column) of a tile in a grid based on geographic longitude
 // in the Web Mercator projection.

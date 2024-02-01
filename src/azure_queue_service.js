@@ -1,5 +1,6 @@
 import { QueueServiceClient } from "@azure/storage-queue";
 
+import { parseListToFloat, validateInputOptions } from "./utils.js";
 import { initiateRendering } from "./initiate.js";
 
 // Connection string and queue names
@@ -27,17 +28,13 @@ const processQueueMessages = async () => {
           message.messageText,
           "base64",
         ).toString("utf8");
-        console.log(`Received message: '${decodedMessageText}'`);
+        console.log(`Received queue message: '${decodedMessageText}'`);
 
         // Parse the message text as JSON
-        const messageData = JSON.parse(decodedMessageText);
+        const options = JSON.parse(decodedMessageText);
 
-        // Extract the required values
         const {
           style,
-          styleObject = null,
-          styleDir = null,
-          sourceDir = null,
           apiKey,
           mapboxStyle,
           monthYear,
@@ -46,28 +43,29 @@ const processQueueMessages = async () => {
           minZoom = 0,
           maxZoom,
           outputFilename = "output",
-        } = messageData;
+        } = options;
 
-        // Check if style, maxZoom, or bounds are undefined
-        if (style === undefined) {
-          throw new Error("Style must be provided.");
-        }
-        if (maxZoom === undefined) {
-          throw new Error("Max zoom must be provided.");
-        }
-        if (bounds === undefined) {
-          throw new Error("Bounds must be provided.");
-        }
+        validateInputOptions(
+          style,
+          null,
+          null,
+          apiKey,
+          mapboxStyle,
+          monthYear,
+          overlay,
+          bounds,
+          minZoom,
+          maxZoom,
+        );
 
-        const boundsArray = bounds.split(",").map(Number);
+        const boundsArray = parseListToFloat(bounds);
         const outputDir = "/maps";
 
         // Pass the extracted values to initiateRendering
         await initiateRendering(
           style,
-          styleObject,
-          styleDir,
-          sourceDir,
+          null,
+          null,
           apiKey,
           mapboxStyle,
           monthYear,
@@ -81,7 +79,6 @@ const processQueueMessages = async () => {
 
         // Send completion message
         const completionMessage = `Finished rendering map`;
-        console.log(completionMessage);
         await destinationQueueClient.sendMessage(completionMessage);
       } finally {
         // Delete the message from the source queue
