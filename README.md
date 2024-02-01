@@ -1,5 +1,7 @@
 # mbgl-tile-renderer
 
+[![Publish to DockerHub](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml)
+
 This headless Node.js MapGL renderer generates styled raster tiles in an MBTiles format. It can work with a self-provided stylesheet and tile sources, or an online source with an optional overlay. 
 
 It uses [Maplibre-GL Native](https://www.npmjs.com/package/@maplibre/maplibre-gl-native) to render tiles, [Sharp](https://www.npmjs.com/package/sharp) to save them as an image, and Mapbox's [mbtiles Node package](https://www.npmjs.com/package/@mapbox/mbtiles) to compile them into an mbtiles database.

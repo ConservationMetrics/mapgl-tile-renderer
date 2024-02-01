@@ -47,3 +47,25 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: communityfirst/mbgl-tile-renderer
           short-description: 'Node.js MapGL renderer for styled raster tiles in MBTiles format.'
+      - name: Test run of Docker image with self-provided style
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -o self-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+      - name: Test run of Docker image with Bing source
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -o bing-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+      - name: Test run of Docker image with Esri source and GeoJSON overlay
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style esri --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}' -o esri-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+      - name: Test run of Docker image with Mapbox source
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style mapbox --mapboxstyle ${{ secrets.MAPBOX_STYLE }} --apikey ${{ secrets.MAPBOX_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -o mapbox-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+      - name: Test run of Docker image with Planet source
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style planet --monthyear 2013-12 --apikey ${{ secrets.PLANET_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5 -o planet-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+      - name: Upload mbtiles artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: mbtiles-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          path: outputs/*.mbtiles
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
+          retention-days: ${{ github.event_name == 'release' && 90 || 15 }}
