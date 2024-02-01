@@ -3,7 +3,10 @@ import path from "path";
 import sharp from "sharp";
 import MBTiles from "@mapbox/mbtiles";
 
-import { calculateTileRangeForBounds } from "./tile_calculations.js";
+import {
+  calculateTileRangeForBounds,
+  validateMinMaxValues,
+} from "./tile_calculations.js";
 import { renderTile } from "./render_map.js";
 
 // Generate a Mapbox GL style JSON object from a remote source
@@ -37,7 +40,8 @@ export const generateStyle = (style, overlay, tileSize) => {
     ],
   };
   // For now, we are styling an additional source with a
-  // transparent red fill and red outline.
+  // transparent red fill and red outline. In the future
+  // we may want to allow for more customization.
   if (overlay) {
     styleObject.sources["overlay"] = {
       type: "geojson",
@@ -112,9 +116,14 @@ export const generateMBTiles = async (
   maxZoom,
   tempDir,
   outputDir,
-  output,
+  outputFilename,
 ) => {
-  const tempPath = `${tempDir}/${output}.mbtiles`;
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  const tempPath = `${tempDir}/${outputFilename}.mbtiles`;
+  console.log(`Generating MBTiles file: ${tempPath}`);
 
   // Create a new MBTiles file
   const mbtiles = await new Promise((resolve, reject) => {
@@ -135,7 +144,7 @@ export const generateMBTiles = async (
         throw err;
       } else {
         let metadata = {
-          name: output,
+          name: outputFilename,
           format: "jpg",
           minzoom: minZoom,
           maxzoom: maxZoom,
@@ -172,6 +181,8 @@ export const generateMBTiles = async (
         zoom,
       );
 
+      validateMinMaxValues(minX, minY, maxX, maxY);
+
       // Iterate over tiles within the range
       for (let x = minX; x <= maxX; x++) {
         for (let y = minY; y <= maxY; y++) {
@@ -201,13 +212,15 @@ export const generateMBTiles = async (
     await new Promise((resolve, reject) => {
       mbtiles.stopWriting((err) => {
         if (err) reject(err);
-        console.log("MBTiles file generation completed!");
+        console.log(
+          `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
+        );
         resolve();
       });
     });
   } finally {
     // Move the generated MBTiles file to the output directory
-    const outputPath = `${outputDir}/${output}.mbtiles`;
+    const outputPath = `${outputDir}/${outputFilename}.mbtiles`;
 
     try {
       const readStream = fs.createReadStream(tempPath);
@@ -230,7 +243,7 @@ export const generateMBTiles = async (
 
       readStream.pipe(writeStream);
     } catch (err) {
-      console.error(`Error moving MBTiles file: ${err}`);
+      throw new Error(`Error moving MBTiles file: ${err}`);
     }
   }
 };
