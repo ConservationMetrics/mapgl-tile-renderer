@@ -45,6 +45,8 @@ const processQueueMessages = async () => {
           outputFilename = "output",
         } = options;
 
+        const boundsArray = parseListToFloat(bounds);
+
         validateInputOptions(
           style,
           null,
@@ -53,12 +55,11 @@ const processQueueMessages = async () => {
           mapboxStyle,
           monthYear,
           overlay,
-          bounds,
+          boundsArray,
           minZoom,
           maxZoom,
         );
 
-        const boundsArray = parseListToFloat(bounds);
         const outputDir = "/maps";
 
         // Pass the extracted values to initiateRendering
