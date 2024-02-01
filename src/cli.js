@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import fs from "fs";
-import path from "path";
 import { program } from "commander";
 
 import { parseListToFloat, validateInputOptions } from "./utils.js";
