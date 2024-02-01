@@ -49,7 +49,8 @@ Common options:
 *  `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 *  `-z` or `--minzoom`: Minimum zoom level (0 if not provided)
 *  `-Z` or `--maxzoom`: Maximum zoom level (required)
-*  `-o` or `--output`: Name of the output mbtiles file
+*  `-o` or `--outputdir`: Output directory (default "outputs/")
+*  `-f` or `--filename`: Name of the output mbtiles file
 
 ## Example usage
 
@@ -89,7 +90,7 @@ $ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.
 To run with Docker simply run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "mapbox-style" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "mapbox" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mbgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
@@ -109,8 +110,8 @@ docker build -t mbgl-tile-renderer .
 
 Then run:
 
-```
-docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "no" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --onlinesource "mapbox-style" --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+```bash
+docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "mapbox" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13--mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 ## Inspect the mbtile outputs

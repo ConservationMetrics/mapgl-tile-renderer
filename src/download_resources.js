@@ -93,7 +93,7 @@ const downloadOnlineTiles = async (
       return;
   }
 
-  const xyzOutputDir = tempDir + "sources/";
+  const xyzOutputDir = `${tempDir}/sources`;
   if (!fs.existsSync(xyzOutputDir)) {
     fs.mkdirSync(xyzOutputDir, { recursive: true });
   }
@@ -150,6 +150,7 @@ const downloadOnlineTiles = async (
           `${col}`,
           `${row}.jpg`,
         );
+
         if (!fs.existsSync(path.dirname(filename))) {
           fs.mkdirSync(path.dirname(filename), { recursive: true });
         }

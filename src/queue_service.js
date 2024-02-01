@@ -1,8 +1,4 @@
 import { QueueServiceClient } from "@azure/storage-queue";
-import fs from "fs";
-import path from "path";
-import { dirname } from "path";
-import { fileURLToPath } from "url";
 
 import { initiateRendering } from "./initiate.js";
 
@@ -18,21 +14,6 @@ const destinationQueueClient =
   queueServiceClient.getQueueClient(destinationQueueName);
 
 const processQueueMessages = async () => {
-  // TODO: erase this dummy code when the rendering is implemented
-  // Write dummy text file to /maps/
-  // const __filename = fileURLToPath(import.meta.url);
-  // const __dirname = dirname(__filename);
-
-  // const dirPath = path.join("/", "maps");
-  // const filePath = path.join(dirPath, "dummy.txt");
-
-  // // Ensure the directory exists
-  // fs.mkdirSync(dirPath, { recursive: true });
-
-  // // Now write the file
-  // console.log(`Writing dummy file to ${filePath}`)
-  // fs.writeFileSync(filePath, "dummy");
-
   while (true) {
     // Receive message
     const response = await sourceQueueClient.receiveMessages({
@@ -46,7 +27,7 @@ const processQueueMessages = async () => {
           message.messageText,
           "base64",
         ).toString("utf8");
-        console.log(`Received message (decoded): '${decodedMessageText}'`);
+        console.log(`Received message: '${decodedMessageText}'`);
 
         // Parse the message text as JSON
         const messageData = JSON.parse(decodedMessageText);
@@ -64,8 +45,11 @@ const processQueueMessages = async () => {
           bounds,
           minZoom = 0,
           maxZoom,
-          output = "output",
+          outputFilename = "output",
         } = messageData;
+
+        const boundsArray = bounds.split(",").map(Number);
+        const outputDir = "/maps";
 
         // Pass the extracted values to initiateRendering
         await initiateRendering(
@@ -77,10 +61,11 @@ const processQueueMessages = async () => {
           mapboxStyle,
           monthYear,
           overlay,
-          bounds,
+          boundsArray,
           minZoom,
           maxZoom,
-          output,
+          outputDir,
+          outputFilename,
         );
 
         // Send completion message

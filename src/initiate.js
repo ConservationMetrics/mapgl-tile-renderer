@@ -18,7 +18,8 @@ export const initiateRendering = async (
   bounds,
   minZoom,
   maxZoom,
-  output,
+  outputDir,
+  outputFilename,
 ) => {
   console.log("Initiating rendering...");
 
@@ -26,7 +27,7 @@ export const initiateRendering = async (
 
   // If the style is not self-hosted, let's generate everything that we need to render tiles.
   if (style !== "self") {
-    tempDir = "outputs/temp/";
+    tempDir = "outputs/temp";
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
@@ -44,7 +45,7 @@ export const initiateRendering = async (
 
     // Save the overlay GeoJSON to a file, if provided
     if (overlay) {
-      fs.writeFileSync(tempDir + "sources/overlay.geojson", overlay);
+      fs.writeFileSync(`${tempDir}/sources/overlay.geojson`, overlay);
       console.log(`Overlay GeoJSON saved to file!`);
     }
 
@@ -60,14 +61,14 @@ export const initiateRendering = async (
     if (styleObject === null) {
       styleObject = generateStyle(style, overlay, tileSize);
       fs.writeFileSync(
-        tempDir + "style.json",
+        `${tempDir}/style.json`,
         JSON.stringify(styleObject, null, 2),
       );
       console.log("Style file generated and saved!");
     }
 
-    sourceDir = tempDir + "sources/";
-    styleDir = path.resolve(process.cwd(), tempDir);
+    sourceDir = `${tempDir}/sources`;
+    styleDir = tempDir;
   }
 
   const localMbtilesMatches = JSON.stringify(styleObject).match(MBTILES_REGEXP);
@@ -104,7 +105,8 @@ export const initiateRendering = async (
       minZoom,
       maxZoom,
       tempDir,
-      output,
+      outputDir,
+      outputFilename,
     );
   } catch (error) {
     console.error("Error generating MBTiles:", error);
