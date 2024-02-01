@@ -18,10 +18,10 @@ while ! xdpyinfo -display ${DISPLAY} > /dev/null 2>&1; do
 done
 echo "Xvfb is running"
 
-# Check if QueueName env var (e.g. for Azure) is set
+# To run the Docker container as an Azure queue service, set the QueueName env var to "mappacker-requests"
 if [ "$QueueName" = "mappacker-requests" ]; then
-    # Run the queue service
-    node src/queue_service.js
+    # Run the Azure queue service
+    node src/azure_queue_service.js
 else
     # Default to the CLI API
     node src/cli.js "$@"

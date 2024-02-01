@@ -27,6 +27,15 @@ To use these services, you are responsible for providing an API token as needed.
 
 Please note that depending on your bounding box and maximum zoom level, this tool has the capability to send a lot of requests. You should first use a tool like the [Mapbox offline tile count estimator](https://docs.mapbox.com/playground/offline-estimator/) to ensure that your request will be reasonable, and in the case of any sources with an API limit, won't end up costing you.
 
+## Usage
+
+This tool can be used in the following ways:
+
+* Via CLI (Node.js or Docker)
+* As a task worker service to poll a queue for new requests. 
+  * Currently supported: Azure Storage Queue. 
+  * The tool may be extended with RabbitMQ for self-hosting in the future.
+
 ## CLI options
 
 * `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet".
@@ -85,9 +94,9 @@ Online source (Esri) with GeoJSON overlay:
 $ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
 ```
 
-### With Docker
+## Docker
 
-To run with Docker simply run:
+To run the tool with Docker,  run:
 
 ```bash
 docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "mapbox" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
