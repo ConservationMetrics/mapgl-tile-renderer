@@ -76,7 +76,16 @@ program
     "(Required) Maximum zoom level",
     parseInt,
   )
-  .option("-o, --output <type>", "Output name (default 'output')", "output");
+  .option(
+    "-o, --outputdir <type>",
+    "Output directory (default 'outputs/')",
+    "outputs",
+  )
+  .option(
+    "-f, --filename <type>",
+    "Output filename (default 'output')",
+    "output",
+  );
 
 program.parse(process.argv);
 
@@ -92,7 +101,8 @@ const overlay = options.overlay;
 const bounds = options.bounds;
 const minZoom = options.minzoom;
 const maxZoom = options.maxzoom;
-const output = options.output;
+const outputDir = options.outputdir;
+const outputFilename = options.filename;
 
 // Validations for CLI options
 
@@ -196,7 +206,8 @@ if (overlay) console.log("overlay source: %j", overlay);
 console.log("bounds: %j", bounds);
 console.log("minZoom: %j", minZoom);
 console.log("maxZoom: %j", maxZoom);
-console.log("output: %j", output);
+console.log("output directory: %j", outputDir);
+console.log("output filename: %j", outputFilename);
 console.log("------------------------------------------------");
 
 initiateRendering(
@@ -211,5 +222,6 @@ initiateRendering(
   bounds,
   minZoom,
   maxZoom,
-  output,
+  outputDir,
+  outputFilename,
 );

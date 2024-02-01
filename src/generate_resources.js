@@ -16,7 +16,7 @@ export const generateStyle = (style, overlay, tileSize) => {
         type: "raster",
         scheme: "xyz",
         tilejson: "2.2.0",
-        tiles: [`sources/{z}/{x}/{y}.jpg`],
+        tiles: ["sources/{z}/{x}/{y}.jpg"],
         tileSize: tileSize,
       },
     },
@@ -29,9 +29,9 @@ export const generateStyle = (style, overlay, tileSize) => {
         },
       },
       {
-        id: `style`,
+        id: style,
         type: "raster",
-        source: `style`,
+        source: style,
         paint: {},
       },
     ],
@@ -111,13 +111,14 @@ export const generateMBTiles = async (
   minZoom,
   maxZoom,
   tempDir,
+  outputDir,
   output,
 ) => {
-  const outputPath = `outputs/${output}.mbtiles`;
+  const tempPath = `${tempDir}/${output}.mbtiles`;
 
   // Create a new MBTiles file
   const mbtiles = await new Promise((resolve, reject) => {
-    new MBTiles(`${outputPath}?mode=rwc`, (err, mbtiles) => {
+    new MBTiles(`${tempPath}?mode=rwc`, (err, mbtiles) => {
       if (err) {
         console.error("Error opening MBTiles file:", err);
         reject(err);
@@ -205,9 +206,31 @@ export const generateMBTiles = async (
       });
     });
   } finally {
-    // Delete the temporary tiles directory and style
-    if (tempDir !== null) {
-      await fs.promises.rm(tempDir, { recursive: true });
+    // Move the generated MBTiles file to the output directory
+    const outputPath = `${outputDir}/${output}.mbtiles`;
+
+    try {
+      const readStream = fs.createReadStream(tempPath);
+      const writeStream = fs.createWriteStream(outputPath);
+
+      readStream.on("error", (err) => {
+        console.error(`Error reading MBTiles file: ${err}`);
+      });
+
+      writeStream.on("error", (err) => {
+        console.error(`Error writing MBTiles file: ${err}`);
+      });
+
+      writeStream.on("close", () => {
+        // Delete the temporary tiles directory and style
+        if (tempDir !== null) {
+          fs.promises.rm(tempDir, { recursive: true });
+        }
+      });
+
+      readStream.pipe(writeStream);
+    } catch (err) {
+      console.error(`Error moving MBTiles file: ${err}`);
     }
   }
 };
