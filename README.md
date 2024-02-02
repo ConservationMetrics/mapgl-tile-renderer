@@ -68,32 +68,32 @@ Common options:
 Using a self-provided style:
 
 ```bash
-$ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-79,37,-77,38" -Z 8
+node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-79,37,-77,38" -Z 8
 ```
 
 From an online source (Bing):
 
 ```bash
-$ node src/cli.js --style bing --bounds "-79,37,-77,38" -Z 8 --apikey YOUR_API_KEY_HERE
+node src/cli.js --style bing --bounds "-79,37,-77,38" -Z 8 --apikey YOUR_API_KEY_HERE
 ```
 
 From an online source (Mapbox):
 
 ```bash
-$ node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE --bounds "-79,37,-77,38" -Z 8
+node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE --bounds "-79,37,-77,38" -Z 8
 ```
 
 From an online source (Planet):
 
 ```bash
-$ node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8
+node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8
 
 ```
 
 Online source (Esri) with GeoJSON overlay:
 
 ```bash
-$ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8 --overlay '{"type": "FeatureCollection", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month": "09", "year": "2023"}, "type": "Feature"}]}'
+node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8 --overlay '{"type": "FeatureCollection", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month": "09", "year": "2023"}, "type": "Feature"}]}'
 ```
 
 ## Azure Storage Queue example usage
@@ -139,6 +139,16 @@ Then run:
 ```bash
 docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
+
+## Tests
+
+To run tests and view coverage, run:
+
+```bash
+npm run test
+```
+
+To run tests that require a Mapbox or Planet access token, create a `.env.test` file and add MAPBOX_TOKEN and PLANET_TOKEN vars with your own token.
 
 ## Inspect the mbtile outputs
 
