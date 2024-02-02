@@ -24,6 +24,7 @@ Node version: 18.17.0 to 20.x.x.
 * Mapbox - your own style
 * Mapbox Satellite
 * Planet PlanetScope monthly visual basemap (via NICFI)
+* Protomaps (with OpenStreetMap data)
 
 To use these services, you are responsible for providing an API token as needed. You may also consult the terms of service and API limitations for each service below.
 
@@ -167,3 +168,4 @@ This tool makes it possible to download tiles from various API sources for offli
 3. Google Hybrid: API [Terms of Use](https://developers.google.com/maps/documentation/tile/policies)
 4. Mapbox: Raster Tiles API [Pricing](https://www-mapbox.webflow.io/pricing#tile)
 5. Planet Basemaps API [Overview](https://developers.planet.com/docs/basemaps/tile-services/)
+6. Protomaps API [FAQ](https://protomaps.com/faq)

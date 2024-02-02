@@ -168,7 +168,7 @@ const downloadOnlineTiles = async (
           xyzOutputDir,
           `${zoom}`,
           `${col}`,
-          `${row}.jpg`,
+          `${row}.${sourceFormat}`,
         );
 
         if (!fs.existsSync(filename)) {

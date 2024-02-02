@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 import MBTiles from "@mapbox/mbtiles";
+import https from "https";
 
 // Validations for source URLs
 const TILE_REGEXP = RegExp("mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)");
@@ -10,6 +11,7 @@ const isMBTilesURL = (url) => url.startsWith("mbtiles://");
 const isGeoJSONURL = (url) => url.endsWith(".geojson");
 const isProtomapsTileJSONURL = (url) => url.endsWith("protomaps-tiles.json");
 const isXYZDirURL = (url) => /\/?\d+\/\d+\/\d+(\.\w+)?$/.test(url);
+const isOnlineURL = (url) => url.startsWith("http");
 
 // Split out mbtiles service name from the URL
 const resolveNamefromURL = (url) => url.split("://")[1].split("/")[0];
@@ -58,6 +60,25 @@ const getLocalSpriteJSON = (styleDir, url, callback) => {
     callback(null, { data });
     return null;
   });
+};
+
+// Given a URL to an online glyph, get the glyph data.
+const getOnlineGlyph = (url, callback) => {
+  https
+    .get(url, (res) => {
+      let data = [];
+
+      res.on("data", (chunk) => {
+        data.push(chunk);
+      });
+
+      res.on("end", () => {
+        callback(null, { data: Buffer.concat(data) });
+      });
+    })
+    .on("error", (err) => {
+      callback(err);
+    });
 };
 
 // Given a URL to a local glyph, get the glyph data.
@@ -268,7 +289,11 @@ export const requestHandler =
         }
         case 4: {
           // glyph
-          getLocalGlyph(styleDir, url, callback);
+          if (isOnlineURL(url)) {
+            getOnlineGlyph(url, callback);
+          } else {
+            getLocalGlyph(styleDir, url, callback);
+          }
           break;
         }
         case 5: {
