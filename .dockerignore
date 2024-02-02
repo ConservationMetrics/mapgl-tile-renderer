@@ -4,3 +4,4 @@ Dockerfile
 .dockerignore
 .history
  *.mbtiles
+ .env.test

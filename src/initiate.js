@@ -1,3 +1,4 @@
+import os from "os";
 import fs from "fs";
 import path from "path";
 
@@ -22,7 +23,10 @@ export const initiateRendering = async (
 ) => {
   console.log("Initiating rendering...");
 
-  const tempDir = path.resolve(process.cwd(), "outputs/temp");
+  const tempDir = path.join(os.tmpdir(), "mbgl-tile-renderer-temp");
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
   let stylePath = null;
   let styleObject = null;
 
@@ -34,9 +38,6 @@ export const initiateRendering = async (
 
   // If the style is not self-hosted, let's generate everything that we need to render tiles.
   if (style !== "self") {
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
     // Download tiles from the online source
     await requestOnlineTiles(
       style,

@@ -9,9 +9,12 @@ import {
 } from "./tile_calculations.js";
 
 // Download XYZ tile
-const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
-  if (fs.existsSync(filename)) return false;
-
+export const downloadOnlineXyzTile = async (
+  style,
+  xyzUrl,
+  filename,
+  apiKey,
+) => {
   const config = { responseType: "arraybuffer" };
 
   if (style === "planet") {
@@ -29,7 +32,7 @@ const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
     const response = await axios.get(xyzUrl, config);
     if (response.status === 200) {
       fs.writeFileSync(filename, response.data);
-      return true; // Return true if download was successful
+      return true;
     } else {
       console.warn(
         `Failed to download: ${xyzUrl} (Status code: ${response.status})`,
@@ -37,7 +40,9 @@ const downloadOnlineXyzTile = async (style, xyzUrl, filename, apiKey) => {
       return false;
     }
   } catch (error) {
-    console.error(`\x1b[33mError downloading tile: ${xyzUrl}\x1b[0m`, error);
+    console.error(`Error downloading tile: ${xyzUrl}\x1b[0m`);
+    // Uncomment the following line if you want to see the error
+    // console.error(error);
     return false;
   }
 };
@@ -157,8 +162,10 @@ const downloadOnlineTiles = async (
           `${row}.jpg`,
         );
 
-        if (!fs.existsSync(path.dirname(filename))) {
-          fs.mkdirSync(path.dirname(filename), { recursive: true });
+        if (!fs.existsSync(filename)) {
+          if (!fs.existsSync(path.dirname(filename))) {
+            fs.mkdirSync(path.dirname(filename), { recursive: true });
+          }
         } else {
           totalTileCount++;
           console.log(`File already exists: ${filename}`);
