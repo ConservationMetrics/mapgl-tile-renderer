@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "prettier --write ./src",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest --coverage --silent"
   },
   "bin": {
     "mbgl-tile-renderer": "./src/cli.js"

@@ -9,7 +9,7 @@ import {
 } from "./tile_calculations.js";
 import { renderTile } from "./render_map.js";
 
-// Generate a Mapbox GL style JSON object from a remote source
+// Generate a MapGL style JSON object from a remote source
 // and an additional source.
 export const generateStyle = (style, overlay, tileSize) => {
   const styleObject = {

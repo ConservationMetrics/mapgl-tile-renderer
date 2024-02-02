@@ -33,16 +33,13 @@ export const downloadOnlineXyzTile = async (
     if (response.status === 200) {
       fs.writeFileSync(filename, response.data);
       return true;
-    } else {
-      console.warn(
-        `Failed to download: ${xyzUrl} (Status code: ${response.status})`,
-      );
-      return false;
     }
+    throw new Error(
+      `Failed to download: ${xyzUrl} (Status code: ${response.status})`,
+    );
   } catch (error) {
     console.error(`Error downloading tile: ${xyzUrl}\x1b[0m`);
-    // Uncomment the following line if you want to see the error
-    // console.error(error);
+    console.error(error);
     return false;
   }
 };
