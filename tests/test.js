@@ -18,15 +18,22 @@ const tempDir = path.join(os.tmpdir());
 // Load MAPBOX_API_TOKEN from .env.test
 // Create this file if wanting to test Mapbox
 dotenv.config();
-const { MAPBOX_API_TOKEN } = process.env;
+const { MAPBOX_TOKEN, PLANET_TOKEN } = process.env;
 
-if (!MAPBOX_API_TOKEN) {
+if (!MAPBOX_TOKEN) {
   console.warn(
-    "MAPBOX_API_TOKEN environment variable is missing; tests that require this token will be skipped"
+    "MAPBOX_TOKEN environment variable is missing; tests that require this token will be skipped"
   );
 }
 
-const testMapbox = skipIf(!MAPBOX_API_TOKEN);
+if (!PLANET_TOKEN) {
+  console.warn(
+    "PLANET_TOKEN environment variable is missing; tests that require this token will be skipped"
+  );
+}
+
+const testMapbox = skipIf(!MAPBOX_TOKEN);
+const testPlanet = skipIf(!PLANET_TOKEN);
 
 // Mock p-limit because it's an ESM module that doesn't work well with jest
 jest.mock("p-limit", () => () => async (fn) => {
@@ -83,24 +90,35 @@ describe("downloadOnlineXyzTile tests", () => {
   testMapbox("Succeeds on valid Mapbox token", async () => {
     await downloadOnlineXyzTile(
       "mapbox",
-      `https://api.mapbox.com/v4/mapbox.satellite/0/0/0.jpg?access_token=${MAPBOX_API_TOKEN}`,
+      `https://api.mapbox.com/v4/mapbox.satellite/0/0/0.jpg?access_token=${MAPBOX_TOKEN}`,
       `${tempDir}/mapbox_satellite_0_0_0.jpg`,
-      MAPBOX_API_TOKEN
+      MAPBOX_TOKEN
     );
-    fs.unlinkSync(`${tempDir}/mapbox_satellite_0_0_0.jpg`);
     expect(consoleErrorSpy).not.toHaveBeenCalled();
+    fs.unlinkSync(`${tempDir}/mapbox_satellite_0_0_0.jpg`);
   });
 
   test("Fails on invalid Mapbox token", async () => {
     await downloadOnlineXyzTile(
       "mapbox",
       "https://api.mapbox.com/v4/mapbox.satellite/0/0/0.jpg?access_token=pk.ey",
-      `${tempDir}/mapbox_satellite_notoken_0_0_0.jpg`,
+      `${tempDir}/mapbox_satellite_0_0_0.jpg`,
       "pk.ey"
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error downloading tile")
     );
+  });
+
+  testPlanet("Succeeds on valid Planet token", async () => {
+    await downloadOnlineXyzTile(
+      "planet",
+      `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_2023-12_mosaic/gmap/0/0/0.jpg?api_key=${PLANET_TOKEN}`,
+      `${tempDir}/planet_medres_visual_2023-12_mosaic_0_0_0.jpg`,
+      PLANET_TOKEN
+    );
+    expect(consoleErrorSpy).not.toHaveBeenCalled();
+    fs.unlinkSync(`${tempDir}/planet_medres_visual_2023-12_mosaic_0_0_0.jpg`);
   });
 
   test("Fails on invalid Planet token", async () => {
