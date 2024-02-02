@@ -21,7 +21,7 @@ export const generateStyle = (style, overlay, tileSize, tempDir) => {
           type: "vector",
           attribution:
             '<a href="https://github.com/protomaps/basemaps">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
-          url: `${tempDir}/sources/tiles.json`,
+          url: `${tempDir}/sources/protomaps-tiles.json`,
         },
       },
       layers: [

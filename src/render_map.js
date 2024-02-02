@@ -7,6 +7,7 @@ import { generateJPG } from "./generate_resources.js";
 // Render the map, returning a Promise.
 const renderMap = (map, options) => {
   return new Promise((resolve, reject) => {
+    // TODO: Protomaps tile.json is not working here.
     map.render(options, (err, buffer) => {
       if (err) {
         console.error("Error during map rendering:", err);

@@ -5,11 +5,11 @@ import MBTiles from "@mapbox/mbtiles";
 
 // Validations for source URLs
 const TILE_REGEXP = RegExp("mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)");
-const XYZ_REGEXP = /(\d+)\/(\d+)\/(\d+)\.(jpg|png|pbf)$/;
+const XYZ_REGEXP = /(\d+)\/(\d+)\/(\d+)\.(jpg|png|pbf|mvt)$/;
 const isMBTilesURL = (url) => url.startsWith("mbtiles://");
 const isGeoJSONURL = (url) => url.endsWith(".geojson");
-const isTileJSONURL = (url) => url.endsWith("tiles.json");
-const isXYZDirURL = (url) => /\/\d+\/\d+\/\d+/.test(url);
+const isProtomapsTileJSONURL = (url) => url.endsWith("protomaps-tiles.json");
+const isXYZDirURL = (url) => /\/?\d+\/\d+\/\d+(\.\w+)?$/.test(url);
 
 // Split out mbtiles service name from the URL
 const resolveNamefromURL = (url) => url.split("://")[1].split("/")[0];
@@ -213,10 +213,9 @@ const getLocalGeoJSON = (sourceDir, url, callback) => {
   });
 };
 
-// Given a URL to a local TileJSON file, get the TileJSON for that to load correct tiles.
-const getLocalTileJSON = (url, callback) => {
+// Given a URL to a local Protomaps TileJSON file, get the TileJSON for that to load correct tiles.
+const getLocalProtomapsTileJSON = (url, callback) => {
   /*
-   * @param {String} sourceDir - path containing mbtiles files.
    * @param {String} url - url of a data source in style.json file.
    * @param {function} callback - function to call with (err, {data}).
    */
@@ -245,8 +244,8 @@ export const requestHandler =
             getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
             getLocalGeoJSON(sourceDir, url, callback);
-          } else if (isTileJSONURL(url)) {
-            getLocalTileJSON(url, callback);
+          } else if (isProtomapsTileJSONURL(url)) {
+            getLocalProtomapsTileJSON(url, callback);
           } else {
             const msg = `Only local sources are currently supported. Received: ${url}`;
             throw new Error(msg);

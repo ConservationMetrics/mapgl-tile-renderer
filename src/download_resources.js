@@ -230,7 +230,7 @@ const downloadOnlineTiles = async (
       const response = await axios.get(tileJsonUrl);
       if (response.status === 200) {
         tilesJson = response.data;
-        tilesJson.tiles = [`${xyzOutputDir}/{z}/{x}/{y}.mvt?key=${apiKey}`];
+        tilesJson.tiles = [`{z}/{x}/{y}.mvt`];
       } else {
         throw new Error(
           `Failed to download tiles.json: ${tileJsonUrl} (Status code: ${response.status})`,
@@ -240,11 +240,11 @@ const downloadOnlineTiles = async (
       throw new Error(`Error downloading tiles.json: ${tileJsonUrl}`);
     }
 
-    const tilesJsonFilePath = path.join(xyzOutputDir, "tiles.json");
+    const tilesJsonFilePath = path.join(xyzOutputDir, "protomaps-tiles.json");
 
     try {
       fs.writeFileSync(tilesJsonFilePath, JSON.stringify(tilesJson, null, 4));
-      console.log("tiles.json file generated!");
+      console.log("protomaps-tiles.json file generated!");
     } catch (error) {
       throw new Error(`Error writing tiles.json file: ${tilesJsonFilePath}`);
     }

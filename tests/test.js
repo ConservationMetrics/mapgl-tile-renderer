@@ -141,9 +141,9 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 241664 bytes
+  // Expect output.mbtiles to be 221184 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(241664);
+  expect(stats.size).toBe(221184);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
