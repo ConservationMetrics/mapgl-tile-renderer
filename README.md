@@ -1,7 +1,6 @@
 # mbgl-tile-renderer
 
 [![Publish to DockerHub](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml)
-[![Coverage Status](https://coveralls.io/repos/github/conservatiometrics/mbgl-tile--renderer/badge.svg?branch=main)](https://coveralls.io/github/conservationmetrics/mbgl-tile-renderer?branch=main)
 
 This headless Node.js MapGL renderer generates styled raster tiles in an MBTiles format. It can work with a self-provided stylesheet and tile sources, or an online source with an optional overlay. 
 
