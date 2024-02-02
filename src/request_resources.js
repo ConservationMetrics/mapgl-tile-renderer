@@ -8,6 +8,7 @@ const TILE_REGEXP = RegExp("mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)");
 const XYZ_REGEXP = /(\d+)\/(\d+)\/(\d+)\.(jpg|png|pbf)$/;
 const isMBTilesURL = (url) => url.startsWith("mbtiles://");
 const isGeoJSONURL = (url) => url.endsWith(".geojson");
+const isTileJSONURL = (url) => url.endsWith("tiles.json");
 const isXYZDirURL = (url) => /\/\d+\/\d+\/\d+/.test(url);
 
 // Split out mbtiles service name from the URL
@@ -212,6 +213,23 @@ const getLocalGeoJSON = (sourceDir, url, callback) => {
   });
 };
 
+// Given a URL to a local TileJSON file, get the TileJSON for that to load correct tiles.
+const getLocalTileJSON = (url, callback) => {
+  /*
+   * @param {String} sourceDir - path containing mbtiles files.
+   * @param {String} url - url of a data source in style.json file.
+   * @param {function} callback - function to call with (err, {data}).
+   */
+  fs.readFile(url, (err, data) => {
+    if (err) {
+      callback(err);
+      return null;
+    }
+    callback(null, { data });
+    return null;
+  });
+};
+
 // requestHandler constructs a request handler for the map to load resources.
 // More about request types (kinds) in MapLibre: https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
 export const requestHandler =
@@ -227,6 +245,8 @@ export const requestHandler =
             getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
             getLocalGeoJSON(sourceDir, url, callback);
+          } else if (isTileJSONURL(url)) {
+            getLocalTileJSON(url, callback);
           } else {
             const msg = `Only local sources are currently supported. Received: ${url}`;
             throw new Error(msg);

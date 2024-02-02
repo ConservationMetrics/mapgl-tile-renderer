@@ -14,6 +14,7 @@ const validOnlineStyles = [
   "mapbox",
   "mapbox-satellite",
   "planet",
+  "protomaps",
 ];
 
 export const validateInputOptions = (
