@@ -1,6 +1,7 @@
 # mbgl-tile-renderer
 
 [![Publish to DockerHub](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml)
+[![Coverage Status](https://coveralls.io/repos/github/conservatiometrics/mbgl-tile--renderer/badge.svg?branch=main)](https://coveralls.io/github/conservationmetrics/mbgl-tile-renderer?branch=main)
 
 This headless Node.js MapGL renderer generates styled raster tiles in an MBTiles format. It can work with a self-provided stylesheet and tile sources, or an online source with an optional overlay. 
 
@@ -68,32 +69,32 @@ Common options:
 Using a self-provided style:
 
 ```bash
-$ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
+$ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-79,37,-77,38" -Z 8
 ```
 
 From an online source (Bing):
 
 ```bash
-$ node src/cli.js --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --apikey YOUR_API_KEY_HERE
+$ node src/cli.js --style bing --bounds "-79,37,-77,38" -Z 8 --apikey YOUR_API_KEY_HERE
 ```
 
 From an online source (Mapbox):
 
 ```bash
-$ node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
+$ node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE --bounds "-79,37,-77,38" -Z 8
 ```
 
 From an online source (Planet):
 
 ```bash
-$ node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 
+$ node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8
 
 ```
 
 Online source (Esri) with GeoJSON overlay:
 
 ```bash
-$ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}'
+$ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8 --overlay '{"type": "FeatureCollection", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month": "09", "year": "2023"}, "type": "Feature"}]}'
 ```
 
 ## Azure Storage Queue example usage
@@ -104,7 +105,7 @@ For Azure Storage Queue (and other queue services in the future), mbgl-tile-rend
 {
   "style": "bing",
   "apiKey": "bing-api-key",
-  "bounds": "-54.28772,3.11460,-54.03630,3.35025",
+  "bounds": "-79,37,-77,38",
   "minZoom": 0,
   "maxZoom": 8,
   "output": "bing"
@@ -116,7 +117,7 @@ For Azure Storage Queue (and other queue services in the future), mbgl-tile-rend
 To run the tool with Docker,  run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "mapbox" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mbgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
@@ -137,7 +138,7 @@ docker build -t mbgl-tile-renderer .
 Then run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "mapbox" --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 13--mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 ## Inspect the mbtile outputs

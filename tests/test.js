@@ -4,14 +4,10 @@ import fs from "fs";
 import dotenv from "dotenv-flow";
 
 import { initiateRendering } from "../src/initiate.js";
+import { generateStyle } from "../src/generate_resources.js";
 import { downloadOnlineXyzTile } from "../src/download_resources.js";
+import { validateMinMaxValues } from "../src/tile_calculations.js";
 import { skipIf } from "./utils.js";
-
-const emptyStyle = "./tests/fixtures/example-style-empty.json";
-// TODO: add and implement more styles from mbgl-renderer
-
-const fixtures = "./tests/fixtures";
-const output = "output";
 
 const tempDir = path.join(os.tmpdir());
 
@@ -40,38 +36,166 @@ jest.mock("p-limit", () => () => async (fn) => {
   return fn();
 });
 
-// Silence console logs during tests; can be useful to uncomment for debugging
-beforeAll(() => {
-  jest.spyOn(console, "log").mockImplementation(() => {});
+test("Generates a MapGL style JSON object from Esri and overlay", async () => {
+  let styleObject = generateStyle(
+    "esri",
+    '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"coordinates":[[[-78.52421524895288,37.84166911915864],[-78.52421524895288,37.42437630967217],[-78.05117693229629,37.42437630967217],[-78.05117693229629,37.84166911915864],[-78.52421524895288,37.84166911915864]]],"type":"Polygon"}}]}',
+    256
+  );
+
+  const expectedStyleObject = {"version":8,"sources":{"esri":{"type":"raster","scheme":"xyz","tilejson":"2.2.0","tiles":["sources/{z}/{x}/{y}.jpg"],"tileSize":256},"overlay":{"type":"geojson","data":"overlay.geojson"}},"layers":[{"id":"background","type":"background","paint":{"background-color":"#f9f9f9"}},{"id":"esri","type":"raster","source":"esri","paint":{}},{"id":"polygon-layer","type":"fill","source":"overlay","source-layer":"output","filter":["==","$type","Polygon"],"paint":{"fill-color":"#FF0000","fill-opacity":0.5}},{"id":"line-layer","type":"line","source":"overlay","source-layer":"output","filter":["==","$type","LineString"],"paint":{"line-color":"#FF0000","line-width":2}}]};
+
+  expect(styleObject).toEqual(expectedStyleObject);
 });
 
-afterAll(() => {
-  console.log.mockRestore();
-});
-
-test("Generates MBTiles from empty self-provided style", async () => {
+test("Generates MBTiles from self-provided style with MBTiles and GeoJSON source", async () => {
   await initiateRendering(
     "self",
-    emptyStyle,
-    fixtures,
+    "./tests/fixtures/alert/style-with-geojson.json",
+    "./tests/fixtures/alert/sources",
     null,
     null,
     null,
     null,
-    [-54, 3, -53, 4],
+    [-54.28772,3.11460,-54.03630,3.35025],
     0,
     5,
     tempDir,
-    output
+    "output"
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 69632 bytes
-  const stats = fs.statSync(`${tempDir}/${output}.mbtiles`);
-  expect(stats.size).toBe(69632);
+  // Expect output.mbtiles to be 200704 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(200704);
 
-  fs.unlinkSync(`${tempDir}/${output}.mbtiles`);
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+test("Generates MBTiles from self-provided style with XYZ dir source", async () => {
+  await initiateRendering(
+    "self",
+    "./tests/fixtures/xyz/style.json",
+    "./tests/fixtures/xyz/tiles",
+    null,
+    null,
+    null,
+    null,
+    [12.7814,67.8263,14.5282,68.3551],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be 155648 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(155648);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+test("Generates MBTiles from Bing with overlay GeoJSON", async () => {
+  await initiateRendering(
+    "bing",
+    null,
+    null,
+    null,
+    null,
+    null,
+    '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"coordinates":[[[-78.52421524895288,37.84166911915864],[-78.52421524895288,37.42437630967217],[-78.05117693229629,37.42437630967217],[-78.05117693229629,37.84166911915864],[-78.52421524895288,37.84166911915864]]],"type":"Polygon"}}]}',
+    [-79, 37, -77, 38],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be 233472 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(233472);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
+  await initiateRendering(
+    "mapbox-satellite",
+    null,
+    null,
+    MAPBOX_TOKEN,
+    null,
+    null,
+    null,
+    [-79, 37, -77, 38],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be 241664 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(241664);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+test("Generates MBTiles from Esri", async () => {
+  await initiateRendering(
+    "esri",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    [-79, 37, -77, 38],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be 278528 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(278528);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+test("Generates MBTiles from Google", async () => {
+  await initiateRendering(
+    "google",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    [-79, 37, -77, 38],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be 241664 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(241664);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
 describe("downloadOnlineXyzTile tests", () => {
@@ -131,5 +255,22 @@ describe("downloadOnlineXyzTile tests", () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error downloading tile")
     );
+  });
+});
+
+describe("validateMinMaxValues tests", () => {
+  test("Throws error when one or more tile coordinates are NaN", () => {
+    expect(() => validateMinMaxValues(NaN, 0, 0, 0)).toThrow("One or more tile coordinates are NaN");
+    expect(() => validateMinMaxValues(0, NaN, 0, 0)).toThrow("One or more tile coordinates are NaN");
+    expect(() => validateMinMaxValues(0, 0, NaN, 0)).toThrow("One or more tile coordinates are NaN");
+    expect(() => validateMinMaxValues(0, 0, 0, NaN)).toThrow("One or more tile coordinates are NaN");
+  });
+
+  test("Throws error when minX is greater than maxX", () => {
+    expect(() => validateMinMaxValues(5, 0, 4, 0)).toThrow("minX cannot be greater than maxX");
+  });
+
+  test("Throws error when minY is greater than maxY", () => {
+    expect(() => validateMinMaxValues(0, 5, 0, 4)).toThrow("minY cannot be greater than maxY");
   });
 });
