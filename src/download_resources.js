@@ -59,38 +59,44 @@ const downloadOnlineTiles = async (
     throw new Error("Invalid bounds provided");
   }
 
-  let imageryUrl, imageryAttribution, imagerySourceName;
+  let sourceUrl, sourceAttribution, sourceName;
   switch (style) {
     case "google":
-      imageryUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
-      imageryAttribution = "© Google";
-      imagerySourceName = "Google Hybrid";
+      sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
+      sourceAttribution = "© Google";
+      sourceName = "Google Hybrid";
+      sourceFormat = "jpg";
       break;
     case "esri":
-      imageryUrl =
+      sourceUrl =
         "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      imageryAttribution = "© ESRI";
-      imagerySourceName = "ESRI World Imagery";
+      sourceAttribution = "© ESRI";
+      sourceName = "ESRI World Imagery";
+      sourceFormat = "jpg";
       break;
     case "bing":
-      imageryUrl = "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1";
-      imageryAttribution = "© Microsoft (Bing Maps)";
-      imagerySourceName = "Bing Maps Satellite";
+      sourceUrl = "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1";
+      sourceAttribution = "© Microsoft (Bing Maps)";
+      sourceName = "Bing Maps Satellite";
+      sourceFormat = "jpg";
       break;
     case "mapbox":
-      imageryUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
-      imageryAttribution = "© Mapbox";
-      imagerySourceName = "Mapbox Custom Style";
+      sourceUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
+      sourceAttribution = "© Mapbox";
+      sourceName = "Mapbox Custom Style";
+      sourceFormat = "jpg";
       break;
     case "mapbox-satellite":
-      imageryUrl = `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=${apiKey}`;
-      imageryAttribution = "© Mapbox";
-      imagerySourceName = "Mapbox Satellite";
+      sourceUrl = `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=${apiKey}`;
+      sourceAttribution = "© Mapbox";
+      sourceName = "Mapbox Satellite";
+      sourceFormat = "jpg";
       break;
     case "planet":
-      imageryUrl = `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_${monthYear}_mosaic/gmap/{z}/{x}/{y}?api_key=${apiKey}`;
-      imageryAttribution = "© Planet Labs";
-      imagerySourceName = `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`;
+      sourceUrl = `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_${monthYear}_mosaic/gmap/{z}/{x}/{y}?api_key=${apiKey}`;
+      sourceAttribution = "© Planet Labs";
+      sourceName = `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`;
+      sourceFormat = "jpg";
       break;
     default:
       console.error("Invalid source provided");
@@ -102,7 +108,7 @@ const downloadOnlineTiles = async (
     fs.mkdirSync(xyzOutputDir, { recursive: true });
   }
 
-  console.log(`Downloading raster XYZ tiles from ${imagerySourceName}...`);
+  console.log(`Downloading XYZ tiles from ${sourceName}...`);
 
   const limit = pLimit(5);
 
@@ -144,9 +150,9 @@ const downloadOnlineTiles = async (
             if ((row & mask) !== 0) digit += 2;
             quadkey += digit.toString();
           }
-          xyzUrl = imageryUrl.replace("{q}", quadkey);
+          xyzUrl = sourceUrl.replace("{q}", quadkey);
         } else {
-          xyzUrl = imageryUrl
+          xyzUrl = sourceUrl
             .replace("{z}", zoom)
             .replace("{x}", col)
             .replace("{y}", row);
@@ -201,11 +207,11 @@ const downloadOnlineTiles = async (
   // Save metadata.json file with proper attribution according to
   // each source's terms of use
   const metadata = {
-    name: imagerySourceName,
-    description: `Raster XYZ tiles from ${imagerySourceName}`,
+    name: sourceName,
+    description: `XYZ tiles from ${sourceName}`,
     version: "1.0.0",
-    attribution: imageryAttribution,
-    format: "jpg",
+    attribution: sourceAttribution,
+    format: sourceFormat,
     type: "overlay",
   };
 
@@ -219,7 +225,7 @@ const downloadOnlineTiles = async (
   }
 
   console.log(
-    `\x1b[32mXYZ tiles successfully downloaded from ${imagerySourceName}!\x1b[0m`,
+    `\x1b[32mXYZ tiles successfully downloaded from ${sourceName}!\x1b[0m`,
   );
 };
 
