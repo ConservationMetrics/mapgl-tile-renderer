@@ -59,7 +59,7 @@ const downloadOnlineTiles = async (
     throw new Error("Invalid bounds provided");
   }
 
-  let sourceUrl, sourceAttribution, sourceName;
+  let sourceUrl, sourceAttribution, sourceName, sourceFormat;
   switch (style) {
     case "google":
       sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
