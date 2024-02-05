@@ -23,7 +23,7 @@ export const initiateRendering = async (
 ) => {
   console.log("Initiating rendering...");
 
-  const tempDir = path.join(os.tmpdir(), "mbgl-tile-renderer-temp");
+  const tempDir = path.join(os.tmpdir(), "mapgl-tile-renderer-temp");
   if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir, { recursive: true });
   }
