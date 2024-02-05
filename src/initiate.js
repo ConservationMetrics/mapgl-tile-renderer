@@ -4,6 +4,7 @@ import path from "path";
 
 import { generateStyle, generateMBTiles } from "./generate_resources.js";
 import { requestOnlineTiles } from "./download_resources.js";
+import { handleError } from "./utils.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -23,9 +24,15 @@ export const initiateRendering = async (
 ) => {
   console.log("Initiating rendering...");
 
+  const workBegun = new Date().toISOString();
+
   const tempDir = path.join(os.tmpdir(), "mapgl-tile-renderer-temp");
   if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
+    try {
+      fs.mkdirSync(tempDir, { recursive: true });
+    } catch (error) {
+      return handleError(error, "creating the temporary directory");
+    }
   }
   let stylePath = null;
   let styleObject = null;
@@ -33,26 +40,38 @@ export const initiateRendering = async (
   // If the style is self-hosted, let's read the style from the file.
   if (style === "self") {
     stylePath = path.resolve(process.cwd(), styleDir);
-    styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
+    try {
+      styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
+    } catch (error) {
+      return handleError(error, "reading the style file");
+    }
   }
 
   // If the style is not self-hosted, let's generate everything that we need to render tiles.
   if (style !== "self") {
     // Download tiles from the online source
-    await requestOnlineTiles(
-      style,
-      apiKey,
-      mapboxStyle,
-      monthYear,
-      bounds,
-      minZoom,
-      maxZoom,
-      tempDir,
-    );
+    try {
+      await requestOnlineTiles(
+        style,
+        apiKey,
+        mapboxStyle,
+        monthYear,
+        bounds,
+        minZoom,
+        maxZoom,
+        tempDir,
+      );
+    } catch (error) {
+      return handleError(error, "downloading tiles from the online source");
+    }
 
     // Save the overlay GeoJSON to a file, if provided
     if (overlay) {
-      fs.writeFileSync(`${tempDir}/sources/overlay.geojson`, overlay);
+      try {
+        fs.writeFileSync(`${tempDir}/sources/overlay.geojson`, overlay);
+      } catch (error) {
+        return handleError(error, "saving the overlay GeoJSON to a file");
+      }
       console.log(`Overlay GeoJSON saved to file!`);
     }
 
@@ -66,12 +85,16 @@ export const initiateRendering = async (
 
     // Generate and save a stylesheet from the online source and overlay source.
     if (styleObject === null) {
-      styleObject = generateStyle(style, overlay, tileSize);
-      fs.writeFileSync(
-        `${tempDir}/style.json`,
-        JSON.stringify(styleObject, null, 2),
-      );
-      console.log("Stylesheet generated and saved!");
+      try {
+        styleObject = generateStyle(style, overlay, tileSize);
+        fs.writeFileSync(
+          `${tempDir}/style.json`,
+          JSON.stringify(styleObject, null, 2),
+        );
+        console.log("Stylesheet generated and saved!");
+      } catch (error) {
+        return handleError(error, "generating and saving the stylesheet");
+      }
     }
 
     sourceDir = `${tempDir}/sources`;
@@ -82,7 +105,7 @@ export const initiateRendering = async (
   if (localMbtilesMatches && !sourceDir) {
     const msg =
       "Stylesheet has local mbtiles file sources, but no sourceDir is set";
-    throw new Error(msg);
+    return handleError(new Error(msg), "checking for local mbtiles sources");
   }
 
   if (localMbtilesMatches) {
@@ -99,13 +122,16 @@ export const initiateRendering = async (
           name,
           ext: ".mbtiles",
         })} in stylesheet is not found in: ${path.resolve(sourceDir)}`;
-        throw new Error(msg);
+        return handleError(
+          new Error(msg),
+          "checking for local mbtiles sources",
+        );
       }
     });
   }
 
   try {
-    await generateMBTiles(
+    let metadata = await generateMBTiles(
       styleObject,
       styleDir,
       sourceDir,
@@ -116,8 +142,31 @@ export const initiateRendering = async (
       outputDir,
       outputFilename,
     );
+
+    console.log(
+      `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
+    );
+
+    // if successful, return the metadata
+    return {
+      style: style,
+      status: metadata.status,
+      errorCode: metadata.errorCode,
+      errorMessage: metadata.errorMessage,
+      filename: metadata.filename,
+      filesize: metadata.filesize,
+      numberOfTiles: metadata.numberOfTiles,
+      numberOfAttempts: 1,
+      workBegun,
+      workEnded: new Date().toISOString(),
+      // if status = success, set expiration for one year
+      expiration:
+        metadata.status === "success"
+          ? new Date(Date.now() + 31556952000).toISOString()
+          : null,
+    };
   } catch (error) {
-    throw new Error("Error generating MBTiles:", error);
+    return handleError(error, "generating MBTiles file");
   }
 };
 

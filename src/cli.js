@@ -105,7 +105,7 @@ console.log("Output directory: %j", outputDir);
 console.log("Output MBTiles filename: %j", outputFilename);
 console.log("------------------------------------------------------");
 
-initiateRendering(
+const metadata = await initiateRendering(
   style,
   styleDir,
   sourceDir,
@@ -119,3 +119,6 @@ initiateRendering(
   outputDir,
   outputFilename,
 );
+
+// output the metadata to console
+console.log("Task metadata:", metadata);

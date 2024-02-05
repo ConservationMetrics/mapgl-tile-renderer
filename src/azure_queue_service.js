@@ -62,8 +62,8 @@ const processQueueMessages = async () => {
 
         const outputDir = "/maps";
 
-        // Pass the extracted values to initiateRendering
-        await initiateRendering(
+        // Pass the extracted values to initiateRendering, and receive the metadata
+        const metadata = await initiateRendering(
           style,
           null,
           null,
@@ -77,6 +77,8 @@ const processQueueMessages = async () => {
           outputDir,
           outputFilename,
         );
+
+        console.log("metadata", metadata);
 
         // Send completion message
         const completionMessage = `Finished rendering map`;

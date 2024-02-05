@@ -8,6 +8,7 @@ import {
   validateMinMaxValues,
 } from "./tile_calculations.js";
 import { renderTile } from "./render_map.js";
+import { handleError } from "./utils.js";
 
 // Generate a MapGL style JSON object from a remote source
 // and an additional source.
@@ -121,6 +122,8 @@ export const generateMBTiles = async (
   const tempPath = `${tempDir}/${outputFilename}.mbtiles`;
   console.log(`Generating MBTiles file: ${tempPath}`);
 
+  let numberOfTiles = 0;
+
   // Create a new MBTiles file
   const mbtiles = await new Promise((resolve, reject) => {
     new MBTiles(`${tempPath}?mode=rwc`, (err, mbtiles) => {
@@ -197,6 +200,9 @@ export const generateMBTiles = async (
             mbtiles.putTile(zoom, x, y, tileBuffer, (err) => {
               if (err) throw err;
             });
+
+            // Increment the number of tiles
+            numberOfTiles++;
           } catch (error) {
             console.error(`Error rendering tile ${zoom}/${x}/${y}: ${error}`);
           }
@@ -208,38 +214,47 @@ export const generateMBTiles = async (
     await new Promise((resolve, reject) => {
       mbtiles.stopWriting((err) => {
         if (err) reject(err);
-        console.log(
-          `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
-        );
         resolve();
       });
     });
-  } finally {
-    // Move the generated MBTiles file to the output directory
-    const outputPath = `${outputDir}/${outputFilename}.mbtiles`;
-
-    try {
-      const readStream = fs.createReadStream(tempPath);
-      const writeStream = fs.createWriteStream(outputPath);
-
-      readStream.on("error", (err) => {
-        console.error(`Error reading MBTiles file: ${err}`);
-      });
-
-      writeStream.on("error", (err) => {
-        console.error(`Error writing MBTiles file: ${err}`);
-      });
-
-      writeStream.on("close", () => {
-        // Delete the temporary tiles directory and style
-        if (tempDir !== null) {
-          fs.promises.rm(tempDir, { recursive: true });
-        }
-      });
-
-      readStream.pipe(writeStream);
-    } catch (err) {
-      throw new Error(`Error moving MBTiles file: ${err}`);
-    }
+  } catch (err) {
+    return handleError(err, "writing to MBTiles file");
   }
+
+  // Move the generated MBTiles file to the output directory
+  const outputPath = `${outputDir}/${outputFilename}.mbtiles`;
+
+  try {
+    const readStream = fs.createReadStream(tempPath);
+    const writeStream = fs.createWriteStream(outputPath);
+
+    readStream.on("error", (err) => {
+      console.error(`Error reading MBTiles file: ${err}`);
+    });
+
+    writeStream.on("error", (err) => {
+      console.error(`Error writing MBTiles file: ${err}`);
+    });
+
+    writeStream.on("close", () => {
+      // Delete the temporary tiles directory and style
+      if (tempDir !== null) {
+        fs.promises.rm(tempDir, { recursive: true });
+      }
+    });
+
+    readStream.pipe(writeStream);
+  } catch (err) {
+    return handleError(err, "moving MBTiles file to output directory");
+  }
+
+  // Return metadata with success status
+  return {
+    status: "success",
+    errorCode: null,
+    errorMessage: null,
+    filename: `${outputFilename}.mbtiles`,
+    filesize: fs.statSync(outputPath).size,
+    numberOfTiles,
+  };
 };

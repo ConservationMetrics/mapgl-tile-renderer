@@ -5,6 +5,14 @@ export const raiseError = (msg) => {
   process.exit(1);
 };
 
+export const handleError = (error, message) => {
+  return {
+    status: "failed",
+    errorCode: "500",
+    errorMessage: `Error ${message}: ${error.message}`,
+  };
+};
+
 // Currently supported list of online styles
 // When adding a new style, make sure to update this list
 const validOnlineStyles = [
