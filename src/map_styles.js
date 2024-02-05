@@ -1,3 +1,4 @@
+// Retrieved from https://maps.protomaps.com/
 export const protomapsStyle = (tempDir) => {
   const styleObject = {
     version: 8,
