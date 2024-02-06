@@ -1,38 +1,37 @@
-# Bare-bones stuff
+# Stuff managed outside of this module
 data "azurerm_resource_group" "this" {
-  name = "guardian"
+  name = var.resource_group_name
 }
-data "azurerm_container_registry" "guardiancr" {
-  name                = "guardiancr"
-  resource_group_name = data.azurerm_resource_group.this.name
+data "azurerm_container_registry" "this" {
+  name                = var.container_registry_name
+  resource_group_name = var.resource_group_name
+}
+data "azurerm_storage_account" "this" {
+  name                = var.storage_account_name
+  resource_group_name = var.resource_group_name
 }
 
-# Storage & Queue
-data "azurerm_storage_account" "this" {
-  name                = "bcmplayground"
-  resource_group_name = data.azurerm_resource_group.this.name
-}
+# Azure Storage Queue
 resource "azurerm_storage_queue" "mappacker_requests" {
   name                 = "mappacker-requests"
-  storage_account_name = data.azurerm_storage_account.this.name
+  storage_account_name = var.storage_account_name
 }
 
 # Azure Container App
 resource "azurerm_container_app_environment" "this" {
-  name                = "guardian-mappacker-env"
-  resource_group_name = data.azurerm_resource_group.this.name
-  location            = "eastus2"
+  name                = var.container_app_env_name
+  resource_group_name = var.resource_group_name
+  location            = var.container_app_environment_location
 }
-resource "azurerm_container_app" "mbgl_tile_renderer" {
-  name                         = "mappacker-worker"
-  resource_group_name          = data.azurerm_resource_group.this.name
+resource "azurerm_container_app" "mapgl_tile_renderer" {
+  name                         = var.container_app_name
+  resource_group_name          = var.resource_group_name
   container_app_environment_id = azurerm_container_app_environment.this.id
   revision_mode                = "Single"
 
-
   registry {
-    server               = data.azurerm_container_registry.guardiancr.login_server
-    username             = data.azurerm_container_registry.guardiancr.admin_username
+    server               = data.azurerm_container_registry.this.login_server
+    username             = data.azurerm_container_registry.this.admin_username
     password_secret_name = "containerregistry"
   }
   # This secret is not used by the application code, but is used by for
@@ -41,7 +40,7 @@ resource "azurerm_container_app" "mbgl_tile_renderer" {
   # for Container App to connect to registry (see: registry {identity:...})
   secret {
     name  = "containerregistry"
-    value = data.azurerm_container_registry.guardiancr.admin_password
+    value = data.azurerm_container_registry.this.admin_password
   }
 
   # This secret is used for scale rules.
@@ -52,8 +51,8 @@ resource "azurerm_container_app" "mbgl_tile_renderer" {
 
   template {
     container {
-      name  = "mbgl-tile-renderer"
-      image = "${data.azurerm_container_registry.guardiancr.login_server}/mbgl-tile-renderer:test-3"
+      name   = "mbgl-tile-renderer"
+      image  = "${data.azurerm_container_registry.this.login_server}/mbgl-tile-renderer:test-3"
       cpu    = "0.25"
       memory = "0.5Gi"
 
