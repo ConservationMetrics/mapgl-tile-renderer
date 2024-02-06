@@ -13,7 +13,6 @@
 # (CircleCI is often the only thing that generates these and there's no good way
 # to have it commit them back to version control.)
 .terraform.lock.hcl
-.terraform.lock.hcl
 
 # Crash log files
 crash.log
