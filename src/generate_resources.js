@@ -8,7 +8,6 @@ import {
   validateMinMaxValues,
 } from "./tile_calculations.js";
 import { renderTile } from "./render_map.js";
-import { handleError } from "./utils.js";
 
 // Generate a MapGL style JSON object from a remote source
 // and an additional source.
@@ -218,7 +217,7 @@ export const generateMBTiles = async (
       });
     });
   } catch (err) {
-    return handleError(err, "writing to MBTiles file");
+    throw new Error(`Error writing MBTiles file: ${err}`);
   }
 
   // Move the generated MBTiles file to the output directory
@@ -245,14 +244,12 @@ export const generateMBTiles = async (
 
     readStream.pipe(writeStream);
   } catch (err) {
-    return handleError(err, "moving MBTiles file to output directory");
+    throw new Error(`Error moving MBTiles file: ${err}`);
   }
 
-  // Return metadata with success status
+  // Return with success status
   return {
-    status: "success",
     errorCode: null,
-    errorMessage: null,
     filename: `${outputFilename}.mbtiles`,
     filesize: fs.statSync(outputPath).size,
     numberOfTiles,

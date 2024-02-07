@@ -4,7 +4,6 @@ import path from "path";
 
 import { generateStyle, generateMBTiles } from "./generate_resources.js";
 import { requestOnlineTiles } from "./download_resources.js";
-import { handleError } from "./utils.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -31,7 +30,7 @@ export const initiateRendering = async (
     try {
       fs.mkdirSync(tempDir, { recursive: true });
     } catch (error) {
-      return handleError(error, "creating the temporary directory");
+      throw new Error(`Error creating temp directory: ${error.message}`);
     }
   }
   let stylePath = null;
@@ -43,7 +42,7 @@ export const initiateRendering = async (
     try {
       styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
     } catch (error) {
-      return handleError(error, "reading the style file");
+      throw new Error(`Error reading the style file: ${error.message}`);
     }
   }
 
@@ -62,7 +61,9 @@ export const initiateRendering = async (
         tempDir,
       );
     } catch (error) {
-      return handleError(error, "downloading tiles from the online source");
+      throw new Error(
+        `Error downloading tiles from the online source: ${error.message}`,
+      );
     }
 
     // Save the overlay GeoJSON to a file, if provided
@@ -70,7 +71,9 @@ export const initiateRendering = async (
       try {
         fs.writeFileSync(`${tempDir}/sources/overlay.geojson`, overlay);
       } catch (error) {
-        return handleError(error, "saving the overlay GeoJSON to a file");
+        throw new Error(
+          `Error saving overlay GeoJSON to file: ${error.message}`,
+        );
       }
       console.log(`Overlay GeoJSON saved to file!`);
     }
@@ -93,7 +96,9 @@ export const initiateRendering = async (
         );
         console.log("Stylesheet generated and saved!");
       } catch (error) {
-        return handleError(error, "generating and saving the stylesheet");
+        throw new Error(
+          `Error generating and saving the stylesheet: ${error.message}`,
+        );
       }
     }
 
@@ -105,7 +110,7 @@ export const initiateRendering = async (
   if (localMbtilesMatches && !sourceDir) {
     const msg =
       "Stylesheet has local mbtiles file sources, but no sourceDir is set";
-    return handleError(new Error(msg), "checking for local mbtiles sources");
+    throw new Error(msg);
   }
 
   if (localMbtilesMatches) {
@@ -122,16 +127,13 @@ export const initiateRendering = async (
           name,
           ext: ".mbtiles",
         })} in stylesheet is not found in: ${path.resolve(sourceDir)}`;
-        return handleError(
-          new Error(msg),
-          "checking for local mbtiles sources",
-        );
+        throw new Error(msg);
       }
     });
   }
 
   try {
-    let metadata = await generateMBTiles(
+    let generateResult = await generateMBTiles(
       styleObject,
       styleDir,
       sourceDir,
@@ -147,26 +149,19 @@ export const initiateRendering = async (
       `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
     );
 
-    // if successful, return the metadata
+    // if successful, return the render result
     return {
       style: style,
-      status: metadata.status,
-      errorCode: metadata.errorCode,
-      errorMessage: metadata.errorMessage,
-      filename: metadata.filename,
-      filesize: metadata.filesize,
-      numberOfTiles: metadata.numberOfTiles,
-      numberOfAttempts: 1,
+      status: "Success",
+      errorMessage: generateResult.errorMessage,
+      filename: generateResult.filename,
+      filesize: generateResult.filesize,
+      numberOfTiles: generateResult.numberOfTiles,
       workBegun,
       workEnded: new Date().toISOString(),
-      // if status = success, set expiration for one year
-      expiration:
-        metadata.status === "success"
-          ? new Date(Date.now() + 31556952000).toISOString()
-          : null,
     };
   } catch (error) {
-    return handleError(error, "generating MBTiles file");
+    throw new Error(`Error generating MBTiles: ${error.message}`);
   }
 };
 
