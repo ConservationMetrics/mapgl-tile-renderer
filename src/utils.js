@@ -5,6 +5,27 @@ export const raiseError = (msg) => {
   process.exit(1);
 };
 
+export const handleError = (error, type) => {
+  if (type === "badRequest") {
+    // Something was caller's fault. They need to fix something then retry.
+    return {
+      status: "BadRequest",
+      errorMessage: `${error.message}`,
+    };
+  } else if (type === "internalServerError") {
+    return {
+      // Something was our fault. It's out of the caller's control.
+      status: "InternalServerError",
+      errorMessage: `${error.message}`,
+    };
+  } else {
+    return {
+      status: "UnknownError",
+      errorMessage: `${error.message}`,
+    };
+  }
+};
+
 // Currently supported list of online styles
 // When adding a new style, make sure to update this list
 const validOnlineStyles = [

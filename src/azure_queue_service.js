@@ -1,6 +1,10 @@
 import { QueueServiceClient } from "@azure/storage-queue";
 
-import { parseListToFloat, validateInputOptions } from "./utils.js";
+import {
+  parseListToFloat,
+  validateInputOptions,
+  handleError,
+} from "./utils.js";
 import { initiateRendering } from "./initiate.js";
 
 // Connection string and queue names
@@ -22,77 +26,108 @@ const processQueueMessages = async () => {
     });
     const message = response.receivedMessageItems[0];
 
-    if (message) {
-      try {
-        const decodedMessageText = Buffer.from(
-          message.messageText,
-          "base64",
-        ).toString("utf8");
-        console.log(`Received queue message: '${decodedMessageText}'`);
-
-        // Parse the message text as JSON
-        const options = JSON.parse(decodedMessageText);
-
-        const {
-          style,
-          apiKey,
-          mapboxStyle,
-          monthYear,
-          overlay,
-          bounds,
-          minZoom = 0,
-          maxZoom,
-          outputFilename = "output",
-        } = options;
-
-        const boundsArray = parseListToFloat(bounds);
-
-        validateInputOptions(
-          style,
-          null,
-          null,
-          apiKey,
-          mapboxStyle,
-          monthYear,
-          overlay,
-          boundsArray,
-          minZoom,
-          maxZoom,
-        );
-
-        const outputDir = "/maps";
-
-        // Pass the extracted values to initiateRendering
-        await initiateRendering(
-          style,
-          null,
-          null,
-          apiKey,
-          mapboxStyle,
-          monthYear,
-          overlay,
-          boundsArray,
-          minZoom,
-          maxZoom,
-          outputDir,
-          outputFilename,
-        );
-
-        // Send completion message
-        const completionMessage = `Finished rendering map`;
-        await destinationQueueClient.sendMessage(completionMessage);
-      } finally {
-        // Delete the message from the source queue
-        await sourceQueueClient.deleteMessage(
-          message.messageId,
-          message.popReceipt,
-        );
-      }
-    } else {
+    // If no message is found, retry after 10 seconds
+    if (!message) {
       console.log("No message found. Retrying in 10 seconds...");
-      await new Promise((resolve) => setTimeout(resolve, 10 * 1000)); // Wait for 10 seconds before retrying
+      await new Promise((resolve) => setTimeout(resolve, 10 * 1000));
+      continue;
+    }
+
+    // Initialize variables with default or null values
+    let renderResult;
+    let decodedMessageText = "";
+    let options = {};
+    let style,
+      apiKey,
+      mapboxStyle,
+      monthYear,
+      overlay,
+      bounds,
+      minZoom,
+      maxZoom,
+      outputFilename;
+    let boundsArray = [];
+    const outputDir = "/maps"; // TODO: Get this from environment variable (or confirm that we are happy with this default value)
+
+    // Decode, parse, and validate the message
+    try {
+      decodedMessageText = Buffer.from(message.messageText, "base64").toString(
+        "utf8",
+      );
+      console.log(`Received queue message: '${decodedMessageText}'`);
+
+      options = JSON.parse(decodedMessageText);
+
+      ({
+        style,
+        apiKey,
+        mapboxStyle,
+        monthYear,
+        overlay,
+        bounds,
+        minZoom = 0,
+        maxZoom,
+        outputFilename = "output",
+      } = options);
+
+      boundsArray = parseListToFloat(bounds);
+
+      validateInputOptions(
+        style,
+        null,
+        null,
+        apiKey,
+        mapboxStyle,
+        monthYear,
+        overlay,
+        boundsArray,
+        minZoom,
+        maxZoom,
+      );
+    } catch (error) {
+      renderResult = handleError(error, "badRequest");
+      await sendCompletionMessage(
+        renderResult,
+        destinationQueueClient,
+        message,
+      );
+      continue;
+    }
+
+    // Initiate rendering
+    try {
+      renderResult = await initiateRendering(
+        style,
+        null,
+        null,
+        apiKey,
+        mapboxStyle,
+        monthYear,
+        overlay,
+        boundsArray,
+        minZoom,
+        maxZoom,
+        outputDir,
+        outputFilename,
+      );
+    } catch (error) {
+      renderResult = handleError(error, "internalServerError");
+    } finally {
+      await sendCompletionMessage(
+        renderResult,
+        destinationQueueClient,
+        message,
+      );
     }
   }
+};
+
+const sendCompletionMessage = async (renderResult, queueClient, message) => {
+  if (renderResult) {
+    const completionMessage = JSON.stringify(renderResult);
+    await queueClient.sendMessage(completionMessage);
+  }
+  await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
 };
 
 processQueueMessages();
