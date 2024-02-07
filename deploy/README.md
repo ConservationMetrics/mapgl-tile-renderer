@@ -29,6 +29,9 @@ container_registry_name = "myacr"
 storage_account_name    = "mappackerplayground"
 ```
 
+If managing multiple deployments, make a separate `*.tfvars` file for each,
+then append `--var-file=«mydeployment».tfvars` in the `terraform` bash commands below.
+
 3. **Plan and apply your configuration:**
 ```shell
 terraform plan
