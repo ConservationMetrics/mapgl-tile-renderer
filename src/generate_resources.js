@@ -122,13 +122,14 @@ export const generateMBTiles = async (
   console.log(`Generating MBTiles file: ${tempPath}`);
 
   let numberOfTiles = 0;
+  let fileSize = 0;
 
   // Create a new MBTiles file
   const mbtiles = await new Promise((resolve, reject) => {
-    new MBTiles(`${tempPath}?mode=rwc`, (err, mbtiles) => {
-      if (err) {
-        console.error("Error opening MBTiles file:", err);
-        reject(err);
+    new MBTiles(`${tempPath}?mode=rwc`, (error, mbtiles) => {
+      if (error) {
+        console.error("Error opening MBTiles file:", error);
+        reject(error);
       } else {
         resolve(mbtiles);
       }
@@ -137,9 +138,9 @@ export const generateMBTiles = async (
 
   try {
     // Start writing to the MBTiles file
-    mbtiles.startWriting((err) => {
-      if (err) {
-        throw err;
+    mbtiles.startWriting((error) => {
+      if (error) {
+        throw error;
       } else {
         let metadata = {
           name: outputFilename,
@@ -159,13 +160,13 @@ export const generateMBTiles = async (
 
             // Merge the file metadata with the default metadata
             metadata = { ...metadata, ...metadataFromFile };
-          } catch (err) {
-            console.error(`Error reading metadata.json file: ${err}`);
+          } catch (error) {
+            console.error(`Error reading metadata.json file: ${error}`);
           }
         }
 
-        mbtiles.putInfo(metadata, (err) => {
-          if (err) throw err;
+        mbtiles.putInfo(metadata, (error) => {
+          if (error) throw error;
         });
       }
     });
@@ -216,8 +217,10 @@ export const generateMBTiles = async (
         resolve();
       });
     });
-  } catch (err) {
-    throw new Error(`Error writing MBTiles file: ${err}`);
+
+    fileSize = fs.statSync(tempPath).size;
+  } catch (error) {
+    throw new Error(`Error writing MBTiles file: ${error}`);
   }
 
   // Move the generated MBTiles file to the output directory
@@ -243,15 +246,15 @@ export const generateMBTiles = async (
     });
 
     readStream.pipe(writeStream);
-  } catch (err) {
-    throw new Error(`Error moving MBTiles file: ${err}`);
+  } catch (error) {
+    throw new Error(`Error moving MBTiles file: ${error}`);
   }
 
   // Return with success status
   return {
     errorMessage: null,
     filename: `${outputFilename}.mbtiles`,
-    filesize: fs.statSync(outputPath).size,
+    filesize: fileSize,
     numberOfTiles,
   };
 };

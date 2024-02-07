@@ -132,37 +132,33 @@ export const initiateRendering = async (
     });
   }
 
-  try {
-    let generateResult = await generateMBTiles(
-      styleObject,
-      styleDir,
-      sourceDir,
-      bounds,
-      minZoom,
-      maxZoom,
-      tempDir,
-      outputDir,
-      outputFilename,
-    );
+  let generateResult = await generateMBTiles(
+    styleObject,
+    styleDir,
+    sourceDir,
+    bounds,
+    minZoom,
+    maxZoom,
+    tempDir,
+    outputDir,
+    outputFilename,
+  );
 
-    console.log(
-      `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
-    );
+  console.log(
+    `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
+  );
 
-    // if successful, return the render result
-    return {
-      style: style,
-      status: "Success",
-      errorMessage: generateResult.errorMessage,
-      filename: generateResult.filename,
-      filesize: generateResult.filesize,
-      numberOfTiles: generateResult.numberOfTiles,
-      workBegun,
-      workEnded: new Date().toISOString(),
-    };
-  } catch (error) {
-    throw new Error(`Error generating MBTiles: ${error.message}`);
-  }
+  // if successful, return the render result
+  return {
+    style: style,
+    status: "Success",
+    errorMessage: generateResult.errorMessage,
+    filename: generateResult.filename,
+    filesize: generateResult.filesize,
+    numberOfTiles: generateResult.numberOfTiles,
+    workBegun,
+    workEnded: new Date().toISOString(),
+  };
 };
 
 export default initiateRendering;
