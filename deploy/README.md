@@ -24,9 +24,10 @@ terraform init
 2. **Create a terraform.tfvars file** in your project directory. This file will contain the values for the variables defined in the `variables.tf` file, most of which refer to your existing Azure infrastructure. Example:
 
 ```ini
-resource_group_name     = "mappacker"
-container_registry_name = "myacr"
-storage_account_name    = "mappackerplayground"
+tile_renderer_docker_image = "my.azurecr.io/mapgl-tile-renderer:example"
+resource_group_name        = "mappacker"
+container_registry_name    = "myacr"
+storage_account_name       = "mappackerplayground"
 ```
 
 If managing multiple deployments, make a separate `*.tfvars` file for each,

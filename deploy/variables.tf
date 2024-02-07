@@ -8,6 +8,11 @@ variable "container_registry_name" {
   type        = string
 }
 
+variable "tile_renderer_docker_image" {
+  description = "The name of the docker image to launch"
+  type        = string
+}
+
 variable "storage_account_name" {
   description = "The name of the existing storage account"
   type        = string

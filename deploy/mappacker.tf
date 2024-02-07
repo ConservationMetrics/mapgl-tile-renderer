@@ -52,7 +52,7 @@ resource "azurerm_container_app" "mapgl_tile_renderer" {
   template {
     container {
       name   = "mbgl-tile-renderer"
-      image  = "${data.azurerm_container_registry.this.login_server}/mbgl-tile-renderer:test-3"
+      image  = var.tile_renderer_docker_image
       cpu    = "0.25"
       memory = "0.5Gi"
 
