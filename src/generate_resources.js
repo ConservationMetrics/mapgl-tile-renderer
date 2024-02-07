@@ -249,7 +249,7 @@ export const generateMBTiles = async (
 
   // Return with success status
   return {
-    errorCode: null,
+    errorMessage: null,
     filename: `${outputFilename}.mbtiles`,
     filesize: fs.statSync(outputPath).size,
     numberOfTiles,
