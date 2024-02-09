@@ -89,7 +89,7 @@ export const initiateRendering = async (
     // Generate and save a stylesheet from the online source and overlay source.
     if (styleObject === null) {
       try {
-        styleObject = generateStyle(style, overlay, tileSize);
+        styleObject = generateStyle(style, overlay, tileSize, tempDir);
         fs.writeFileSync(
           `${tempDir}/style.json`,
           JSON.stringify(styleObject, null, 2),

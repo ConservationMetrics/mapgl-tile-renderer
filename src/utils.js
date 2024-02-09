@@ -69,7 +69,8 @@ export const validateInputOptions = (
   if (
     (style === "mapbox" ||
       style === "mapbox-satellite" ||
-      style === "planet") &&
+      style === "planet" ||
+      style === "protomaps") &&
     !apiKey
   ) {
     raiseError(`You must provide an API key for ${style}`);

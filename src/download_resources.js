@@ -60,6 +60,7 @@ const downloadOnlineTiles = async (
   }
 
   let sourceUrl, sourceAttribution, sourceName, sourceFormat;
+  console.log(style);
   switch (style) {
     case "google":
       sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
@@ -101,11 +102,11 @@ const downloadOnlineTiles = async (
     case "protomaps":
       sourceUrl = `https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=${apiKey}`;
       sourceAttribution = "Protomaps";
-      sourceName = `Protomaps © OpenStreetMap`;
+      sourceName = "Protomaps © OpenStreetMap";
       sourceFormat = "mvt";
+      break;
     default:
-      console.error("Invalid source provided");
-      return;
+      throw new Error("Invalid source provided");
   }
 
   const xyzOutputDir = `${tempDir}/sources`;
