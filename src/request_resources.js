@@ -2,13 +2,16 @@ import fs from "fs";
 import path from "path";
 import zlib from "zlib";
 import MBTiles from "@mapbox/mbtiles";
+import https from "https";
 
 // Validations for source URLs
 const TILE_REGEXP = RegExp("mbtiles://([^/]+)/(\\d+)/(\\d+)/(\\d+)");
-const XYZ_REGEXP = /(\d+)\/(\d+)\/(\d+)\.(jpg|png|pbf)$/;
+const XYZ_REGEXP = /(\d+)\/(\d+)\/(\d+)\.(jpg|png|pbf|mvt)$/;
 const isMBTilesURL = (url) => url.startsWith("mbtiles://");
 const isGeoJSONURL = (url) => url.endsWith(".geojson");
-const isXYZDirURL = (url) => /\/\d+\/\d+\/\d+/.test(url);
+const isProtomapsTileJSONURL = (url) => url.endsWith("protomaps-tiles.json");
+const isXYZDirURL = (url) => /\/?\d+\/\d+\/\d+(\.\w+)?$/.test(url);
+const isOnlineURL = (url) => url.startsWith("http");
 
 // Split out mbtiles service name from the URL
 const resolveNamefromURL = (url) => url.split("://")[1].split("/")[0];
@@ -57,6 +60,25 @@ const getLocalSpriteJSON = (styleDir, url, callback) => {
     callback(null, { data });
     return null;
   });
+};
+
+// Given a URL to an online glyph, get the glyph data.
+const getOnlineGlyph = (url, callback) => {
+  https
+    .get(url, (res) => {
+      let data = [];
+
+      res.on("data", (chunk) => {
+        data.push(chunk);
+      });
+
+      res.on("end", () => {
+        callback(null, { data: Buffer.concat(data) });
+      });
+    })
+    .on("error", (err) => {
+      callback(err);
+    });
 };
 
 // Given a URL to a local glyph, get the glyph data.
@@ -212,6 +234,22 @@ const getLocalGeoJSON = (sourceDir, url, callback) => {
   });
 };
 
+// Given a URL to a local Protomaps TileJSON file, get the TileJSON for that to load correct tiles.
+const getLocalProtomapsTileJSON = (url, callback) => {
+  /*
+   * @param {String} url - url of a data source in style.json file.
+   * @param {function} callback - function to call with (err, {data}).
+   */
+  fs.readFile(url, (err, data) => {
+    if (err) {
+      callback(err);
+      return null;
+    }
+    callback(null, { data });
+    return null;
+  });
+};
+
 // requestHandler constructs a request handler for the map to load resources.
 // More about request types (kinds) in MapLibre: https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
 export const requestHandler =
@@ -227,6 +265,8 @@ export const requestHandler =
             getLocalXYZTile(sourceDir, url, callback);
           } else if (isGeoJSONURL(url)) {
             getLocalGeoJSON(sourceDir, url, callback);
+          } else if (isProtomapsTileJSONURL(url)) {
+            getLocalProtomapsTileJSON(url, callback);
           } else {
             const msg = `Only local sources are currently supported. Received: ${url}`;
             throw new Error(msg);
@@ -249,7 +289,11 @@ export const requestHandler =
         }
         case 4: {
           // glyph
-          getLocalGlyph(styleDir, url, callback);
+          if (isOnlineURL(url)) {
+            getOnlineGlyph(url, callback);
+          } else {
+            getLocalGlyph(styleDir, url, callback);
+          }
           break;
         }
         case 5: {

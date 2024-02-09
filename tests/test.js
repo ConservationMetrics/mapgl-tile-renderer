@@ -14,7 +14,7 @@ const tempDir = path.join(os.tmpdir());
 // Load MAPBOX_API_TOKEN from .env.test
 // Create this file if wanting to test Mapbox
 dotenv.config();
-const { MAPBOX_TOKEN, PLANET_TOKEN } = process.env;
+const { MAPBOX_TOKEN, PLANET_TOKEN, PROTOMAPS_TOKEN } = process.env;
 
 if (!MAPBOX_TOKEN) {
   console.warn(
@@ -28,8 +28,15 @@ if (!PLANET_TOKEN) {
   );
 }
 
+if (!PROTOMAPS_TOKEN) {
+  console.warn(
+    "PROTOMAPS_TOKEN environment variable is missing; tests that require this token will be skipped"
+  );
+}
+
 const testMapbox = skipIf(!MAPBOX_TOKEN);
 const testPlanet = skipIf(!PLANET_TOKEN);
+const testProtomaps = skipIf(!PROTOMAPS_TOKEN);
 
 // Mock p-limit because it's an ESM module that doesn't work well with jest
 jest.mock("p-limit", () => () => async (fn) => {
@@ -194,6 +201,31 @@ test("Generates MBTiles from Google", async () => {
   // Expect output.mbtiles to be 241664 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
   expect(stats.size).toBe(241664);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+testProtomaps("Generates MBTiles from Protomaps", async () => {
+  await initiateRendering(
+    "protomaps",
+    null,
+    null,
+    PROTOMAPS_TOKEN,
+    null,
+    null,
+    null,
+    [-79, 37, -77, 38],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be 237568 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBe(237568);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });

@@ -60,6 +60,7 @@ const downloadOnlineTiles = async (
   }
 
   let sourceUrl, sourceAttribution, sourceName, sourceFormat;
+  console.log(style);
   switch (style) {
     case "google":
       sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
@@ -98,9 +99,14 @@ const downloadOnlineTiles = async (
       sourceName = `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`;
       sourceFormat = "jpg";
       break;
+    case "protomaps":
+      sourceUrl = `https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=${apiKey}`;
+      sourceAttribution = "Protomaps";
+      sourceName = "Protomaps © OpenStreetMap";
+      sourceFormat = "mvt";
+      break;
     default:
-      console.error("Invalid source provided");
-      return;
+      throw new Error("Invalid source provided");
   }
 
   const xyzOutputDir = `${tempDir}/sources`;
@@ -162,7 +168,7 @@ const downloadOnlineTiles = async (
           xyzOutputDir,
           `${zoom}`,
           `${col}`,
-          `${row}.jpg`,
+          `${row}.${sourceFormat}`,
         );
 
         if (!fs.existsSync(filename)) {
@@ -214,6 +220,35 @@ const downloadOnlineTiles = async (
     format: sourceFormat,
     type: "overlay",
   };
+
+  // Save Protomaps tiles.json
+  if (style === "protomaps") {
+    const tileJsonUrl = "https://api.protomaps.com/tiles/v3.json?key=" + apiKey;
+
+    let tilesJson;
+    try {
+      const response = await axios.get(tileJsonUrl);
+      if (response.status === 200) {
+        tilesJson = response.data;
+        tilesJson.tiles = [`{z}/{x}/{y}.mvt`];
+      } else {
+        throw new Error(
+          `Failed to download tiles.json: ${tileJsonUrl} (Status code: ${response.status})`,
+        );
+      }
+    } catch (error) {
+      throw new Error(`Error downloading tiles.json: ${tileJsonUrl}`);
+    }
+
+    const tilesJsonFilePath = path.join(xyzOutputDir, "protomaps-tiles.json");
+
+    try {
+      fs.writeFileSync(tilesJsonFilePath, JSON.stringify(tilesJson, null, 4));
+      console.log("protomaps-tiles.json file generated!");
+    } catch (error) {
+      throw new Error(`Error writing tiles.json file: ${tilesJsonFilePath}`);
+    }
+  }
 
   const metadataFilePath = path.join(xyzOutputDir, "metadata.json");
 

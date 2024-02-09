@@ -8,37 +8,17 @@ import {
   validateMinMaxValues,
 } from "./tile_calculations.js";
 import { renderTile } from "./render_map.js";
+import { basicMapStyle, protomapsStyle } from "./map_styles.js";
 
 // Generate a MapGL style JSON object from a remote source
 // and an additional source.
-export const generateStyle = (style, overlay, tileSize) => {
-  const styleObject = {
-    version: 8,
-    sources: {
-      [style]: {
-        type: "raster",
-        scheme: "xyz",
-        tilejson: "2.2.0",
-        tiles: ["sources/{z}/{x}/{y}.jpg"],
-        tileSize: tileSize,
-      },
-    },
-    layers: [
-      {
-        id: "background",
-        type: "background",
-        paint: {
-          "background-color": "#f9f9f9",
-        },
-      },
-      {
-        id: style,
-        type: "raster",
-        source: style,
-        paint: {},
-      },
-    ],
-  };
+export const generateStyle = (style, overlay, tileSize, tempDir) => {
+  let styleObject;
+  if (style === "protomaps") {
+    styleObject = protomapsStyle(tempDir);
+  } else {
+    styleObject = basicMapStyle(style, tileSize);
+  }
   // For now, we are styling an additional source with a
   // transparent red fill and red outline. In the future
   // we may want to allow for more customization.
