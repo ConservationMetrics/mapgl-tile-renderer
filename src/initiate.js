@@ -23,9 +23,15 @@ export const initiateRendering = async (
 ) => {
   console.log("Initiating rendering...");
 
-  const tempDir = path.join(os.tmpdir(), "mbgl-tile-renderer-temp");
+  const workBegun = new Date().toISOString();
+
+  const tempDir = path.join(os.tmpdir(), "mapgl-tile-renderer-temp");
   if (!fs.existsSync(tempDir)) {
-    fs.mkdirSync(tempDir, { recursive: true });
+    try {
+      fs.mkdirSync(tempDir, { recursive: true });
+    } catch (error) {
+      throw new Error(`Error creating temp directory: ${error.message}`);
+    }
   }
   let stylePath = null;
   let styleObject = null;
@@ -33,26 +39,42 @@ export const initiateRendering = async (
   // If the style is self-hosted, let's read the style from the file.
   if (style === "self") {
     stylePath = path.resolve(process.cwd(), styleDir);
-    styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
+    try {
+      styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
+    } catch (error) {
+      throw new Error(`Error reading the style file: ${error.message}`);
+    }
   }
 
   // If the style is not self-hosted, let's generate everything that we need to render tiles.
   if (style !== "self") {
     // Download tiles from the online source
-    await requestOnlineTiles(
-      style,
-      apiKey,
-      mapboxStyle,
-      monthYear,
-      bounds,
-      minZoom,
-      maxZoom,
-      tempDir,
-    );
+    try {
+      await requestOnlineTiles(
+        style,
+        apiKey,
+        mapboxStyle,
+        monthYear,
+        bounds,
+        minZoom,
+        maxZoom,
+        tempDir,
+      );
+    } catch (error) {
+      throw new Error(
+        `Error downloading tiles from the online source: ${error.message}`,
+      );
+    }
 
     // Save the overlay GeoJSON to a file, if provided
     if (overlay) {
-      fs.writeFileSync(`${tempDir}/sources/overlay.geojson`, overlay);
+      try {
+        fs.writeFileSync(`${tempDir}/sources/overlay.geojson`, overlay);
+      } catch (error) {
+        throw new Error(
+          `Error saving overlay GeoJSON to file: ${error.message}`,
+        );
+      }
       console.log(`Overlay GeoJSON saved to file!`);
     }
 
@@ -66,12 +88,18 @@ export const initiateRendering = async (
 
     // Generate and save a stylesheet from the online source and overlay source.
     if (styleObject === null) {
-      styleObject = generateStyle(style, overlay, tileSize, tempDir);
-      fs.writeFileSync(
-        `${tempDir}/style.json`,
-        JSON.stringify(styleObject, null, 2),
-      );
-      console.log("Stylesheet generated and saved!");
+      try {
+        styleObject = generateStyle(style, overlay, tileSize);
+        fs.writeFileSync(
+          `${tempDir}/style.json`,
+          JSON.stringify(styleObject, null, 2),
+        );
+        console.log("Stylesheet generated and saved!");
+      } catch (error) {
+        throw new Error(
+          `Error generating and saving the stylesheet: ${error.message}`,
+        );
+      }
     }
 
     sourceDir = `${tempDir}/sources`;
@@ -104,21 +132,33 @@ export const initiateRendering = async (
     });
   }
 
-  try {
-    await generateMBTiles(
-      styleObject,
-      styleDir,
-      sourceDir,
-      bounds,
-      minZoom,
-      maxZoom,
-      tempDir,
-      outputDir,
-      outputFilename,
-    );
-  } catch (error) {
-    throw new Error("Error generating MBTiles:", error);
-  }
+  let generateResult = await generateMBTiles(
+    styleObject,
+    styleDir,
+    sourceDir,
+    bounds,
+    minZoom,
+    maxZoom,
+    tempDir,
+    outputDir,
+    outputFilename,
+  );
+
+  console.log(
+    `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
+  );
+
+  // if successful, return the render result
+  return {
+    style: style,
+    status: "Success",
+    errorMessage: generateResult.errorMessage,
+    filename: generateResult.filename,
+    filesize: generateResult.filesize,
+    numberOfTiles: generateResult.numberOfTiles,
+    workBegun,
+    workEnded: new Date().toISOString(),
+  };
 };
 
 export default initiateRendering;

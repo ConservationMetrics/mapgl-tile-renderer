@@ -105,7 +105,7 @@ console.log("Output directory: %j", outputDir);
 console.log("Output MBTiles filename: %j", outputFilename);
 console.log("------------------------------------------------------");
 
-initiateRendering(
+const renderResult = await initiateRendering(
   style,
   styleDir,
   sourceDir,
@@ -119,3 +119,6 @@ initiateRendering(
   outputDir,
   outputFilename,
 );
+
+// output the render result to console
+console.log("Render result:", renderResult);

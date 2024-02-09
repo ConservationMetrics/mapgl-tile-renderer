@@ -1,5 +1,5 @@
 {
-  "name": "mbgl-tile-renderer",
+  "name": "mapgl-tile-renderer",
   "version": "1.0.0",
   "description": "A tile renderer for Maplibre GL JS",
   "type": "module",
@@ -10,7 +10,7 @@
     "test": "jest --coverage --silent"
   },
   "bin": {
-    "mbgl-tile-renderer": "./src/cli.js"
+    "mapgl-tile-renderer": "./src/cli.js"
   },
   "dependencies": {
     "@azure/storage-queue": "^12.16.0",
@@ -46,6 +46,6 @@
       "git add"
     ]
   },
-  "repository": "https://github.com/conservationmetrics/mbgl-tile-renderer",
+  "repository": "https://github.com/conservationmetrics/mapgl-tile-renderer",
   "license": "MIT"
 }

@@ -29,7 +29,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: communityfirst/mbgl-tile-renderer
+          images: communityfirst/mapgl-tile-renderer
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -45,7 +45,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: communityfirst/mbgl-tile-renderer
+          repository: communityfirst/mapgl-tile-renderer
           short-description: 'Node.js MapGL renderer for styled raster tiles in MBTiles format.'
       - name: Test run of Docker image with self-provided style
         run: |

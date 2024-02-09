@@ -103,7 +103,6 @@ const downloadOnlineTiles = async (
       sourceAttribution = "Protomaps";
       sourceName = `Protomaps © OpenStreetMap`;
       sourceFormat = "mvt";
-      break;
     default:
       console.error("Invalid source provided");
       return;

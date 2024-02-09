@@ -1,6 +1,6 @@
-# mbgl-tile-renderer
+# mapgl-tile-renderer
 
-[![Publish to DockerHub](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ConservationMetrics/mbgl-tile-renderer/actions/workflows/docker-publish.yml)
+[![Publish to DockerHub](https://github.com/ConservationMetrics/mapgl-tile-renderer/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/ConservationMetrics/mapgl-tile-renderer/actions/workflows/docker-publish.yml)
 
 This headless Node.js MapGL renderer generates styled raster tiles in an MBTiles format. It can work with a self-provided stylesheet and tile sources, or an online source with an optional overlay. 
 
@@ -99,7 +99,7 @@ node src/cli.js --style esri --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -
 
 ## Azure Storage Queue example usage
 
-For Azure Storage Queue (and other queue services in the future), mbgl-tile-renderer expects a message with a JSON body, composed of the input options:
+For Azure Storage Queue (and other queue services in the future), mapgl-tile-renderer expects a message with a JSON body, composed of the input options:
 
 ```json
 {
@@ -117,28 +117,28 @@ For Azure Storage Queue (and other queue services in the future), mbgl-tile-rend
 To run the tool with Docker,  run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mbgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mapgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
-This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mbgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
+This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mapgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
 
 - `-it`: This option ensures that the Docker container runs in interactive mode, allowing you to interact with the command-line interface.
 - `--rm`: This option automatically removes the container when it exits, which helps to clean up and save disk space.
 - `-v "$(pwd)":/app/outputs`: This mounts the current working directory (`$(pwd)`) to the `/app/outputs` directory inside the container, allowing the container to write the output files to your local file system.
-- `communityfirst/mbgl-tile-renderer`: This is the name of the Docker image that contains the mbgl-tile-renderer tool.
+- `communityfirst/mapgl-tile-renderer`: This is the name of the Docker image that contains the mapgl-tile-renderer tool.
 Make sure to replace the placeholder values with your actual information before running the command.
 
 
 To run locally first build the Docker image:
 
 ```bash
-docker build -t mbgl-tile-renderer .
+docker build -t mapgl-tile-renderer .
 ```
 
 Then run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app/outputs mbgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs mapgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 ## Tests
