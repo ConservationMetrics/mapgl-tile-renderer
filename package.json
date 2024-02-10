@@ -6,7 +6,7 @@
   "main": "./src/cli.js",
   "scripts": {
     "lint": "prettier --write ./src",
-    "prepare": "husky install",
+    "prepare": "[ -f ./node_modules/.bin/husky ] && husky install || echo 'Skipping husky install'",
     "test": "jest --coverage --silent"
   },
   "bin": {
