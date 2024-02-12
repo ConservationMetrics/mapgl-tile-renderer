@@ -58,6 +58,7 @@ export const initiateRendering = async (
         bounds,
         minZoom,
         maxZoom,
+        outputFilename,
         tempDir,
       );
     } catch (error) {
