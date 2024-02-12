@@ -53,6 +53,7 @@ const downloadOnlineTiles = async (
   bounds,
   minZoom,
   maxZoom,
+  outputFilename,
   tempDir,
 ) => {
   if (!bounds || bounds.length < 4) {
@@ -213,7 +214,7 @@ const downloadOnlineTiles = async (
   // Save metadata.json file with proper attribution according to
   // each source's terms of use
   const metadata = {
-    name: sourceName,
+    name: `${outputFilename} - ${sourceName}`,
     description: `XYZ tiles from ${sourceName}`,
     version: "1.0.0",
     attribution: sourceAttribution,
@@ -273,6 +274,7 @@ export const requestOnlineTiles = (
   bounds,
   minZoom,
   maxZoom,
+  outputFilename,
   tempDir,
 ) => {
   return new Promise(async (resolve, reject) => {
@@ -285,6 +287,7 @@ export const requestOnlineTiles = (
         bounds,
         minZoom,
         maxZoom,
+        outputFilename,
         tempDir,
       );
       resolve();
