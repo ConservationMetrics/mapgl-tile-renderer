@@ -134,7 +134,7 @@ const downloadOnlineTiles = async (
       zoom,
     );
 
-    validateMinMaxValues(minX, maxX, minY, maxY);
+    validateMinMaxValues(minX, minY, maxX, maxY);
 
     let tileCount = 0;
 
