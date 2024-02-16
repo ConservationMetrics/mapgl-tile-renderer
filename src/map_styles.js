@@ -2064,6 +2064,8 @@ export const openStreetMapStyle = (style, tileSize) => {
         data: `openstreetmap.geojson`,
       },
     },
+    glyphs:
+      "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
     layers: [
       {
         id: "background",
@@ -2084,6 +2086,7 @@ export const openStreetMapStyle = (style, tileSize) => {
         type: "line",
         source: "osm",
         "source-layer": "lines",
+        minzoom: 8,
         filter: ["in", "$type", "LineString", "MultiLineString"],
         paint: {
           "line-width": 2,
@@ -2104,6 +2107,7 @@ export const openStreetMapStyle = (style, tileSize) => {
         type: "circle",
         source: "osm",
         "source-layer": "points",
+        minzoom: 8,
         filter: ["==", "$type", "Point"],
         paint: {
           "circle-radius": 6,
@@ -2112,25 +2116,26 @@ export const openStreetMapStyle = (style, tileSize) => {
           "circle-stroke-width": 1,
         },
       },
-      // {
-      //   id: "osm-point-labels",
-      //   type: "symbol",
-      //   source: "osm",
-      //   "source-layer": "points",
-      //   filter: ["==", "$type", "Point"],
-      //   layout: {
-      //     "text-field": "{name}",
-      //     "text-font": ["Noto Sans Regular"],
-      //     "text-size": 12,
-      //     "text-offset": [0, 1.5],
-      //     "text-anchor": "top",
-      //   },
-      //   paint: {
-      //     "text-color": "#000000",
-      //     "text-halo-color": "#ffffff",
-      //     "text-halo-width": 1,
-      //   },
-      // },
+      {
+        id: "osm-point-labels",
+        type: "symbol",
+        source: "osm",
+        "source-layer": "points",
+        minzoom: 12,
+        filter: ["==", "$type", "Point"],
+        layout: {
+          "text-field": "{name}",
+          "text-font": ["Noto Sans Regular"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8, 12, 16, 24],
+          "text-offset": [0, 1.5],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#000000",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1,
+        },
+      },
     ],
   };
 

@@ -344,6 +344,13 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
   // Convert OSM JSON to GeoJSON
   const geojson = osmtogeojson(osmData);
 
+  // Filter out lines and points only
+  geojson.features = geojson.features.filter(
+    (feature) =>
+      feature.geometry.type === "LineString" ||
+      feature.geometry.type === "Point",
+  );
+
   fs.writeFileSync(
     `${outputDir}/openstreetmap.geojson`,
     JSON.stringify(geojson, null, 4),
