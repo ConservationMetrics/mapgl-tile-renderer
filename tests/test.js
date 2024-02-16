@@ -175,6 +175,33 @@ test("Generates MBTiles from Bing with overlay GeoJSON", async () => {
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
+
+test("Generates MBTiles from Bing with OpenStreetMap overlay", async () => {
+  await initiateRendering(
+    "bing",
+    null,
+    null,
+    null,
+    null,
+    null,
+    true,
+    null,
+    [-54.9528992176,4.651819884,-54.9391663074,4.6655074239],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be greater than 69632 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBeGreaterThan(69632);
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+}, 10000);
+
 testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
   await initiateRendering(
     "mapbox-satellite",
