@@ -63,7 +63,7 @@ const downloadOnlineTiles = async (
   }
 
   let sourceUrl, sourceAttribution, sourceName, sourceFormat;
-  console.log(style);
+
   switch (style) {
     case "google":
       sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;

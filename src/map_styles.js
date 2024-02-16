@@ -2078,27 +2078,25 @@ export const openStreetMapStyle = (style, tileSize) => {
         source: style,
         paint: {},
       },
-      // TODO: Style OSM data
-      // For now, as a proof of concept, let's map all point as red,
-      // lines as green, and polygons as black
-      {
-        id: "osm-polygons",
-        type: "fill",
-        source: "osm",
-        "source-layer": "polygons",
-        paint: {
-          "fill-color": "#000000",
-          "fill-opacity": 0.5,
-        },
-      },
+      // Style OSM data
       {
         id: "osm-lines",
         type: "line",
         source: "osm",
         "source-layer": "lines",
+        filter: ["in", "$type", "LineString", "MultiLineString"],
         paint: {
-          "line-color": "#00ff00",
           "line-width": 2,
+          "line-color": [
+            "case",
+            ["has", "waterway"],
+            "#0000ff", // blue if waterway property exists
+            ["has", "highway"],
+            "#a52a2a", // brown if highway property exists
+            ["has", "boundary"],
+            "#ffa500", // orange if boundary property exists
+            "rgba(0,0,0,0)", // transparent if none of the above
+          ],
         },
       },
       {
@@ -2106,11 +2104,33 @@ export const openStreetMapStyle = (style, tileSize) => {
         type: "circle",
         source: "osm",
         "source-layer": "points",
+        filter: ["==", "$type", "Point"],
         paint: {
-          "circle-radius": 5,
-          "circle-color": "#ff0000",
+          "circle-radius": 6,
+          "circle-color": "#ffffff",
+          "circle-stroke-color": "#000000",
+          "circle-stroke-width": 1,
         },
       },
+      // {
+      //   id: "osm-point-labels",
+      //   type: "symbol",
+      //   source: "osm",
+      //   "source-layer": "points",
+      //   filter: ["==", "$type", "Point"],
+      //   layout: {
+      //     "text-field": "{name}",
+      //     "text-font": ["Noto Sans Regular"],
+      //     "text-size": 12,
+      //     "text-offset": [0, 1.5],
+      //     "text-anchor": "top",
+      //   },
+      //   paint: {
+      //     "text-color": "#000000",
+      //     "text-halo-color": "#ffffff",
+      //     "text-halo-width": 1,
+      //   },
+      // },
     ],
   };
 
