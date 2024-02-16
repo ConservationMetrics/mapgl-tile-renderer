@@ -2125,7 +2125,7 @@ export const openStreetMapStyle = (style, tileSize) => {
         filter: ["==", "$type", "Point"],
         layout: {
           "text-field": "{name}",
-          "text-font": ["Noto Sans Regular"],
+          "text-font": ["Noto Sans Medium"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 8, 12, 16, 24],
           "text-offset": [0, 1.5],
           "text-anchor": "top",
