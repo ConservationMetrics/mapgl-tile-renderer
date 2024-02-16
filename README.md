@@ -52,6 +52,9 @@ If using an online style (`--style` with any online style name):
 *  `-a` or `--overlay`: (Optional) Provide a GeoJSON object for a feature layer to overlay on top of the online source
 *  `-k` or `--apikey`: (Optional) API key that may be required for your online source
 
+If using any of the imagery online styles ("bing", "esri", "google", "mapbox-satellite", or "planet"):
+* `-O` or `--openstreetmap`: (Optional) Overlay OSM vector data on top of your imagery. Currently mapped: hydrology, roads, and points of interest (with labels). This is a boolean variable; set to "true" if you want to use this.
+
 If your style is `mapbox`:
 * `-m` or `--mapboxstyle` in the format `<yourusername>/<styleid>`
 
@@ -76,7 +79,7 @@ node src/cli.js --style self --stylelocation tests/fixtures/alert/style-with-geo
 From an online source (Bing):
 
 ```bash
-node src/cli.js --style bing --bounds "-79,37,-77,38" -Z 8 --apikey YOUR_API_KEY_HERE
+node src/cli.js --style bing --bounds "-79,37,-77,38" --openstreetmap true -Z 8 --apikey YOUR_API_KEY_HERE
 ```
 
 From an online source (Mapbox):
@@ -88,7 +91,7 @@ node src/cli.js --style mapbox --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID 
 From an online source (Planet):
 
 ```bash
-node src/cli.js --style planet --monthyear 2013-12 --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8
+node src/cli.js --style planet --monthyear 2013-12 --openstreetmap true --apikey YOUR_API_KEY_HERE --bounds "-54,3,-53,4" -Z 8
 
 ```
 

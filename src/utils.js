@@ -45,6 +45,7 @@ export const validateInputOptions = (
   apiKey,
   mapboxStyle,
   monthYear,
+  openStreetMap,
   overlay,
   bounds,
   minZoom,
@@ -103,6 +104,20 @@ export const validateInputOptions = (
         "Mapbox style URL must be in a valid format: <yourusername>/<styleid>",
       );
     }
+  }
+
+  if (
+    openStreetMap &&
+    style !== "mapbox" &&
+    style !== "mapbox-satellite" &&
+    style !== "google" &&
+    style !== "planet" &&
+    style !== "esri" &&
+    style !== "bing"
+  ) {
+    raiseError(
+      "OpenStreetMap vector overlay can only be used with satellite imagery backgrounds. Please use 'mapbox-satellite', 'google', 'planet', 'esri', or 'bing' as your style.",
+    );
   }
 
   // Ensure overlay is a JSON object

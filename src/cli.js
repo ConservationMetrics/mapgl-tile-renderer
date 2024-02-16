@@ -22,8 +22,10 @@ program
     "(Optional) If using an online source: API key that may be required",
   )
   .option(
-    "-o, --openstreetmap",
-    "If using an online satellite imagery source: include OpenStreetMap data as an overlay",
+    "-O, --openstreetmap <boolean>",
+    "If using an online satellite imagery source: include OpenStreetMap data as an overlay. Set to 'true' or 'false' (default 'false')",
+    (value) => value.toLowerCase() === "true",
+    false,
   )
   .option(
     "-a, --overlay <type>",
@@ -87,6 +89,7 @@ validateInputOptions(
   apiKey,
   mapboxStyle,
   monthYear,
+  openStreetMap,
   overlay,
   bounds,
   minZoom,
