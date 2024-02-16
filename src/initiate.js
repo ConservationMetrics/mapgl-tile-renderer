@@ -3,7 +3,10 @@ import fs from "fs";
 import path from "path";
 
 import { generateStyle, generateMBTiles } from "./generate_resources.js";
-import { requestOnlineTiles } from "./download_resources.js";
+import {
+  requestOnlineTiles,
+  requestOpenStreetMapData,
+} from "./download_resources.js";
 
 const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
@@ -14,6 +17,7 @@ export const initiateRendering = async (
   apiKey,
   mapboxStyle,
   monthYear,
+  openStreetMap,
   overlay,
   bounds,
   minZoom,
@@ -79,6 +83,17 @@ export const initiateRendering = async (
       console.log(`Overlay GeoJSON saved to file!`);
     }
 
+    // Download OpenStreetMap data for the bounds from the Overpass API, and convert it to GeoJSON
+    if (openStreetMap) {
+      try {
+        await requestOpenStreetMapData(bounds, tempDir);
+      } catch (error) {
+        throw new Error(
+          `Error downloading OpenStreetMap data: ${error.message}`,
+        );
+      }
+    }
+
     // Set the tileSize of the online source. Mapbox Raster API provides 512px tiles.
     let tileSize;
     if (style === "mapbox" || style === "mapbox-satellite") {
@@ -90,7 +105,13 @@ export const initiateRendering = async (
     // Generate and save a stylesheet from the online source and overlay source.
     if (styleObject === null) {
       try {
-        styleObject = generateStyle(style, overlay, tileSize, tempDir);
+        styleObject = generateStyle(
+          style,
+          overlay,
+          openStreetMap,
+          tileSize,
+          tempDir,
+        );
         fs.writeFileSync(
           `${tempDir}/style.json`,
           JSON.stringify(styleObject, null, 2),

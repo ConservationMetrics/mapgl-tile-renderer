@@ -2046,3 +2046,73 @@ export const basicMapStyle = (style, tileSize) => {
 
   return styleObject;
 };
+
+export const openStreetMapStyle = (style, tileSize) => {
+  const styleObject = {
+    version: 8,
+    sources: {
+      [style]: {
+        type: "raster",
+        scheme: "xyz",
+        tilejson: "2.2.0",
+        tiles: ["sources/{z}/{x}/{y}.jpg"],
+        tileSize: tileSize,
+      },
+      osm: {
+        type: "geojson",
+        attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+        data: `openstreetmap.geojson`,
+      },
+    },
+    layers: [
+      {
+        id: "background",
+        type: "background",
+        paint: {
+          "background-color": "#f9f9f9",
+        },
+      },
+      {
+        id: style,
+        type: "raster",
+        source: style,
+        paint: {},
+      },
+      // TODO: Style OSM data
+      // For now, as a proof of concept, let's map all point as red,
+      // lines as green, and polygons as black
+      {
+        id: "osm-polygons",
+        type: "fill",
+        source: "osm",
+        "source-layer": "polygons",
+        paint: {
+          "fill-color": "#000000",
+          "fill-opacity": 0.5,
+        },
+      },
+      {
+        id: "osm-lines",
+        type: "line",
+        source: "osm",
+        "source-layer": "lines",
+        paint: {
+          "line-color": "#00ff00",
+          "line-width": 2,
+        },
+      },
+      {
+        id: "osm-points",
+        type: "circle",
+        source: "osm",
+        "source-layer": "points",
+        paint: {
+          "circle-radius": 5,
+          "circle-color": "#ff0000",
+        },
+      },
+    ],
+  };
+
+  return styleObject;
+};

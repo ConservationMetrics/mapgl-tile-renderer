@@ -22,6 +22,10 @@ program
     "(Optional) If using an online source: API key that may be required",
   )
   .option(
+    "-o, --openstreetmap",
+    "If using an online satellite imagery source: include OpenStreetMap data as an overlay",
+  )
+  .option(
     "-a, --overlay <type>",
     "(Optional) If using an online source: feature layer to overlay on top of the online source (must be a GeoJSON object)",
   )
@@ -67,6 +71,7 @@ const {
   apikey: apiKey,
   mapboxstyle: mapboxStyle,
   monthyear: monthYear,
+  openstreetmap: openStreetMap,
   overlay,
   bounds,
   minzoom: minZoom,
@@ -97,6 +102,7 @@ if (apiKey) console.log("API key: %j", apiKey);
 if (mapboxStyle) console.log("Mapbox style: %j", mapboxStyle);
 if (monthYear)
   console.log("Month and year (for Planet monthly basemaps): %j", monthYear);
+if (openStreetMap) console.log("OpenStreetMap overlay: %j", openStreetMap);
 if (overlay) console.log("Overlay: %j", overlay);
 console.log("Bounding box: %j", bounds);
 console.log("Min zoom: %j", minZoom);
@@ -112,6 +118,7 @@ const renderResult = await initiateRendering(
   apiKey,
   mapboxStyle,
   monthYear,
+  openStreetMap,
   overlay,
   bounds,
   minZoom,
