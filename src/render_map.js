@@ -39,6 +39,7 @@ export const renderTile = async (
   const map = new maplibre.Map({
     request: requestHandler(styleDir, sourceDir),
     ratio: 1,
+    mode: "tile",
   });
 
   map.load(styleObject);
