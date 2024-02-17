@@ -46,11 +46,7 @@ program
     "(Required) Maximum zoom level",
     parseInt,
   )
-  .option(
-    "-o, --outputdir <type>",
-    "Output directory (default 'outputs/')",
-    "outputs",
-  )
+  .option("-o, --outputdir <type>", "Output directory (default './')", "./")
   .option(
     "-f, --filename <type>",
     "Output filename (default 'output')",
