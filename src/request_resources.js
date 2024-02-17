@@ -247,7 +247,7 @@ const getLocalMBTileJSON = (sourceDir, url, callback) => {
   });
 };
 
-// Fetch a tile from a local mbtiles file.
+// Fetch a tile from a pmtiles file.
 const getPMTiles = async (sourceDir, url, callback) => {
   /*
    * @param {String} sourceDir - path containing pmtiles files.
@@ -471,6 +471,7 @@ export const requestHandler =
     }
   };
 
+// pmtiles class to allow reading from a local file
 class PMTilesFileSource {
   constructor(fd) {
     this.fd = fd;
@@ -489,12 +490,7 @@ class PMTilesFileSource {
   }
 }
 
-/**
- *
- * @param fd
- * @param buffer
- * @param offset
- */
+// reads specified bytes from a file
 async function readFileBytes(fd, buffer, offset) {
   return new Promise((resolve, reject) => {
     fs.read(fd, buffer, 0, buffer.length, offset, (err) => {
