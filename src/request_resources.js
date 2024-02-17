@@ -153,6 +153,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
 
   //Get PMtiles header information
   const header = await pmtiles.getHeader();
+  const ext = PMtilesTypes[header.tileType] === "pbf" ? ".pbf" : "";
 
   //Close the pmtiles file to prevent too many open files
   if (pmtiles.source.fd) {
@@ -160,29 +161,24 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   }
 
   //Add missing metadata from header
-  if (header.minLon && header.minLat && header.maxLon && header.maxLat) {
+  if (
+    header.minLon == 0 &&
+    header.minLat == 0 &&
+    header.maxLon == 0 &&
+    header.maxLat == 0
+  ) {
+    header["bounds"] = [-180, -85, 180, 85];
+  } else {
     header["bounds"] = [
       header.minLon,
       header.minLat,
       header.maxLon,
       header.maxLat,
     ];
-  } else {
-    header["bounds"] = [-180, -85, 180, 85];
   }
+  header["center"] = [header.centerLon, header.centerLat, header.centerZoom];
 
-  if (header.centerZoom) {
-    header["center"] = [header.centerLon, header.centerLat, header.centerZoom];
-  } else {
-    header["center"] = [
-      header.centerLon,
-      header.centerLat,
-      parseInt(header["maxZoom"]) / 2,
-    ];
-  }
-
-  const ext = PMtilesTypes[header.tileType] === "pbf" ? ".pbf" : "";
-
+  //Create TileJSON
   const tileJSON = {
     tilejson: "1.0.0",
     tiles: [`pmtiles://${service}/{z}/{x}/{y}${ext}`],
