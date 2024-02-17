@@ -69,6 +69,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: mbtiles-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-          path: '*.mbtiles'
+          path: './*.mbtiles'
           if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
           retention-days: ${{ github.event_name == 'release' && 90 || 15 }}
