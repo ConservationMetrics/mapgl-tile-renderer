@@ -21,15 +21,6 @@ const isOnlineURL = (url) => url.match(HTTP_REGEX);
 const resolveNamefromURL = (url) => url.split("://")[1].split("/")[0];
 const resolveNamefromPMtilesURL = (url) => url.split("pmtiles://")[1];
 
-const PMtilesTypes = {
-  0: "unknown",
-  1: "pbf",
-  2: "png",
-  3: "jpg",
-  4: "webp",
-  5: "avif",
-};
-
 // Resolve a URL of a local pmtiles file to a file path or return the url for a http(s) pmtiles file
 // Expected to follow this format "pmtiles://<service_name>/*" for local files or "pmtiles://https://foo.lan/filename.pmtiles/*" for a url file
 const resolvePMTilesURL = (sourceDir, url) => {
@@ -153,7 +144,9 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
 
   //Get PMtiles header information
   const header = await pmtiles.getHeader();
-  const ext = PMtilesTypes[header.tileType] === "pbf" ? ".pbf" : "";
+
+  // If the tileType is 1(mvt/pbf), add a .pbf extension
+  const ext = header.tileType === 1 ? ".pbf" : "";
 
   //Close the pmtiles file to prevent too many open files
   if (pmtiles.source.fd) {
