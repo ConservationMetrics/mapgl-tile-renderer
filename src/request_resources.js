@@ -39,8 +39,7 @@ const resolvePMTilesURL = (sourceDir, url) => {
    */
 
   const pmtilesFile = resolveNamefromPMtilesURL(url);
-  const isHttp = pmtilesFile.match(HTTP_REGEX);
-  if (isHttp) {
+  if (isOnlineURL(pmtilesFile)) {
     return pmtilesFile;
   } else {
     return path.format({
@@ -142,10 +141,9 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
    */
   const pmtilesFile = resolvePMTilesURL(sourceDir, url);
   const service = resolveNamefromPMtilesURL(url);
-  const isHttp = pmtilesFile.match(HTTP_REGEX);
 
   let pmtiles = undefined;
-  if (isHttp) {
+  if (isOnlineURL(pmtilesFile)) {
     const source = new FetchSource(pmtilesFile);
     pmtiles = new PMTiles(source);
   } else {
@@ -259,10 +257,9 @@ const getPMTiles = async (sourceDir, url, callback) => {
   const parts = url.split("/");
   parts.splice(-3);
   const pmtilesFile = resolvePMTilesURL(sourceDir, parts.join("/"));
-  const isHttp = pmtilesFile.match(HTTP_REGEX);
 
   let pmtiles = undefined;
-  if (isHttp) {
+  if (isOnlineURL(pmtilesFile)) {
     const source = new FetchSource(pmtilesFile);
     pmtiles = new PMTiles(source);
   } else {
