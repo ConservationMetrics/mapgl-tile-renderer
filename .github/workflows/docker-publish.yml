@@ -88,7 +88,7 @@ jobs:
           fi
       - name: Test run of Docker image with ${{ matrix.style }} style
         run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.build-and-deploy.outputs.tags }} ${{ matrix.command }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -f ${{ matrix.style }}-${{ needs.build-and-deploy.outputs.version }} ${{ env.MAPBOX_STYLE && ' --mapboxstyle ' || '' }} ${{ env.MAPBOX_STYLE || '' }} ${{ env.APIKEY && ' --apikey ' || '' }} ${{ env.APIKEY || '' }}
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.build-and-deploy.outputs.tags }} ${{ matrix.command }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -f ${{ matrix.style }}-${{ needs.build-and-deploy.outputs.version }} ${{ env.MAPBOX_STYLE && '--mapboxstyle' || '' }} ${{ env.MAPBOX_STYLE || '' }} ${{ env.APIKEY && '--apikey' || '' }} ${{ env.APIKEY || '' }}
       - name: Upload mbtiles artifacts
         uses: actions/upload-artifact@v2
         with:
