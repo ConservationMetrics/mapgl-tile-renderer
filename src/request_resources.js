@@ -48,8 +48,6 @@ const resolvePMTilesURL = (sourceDir, url) => {
       ext: ".mbtiles",
     });
   }
-
-  return resolveNamefromPMtilesURL(url);
 };
 
 // Resolve a URL of a local mbtiles file to a file path
