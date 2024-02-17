@@ -140,6 +140,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   const pmtilesFile = resolvePMTilesURL(sourceDir, url);
   const service = resolveNamefromPMtilesURL(url);
 
+  //Open the pmtiles file
   let pmtiles;
   if (isOnlineURL(pmtilesFile)) {
     const source = new FetchSource(pmtilesFile);
@@ -152,6 +153,11 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
 
   //Get PMtiles header information
   const header = await pmtiles.getHeader();
+
+  //Close the pmtiles file to prevent too many open files
+  if (pmtiles.source.fd) {
+    fs.closeSync(pmtiles.source.fd);
+  }
 
   //Add missing metadata from header
   if (header.minLon && header.minLat && header.maxLon && header.maxLat) {
@@ -247,6 +253,7 @@ const getPMTiles = async (sourceDir, url, callback) => {
     url.split("/").slice(0, -3).join("/"),
   );
 
+  //Open the pmtiles file
   let pmtiles;
   if (isOnlineURL(pmtilesFile)) {
     const source = new FetchSource(pmtilesFile);
@@ -257,7 +264,15 @@ const getPMTiles = async (sourceDir, url, callback) => {
     pmtiles = new PMTiles(source);
   }
 
+  //Get the requested tile
   let zxyTile = await pmtiles.getZxy(z, x, y);
+
+  //Close the pmtiles file to prevent too many open files
+  if (pmtiles.source.fd) {
+    fs.closeSync(pmtiles.source.fd);
+  }
+
+  //Return the tile data
   if (zxyTile && zxyTile.data) {
     const data = Buffer.from(zxyTile.data);
     callback(null, { data });
