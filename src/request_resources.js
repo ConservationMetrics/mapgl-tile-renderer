@@ -45,7 +45,7 @@ const resolvePMTilesURL = (sourceDir, url) => {
     return path.format({
       dir: sourceDir,
       name: resolveNamefromURL(url),
-      ext: ".mbtiles",
+      ext: ".pmtiles",
     });
   }
 };
