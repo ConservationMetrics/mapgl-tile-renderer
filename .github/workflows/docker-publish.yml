@@ -92,10 +92,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install mbview
-        run: npm install -g @mapbox/mbview
-      - name: Render MBTiles using mbview
-        run: MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_API_KEY }} mbview --port 9000 outputs/*.mbtiles &
+      - name: Install mbview and render tiles
+        run: |
+          npm install -g @mapbox/mbview
+          MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_API_KEY }} mbview --port 9000 outputs/*.mbtiles &
+          sleep 10
       - name: Screenshot rendered tile
         uses: swinton/screenshot-website@v1.x
         with:
