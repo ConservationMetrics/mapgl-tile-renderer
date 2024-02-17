@@ -40,7 +40,7 @@ const validOnlineStyles = [
 
 export const validateInputOptions = (
   style,
-  styleDir,
+  styleLocation,
   sourceDir,
   apiKey,
   mapboxStyle,
@@ -61,7 +61,7 @@ export const validateInputOptions = (
     );
   }
 
-  if (style === "self" && (!styleDir || !sourceDir)) {
+  if (style === "self" && (!styleLocation || !sourceDir)) {
     raiseError(
       "If you are providing your own style, you must provide a style location and a source directory",
     );

@@ -68,7 +68,7 @@ const options = program.opts();
 
 const {
   style,
-  stylelocation: styleDir,
+  stylelocation: styleLocation,
   stylesources: sourceDir,
   apikey: apiKey,
   mapboxstyle: mapboxStyle,
@@ -84,7 +84,7 @@ const {
 
 validateInputOptions(
   style,
-  styleDir,
+  styleLocation,
   sourceDir,
   apiKey,
   mapboxStyle,
@@ -99,7 +99,8 @@ validateInputOptions(
 console.log("\n\n-------- Rendering map tiles with Maplibre GL --------");
 
 console.log("Map style: %j", style);
-if (styleDir) console.log("Location of self-hosted stylesheet: %j", styleDir);
+if (styleLocation)
+  console.log("Location of self-hosted stylesheet: %j", styleLocation);
 if (sourceDir) console.log("Location of self-hosted sources: %j", sourceDir);
 if (apiKey) console.log("API key: %j", apiKey);
 if (mapboxStyle) console.log("Mapbox style: %j", mapboxStyle);
@@ -116,7 +117,7 @@ console.log("------------------------------------------------------");
 
 const renderResult = await initiateRendering(
   style,
-  styleDir,
+  styleLocation,
   sourceDir,
   apiKey,
   mapboxStyle,
