@@ -54,8 +54,8 @@ program
   )
   .option(
     "-o, --outputdir <type>",
-    "Output directory (default '/outputs')",
-    "/outputs",
+    "Output directory (default 'outputs/')",
+    "outputs",
   )
   .option(
     "-f, --filename <type>",
