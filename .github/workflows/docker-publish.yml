@@ -11,7 +11,7 @@ on:
     types: [created]
 
 jobs:
-  docker:
+  build-and-deploy:
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
@@ -50,39 +50,49 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: communityfirst/mapgl-tile-renderer
           short-description: 'Node.js MapGL renderer for styled raster tiles in MBTiles format.'
-  test:
-    needs: docker
+  test-docker-image:
+    needs: build-and-deploy
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        style: [self, bing, esri, mapbox, planet, protomaps]
         include:
           - style: self
             command: "--style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources"
+            apikey_secret: ""
           - style: bing
             command: "--style bing"
+            apikey_secret: ""
           - style: esri
             command: "--style esri --overlay '{\"type\": \"FeatureCollection\", \"name\": \"alert\", \"features\": [{\"geometry\": {\"coordinates\": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], \"geodesic\": false, \"type\": \"Polygon\"}, \"id\": \"-603946+34961\", \"properties\": {\"month_detec\": \"09\", \"year_detec\": \"2023\"}, \"type\": \"Feature\"}]}'"
+            apikey_secret: ""
           - style: mapbox
-            command: "--style mapbox --mapboxstyle mapbox-style-placeholder --apikey mapbox-api-key-placeholder"
+            command: "--style mapbox"
+            apikey_secret: MAPBOX_API_KEY
           - style: planet
-            command: "--style planet --monthyear 2013-12 --apikey planet-api-key-placeholder"
-          - style:
-            command: "--style protomaps --apikey protomaps-api-key-placeholder"
+            command: "--style planet --monthyear 2013-12"
+            apikey_secret: PLANET_API_KEY
+          - style: protomaps
+            command: "--style protomaps"
+            apikey_secret: PROTOMAPS_API_KEY
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Test run of Docker image with ${{ matrix.style }} style
-        env:
-          MAPBOX_STYLE: ${{ secrets.MAPBOX_STYLE }}
-          MAPBOX_API_KEY: ${{ secrets.MAPBOX_API_KEY }}
-          PLANET_API_KEY: ${{ secrets.PLANET_API_KEY }}
-          PROTOMAPS_API_KEY: ${{ secrets.PROTOMAPS_API_KEY }}"
+      - name: Set up environment variables for API key and Mapbox style
         run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.docker.outputs.tags }} ${{ matrix.command }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -f ${{ matrix.style }}-${{ needs.docker.outputs.version }}
+          if [ "${{ matrix.apikey_secret }}" != "" ]; then
+            echo "APIKEY=${{ secrets[matrix.apikey_secret] }}" >> $GITHUB_ENV
+          fi
+          if [ "${{ matrix.style }}" == "mapbox" ]; then
+            echo "MAPBOX_STYLE=${{ secrets.MAPBOX_STYLE }}" >> $GITHUB_ENV
+          fi
+      - name: Test run of Docker image with ${{ matrix.style }} style
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.build-and-deploy.outputs.tags }} ${{ matrix.command }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -f ${{ matrix.style }}-${{ needs.build-and-deploy.outputs.version }} ${{ env.MAPBOX_STYLE && ' --mapboxstyle ' || '' }} ${{ env.MAPBOX_STYLE || '' }} ${{ env.APIKEY && ' --apikey ' || '' }} ${{ env.APIKEY || '' }}
       - name: Upload mbtiles artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: mbtiles-${{ needs.docker.outputs.version }}
+          name: mbtiles-${{ needs.build-and-deploy.outputs.version }}
           path: outputs/*.mbtiles
           if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
           retention-days: ${{ github.event_name == 'release' && 90 || 15 }}
