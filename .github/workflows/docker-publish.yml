@@ -13,6 +13,10 @@ on:
 jobs:
   docker:
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      version: ${{ steps.meta.outputs.version }}
+      image: ${{ steps.build_and_push.outputs.digest }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +35,7 @@ jobs:
         with:
           images: communityfirst/mapgl-tile-renderer
       - name: Build and push Docker image
+        id: build_and_push
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -47,28 +52,50 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: communityfirst/mapgl-tile-renderer
           short-description: 'Node.js MapGL renderer for styled raster tiles in MBTiles format.'
-      - name: Test run of Docker image with self-provided style
+  test:
+    needs: docker
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - style: self
+            command: "--style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources"
+          - style: bing
+            command: "--style bing"
+          - style: esri
+            command: "--style esri --overlay '{\"type\": \"FeatureCollection\", \"name\": \"alert\", \"features\": [{\"geometry\": {\"coordinates\": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], \"geodesic\": false, \"type\": \"Polygon\"}, \"id\": \"-603946+34961\", \"properties\": {\"month_detec\": \"09\", \"year_detec\": \"2023\"}, \"type\": \"Feature\"}]}'"
+          - style: mapbox
+            command: "--style mapbox --mapboxstyle mapbox-style-placeholder --apikey mapbox-api-key-placeholder"
+          - style: planet
+            command: "--style planet --monthyear 2013-12 --apikey planet-api-key-placeholder"
+          - style:
+            command: "--style protomaps --apikey protomaps-api-key-placeholder"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: docker-image
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Load Docker image
+        run: docker load < docker-image/image.tar
+      - name: Test run of Docker image with ${{ matrix.style }} style
+        env:
+          MAPBOX_STYLE: ${{ secrets.MAPBOX_STYLE }}
+          MAPBOX_API_KEY: ${{ secrets.MAPBOX_API_KEY }}
+          PLANET_API_KEY: ${{ secrets.PLANET_API_KEY }}
+          PROTOMAPS_API_KEY: ${{ secrets.PROTOMAPS_API_KEY }}"
         run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -f self-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Test run of Docker image with Bing source
-        run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -f bing-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Test run of Docker image with Esri source and GeoJSON overlay
-        run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style esri --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}' -f esri-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Test run of Docker image with Mapbox source
-        run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style mapbox --mapboxstyle ${{ secrets.MAPBOX_STYLE }} --apikey ${{ secrets.MAPBOX_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -f mapbox-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Test run of Docker image with Planet source
-        run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style planet --monthyear 2023-12 --apikey ${{ secrets.PLANET_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5 -f planet-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-      - name: Test run of Docker image with Protomaps source
-        run: |
-          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style protomaps --apikey ${{ secrets.PROTOMAPS_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5 -f protomaps-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.docker.outputs.tags }} ${MATRIX_COMMAND} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -o ${{ matrix.style }}-${{ needs.docker.outputs.version }}
       - name: Upload mbtiles artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: mbtiles-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
+          name: mbtiles-${{ needs.docker.outputs.version }}
           path: outputs/*.mbtiles
           if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
           retention-days: ${{ github.event_name == 'release' && 90 || 15 }}
