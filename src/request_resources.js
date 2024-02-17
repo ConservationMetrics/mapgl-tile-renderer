@@ -30,8 +30,8 @@ const PMtilesTypes = {
   5: "avif",
 };
 
-// Resolve a URL of a local mbtiles file to a file path
-// Expected to follow this format "mbtiles://<service_name>/*"
+// Resolve a URL of a local pmtiles file to a file path or return the url for a http(s) pmtiles file
+// Expected to follow this format "pmtiles://<service_name>/*" for local files or "pmtiles://https://foo.lan/filename.pmtiles/*" for a url file
 const resolvePMTilesURL = (sourceDir, url) => {
   /*
    * @param {String} sourceDir - path containing mbtiles files
