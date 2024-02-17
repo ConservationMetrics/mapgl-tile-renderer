@@ -140,7 +140,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   const pmtilesFile = resolvePMTilesURL(sourceDir, url);
   const service = resolveNamefromPMtilesURL(url);
 
-  let pmtiles = undefined;
+  let pmtiles;
   if (isOnlineURL(pmtilesFile)) {
     const source = new FetchSource(pmtilesFile);
     pmtiles = new PMTiles(source);
@@ -252,11 +252,12 @@ const getPMTiles = async (sourceDir, url, callback) => {
    */
   const matches = url.match(PMTILES_REGEXP);
   const [z, x, y] = matches.slice(matches.length - 3, matches.length);
-  const parts = url.split("/");
-  parts.splice(-3);
-  const pmtilesFile = resolvePMTilesURL(sourceDir, parts.join("/"));
+  const pmtilesFile = resolvePMTilesURL(
+    sourceDir,
+    url.split("/").slice(0, -3).join("/"),
+  );
 
-  let pmtiles = undefined;
+  let pmtiles;
   if (isOnlineURL(pmtilesFile)) {
     const source = new FetchSource(pmtilesFile);
     pmtiles = new PMTiles(source);
