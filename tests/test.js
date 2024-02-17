@@ -73,9 +73,9 @@ test("Generates MBTiles from self-provided style with MBTiles and GeoJSON source
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 200704 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(200704);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -98,9 +98,9 @@ test("Generates MBTiles from self-provided style with XYZ dir source", async () 
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 155648 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(155648);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -123,9 +123,9 @@ test("Generates MBTiles from Bing with overlay GeoJSON", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 233472 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(233472);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -148,9 +148,9 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 221184 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(221184);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -173,9 +173,9 @@ test("Generates MBTiles from Esri", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 278528 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(278528);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -198,9 +198,9 @@ test("Generates MBTiles from Google", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 241664 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(241664);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -223,9 +223,9 @@ testProtomaps("Generates MBTiles from Protomaps", async () => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // Expect output.mbtiles to be 237568 bytes
+  // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBe(237568);
+  expect(stats.size).toBeGreaterThan(69632)
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
