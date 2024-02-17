@@ -166,7 +166,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
       header.maxLat,
     ];
   } else {
-    metadata["bounds"] = [-180, -85.05112877980659, 180, 85.0511287798066];
+    metadata["bounds"] = [-180, -85, 180, 85];
   }
 
   if (header.centerZoom) {
