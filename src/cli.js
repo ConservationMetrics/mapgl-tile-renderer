@@ -6,7 +6,7 @@ import { parseListToFloat, validateInputOptions } from "./utils.js";
 import { initiateRendering } from "./initiate.js";
 
 program
-  .name("mbgl-tile-render")
+  .name("mapgl-tile-renderer")
   .description("Render styled Maplibre GL map tiles")
   .requiredOption("-s ,--style <type>", `Specify the style source`)
   .option(
@@ -52,7 +52,11 @@ program
     "(Required) Maximum zoom level",
     parseInt,
   )
-  .option("-o, --outputdir <type>", "Output directory (default './')", "./")
+  .option(
+    "-o, --outputdir <type>",
+    "Output directory (default '/outputs')",
+    "/outputs",
+  )
   .option(
     "-f, --filename <type>",
     "Output filename (default 'output')",

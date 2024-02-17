@@ -5,5 +5,4 @@ Dockerfile
 .dockerignore
 .history
  *.mbtiles
- *.pmtiles
  .env.test

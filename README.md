@@ -64,7 +64,7 @@ Common options:
 * `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 * `-Z` or `--maxzoom`: Maximum zoom level (required)
 * `-z` or `--minzoom`: Minimum zoom level (optional, 0 if not provided)
-* `-o` or `--outputdir`: Output directory (optional, "./" if not provided)
+* `-o` or `--outputdir`: Output directory (optional, "outputs/" if not provided)
 * `-f` or `--filename`: Name of the output MBTiles file (optional, "output" if not provided)
 
 ## CLI example usage
@@ -118,14 +118,14 @@ In the future, we may decide to extend this tool to support creating raster tile
 To run the tool with Docker,  run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app communityfirst/mapgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs communityfirst/mapgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 This automatically pulls the latest image from Docker hub. The `docker run` command is used to execute the mapgl-tile-renderer tool with a set of options that define how the map tiles will be rendered and saved. Here's a breakdown of the command and its variables:
 
 - `-it`: This option ensures that the Docker container runs in interactive mode, allowing you to interact with the command-line interface.
 - `--rm`: This option automatically removes the container when it exits, which helps to clean up and save disk space.
-- `-v "$(pwd)":/app`: This mounts the current working directory (`$(pwd)`) to the `/app` directory inside the container, allowing the container to write the output files to your local file system.
+- `-v "$(pwd)":/app/outputs`: This mounts the current working directory (`$(pwd)`) to the `/app/outputs` directory inside the container, allowing the container to write the output files to your local file system.
 - `communityfirst/mapgl-tile-renderer`: This is the name of the Docker image that contains the mapgl-tile-renderer tool.
 Make sure to replace the placeholder values with your actual information before running the command.
 
@@ -139,7 +139,7 @@ docker build -t mapgl-tile-renderer .
 Then run:
 
 ```bash
-docker run -it --rm -v "$(pwd)":/app mapgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
+docker run -it --rm -v "$(pwd)":/app/outputs/ mapgl-tile-renderer --style "mapbox" --bounds "-79,37,-77,38" -Z 8 --mapboxstyle YOUR_USERNAME/YOUR_MAPBOX_STYLE_ID --apikey YOUR_API_KEY_HERE
 ```
 
 ## Azure Storage Queue example usage
