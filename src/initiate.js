@@ -12,7 +12,7 @@ const MBTILES_REGEXP = /mbtiles:\/\/(\S+?)(?=[/"]+)/gi;
 
 export const initiateRendering = async (
   style,
-  styleDir,
+  styleLocation,
   sourceDir,
   apiKey,
   mapboxStyle,
@@ -37,12 +37,14 @@ export const initiateRendering = async (
       throw new Error(`Error creating temp directory: ${error.message}`);
     }
   }
-  let stylePath = null;
+
   let styleObject = null;
+  let styleDir = null;
 
   // If the style is self-hosted, let's read the style from the file.
   if (style === "self") {
-    stylePath = path.resolve(process.cwd(), styleDir);
+    const stylePath = path.resolve(process.cwd(), styleLocation);
+    styleDir = path.dirname(stylePath);
     try {
       styleObject = JSON.parse(fs.readFileSync(stylePath, "utf-8"));
     } catch (error) {
