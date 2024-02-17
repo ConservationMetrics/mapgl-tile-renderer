@@ -150,50 +150,40 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
     pmtiles = new PMTiles(source);
   }
 
+  //Get PMtiles header information
   const header = await pmtiles.getHeader();
-  const metadata = await pmtiles.getMetadata();
 
   //Add missing metadata from header
-  metadata["format"] = PMtilesTypes[header.tileType];
-  metadata["minzoom"] = header.minZoom;
-  metadata["maxzoom"] = header.maxZoom;
-
   if (header.minLon && header.minLat && header.maxLon && header.maxLat) {
-    metadata["bounds"] = [
+    header["bounds"] = [
       header.minLon,
       header.minLat,
       header.maxLon,
       header.maxLat,
     ];
   } else {
-    metadata["bounds"] = [-180, -85, 180, 85];
+    header["bounds"] = [-180, -85, 180, 85];
   }
 
   if (header.centerZoom) {
-    metadata["center"] = [
-      header.centerLon,
-      header.centerLat,
-      header.centerZoom,
-    ];
+    header["center"] = [header.centerLon, header.centerLat, header.centerZoom];
   } else {
-    metadata["center"] = [
+    header["center"] = [
       header.centerLon,
       header.centerLat,
-      parseInt(metadata["maxzoom"]) / 2,
+      parseInt(header["maxZoom"]) / 2,
     ];
   }
 
-  const { minzoom, maxzoom, center, bounds, format } = metadata;
-
-  const ext = format === "pbf" ? ".pbf" : "";
+  const ext = PMtilesTypes[header.tileType] === "pbf" ? ".pbf" : "";
 
   const tileJSON = {
     tilejson: "1.0.0",
     tiles: [`pmtiles://${service}/{z}/{x}/{y}${ext}`],
-    minzoom,
-    maxzoom,
-    center,
-    bounds,
+    minzoom: header.minZoom,
+    maxzoom: header.maxZoom,
+    center: header.center,
+    bounds: header.bounds,
   };
 
   callback(null, { data: Buffer.from(JSON.stringify(tileJSON)) });
