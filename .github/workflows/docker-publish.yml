@@ -89,10 +89,20 @@ jobs:
       - name: Test run of Docker image with ${{ matrix.style }} style
         run: |
           docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ needs.build-and-deploy.outputs.tags }} ${{ matrix.command }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z ${{ matrix.style == 'planet' && '5' || '10' }} -f ${{ matrix.style }}-${{ needs.build-and-deploy.outputs.version }} ${{ env.MAPBOX_STYLE && '--mapboxstyle' || '' }} ${{ env.MAPBOX_STYLE || '' }} ${{ env.APIKEY && '--apikey' || '' }} ${{ env.APIKEY || '' }}
+      - name: Install mbview
+        run: npm install -g @mapbox/mbview
+      - name: Render MBTiles using mbview
+        run: MAPBOX_ACCESS_TOKEN=${{ secrets.MAPBOX_API_KEY }} mbview --port 9000 outputs/*.mbtiles &
+      - name: Screenshot rendered tile
+        uses: swinton/screenshot-website@v1.x
+        with:
+          source: http://localhost:9000
+          destination: ouputs/${{ matrix.style }}-${{ needs.build-and-deploy.outputs.version }}.png
+          full-page: true
       - name: Upload mbtiles artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: mbtiles-${{ needs.build-and-deploy.outputs.version }}
-          path: outputs/*.mbtiles
+          path: outputs/*.{mbtiles,png}
           if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
           retention-days: ${{ github.event_name == 'release' && 90 || 15 }}
