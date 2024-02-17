@@ -25,7 +25,7 @@ const PMtilesTypes = {
   0: "unknown",
   1: "pbf",
   2: "png",
-  3: "jpeg",
+  3: "jpg",
   4: "webp",
   5: "avif",
 };
