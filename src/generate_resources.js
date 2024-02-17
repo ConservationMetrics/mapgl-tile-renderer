@@ -216,6 +216,9 @@ export const generateMBTiles = async (
   }
 
   // Move the generated MBTiles file to the output directory
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
   const outputPath = `${outputDir}/${outputFilename}.mbtiles`;
 
   try {
