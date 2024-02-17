@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import pLimit from "p-limit";
+import osmtogeojson from "osmtogeojson";
+import xmldom from "xmldom";
 
 import {
   convertCoordinatesToTiles,
@@ -61,7 +63,7 @@ const downloadOnlineTiles = async (
   }
 
   let sourceUrl, sourceAttribution, sourceName, sourceFormat;
-  console.log(style);
+
   switch (style) {
     case "google":
       sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
@@ -295,4 +297,65 @@ export const requestOnlineTiles = (
       reject(error);
     }
   });
+};
+
+// Handler for requesting OSM data from Overpass API and converting it to GeoJSON
+export const requestOpenStreetMapData = async (bounds, tempDir) => {
+  const overpassUrl = `https://overpass-api.de/api/map?bbox=${bounds.join(
+    ",",
+  )}`;
+
+  const outputDir = `${tempDir}/sources`;
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
+  console.log(`Downloading OpenStreetMap data from Overpass API...`);
+
+  const osmFile = `${outputDir}/data.osm`;
+
+  if (!fs.existsSync(osmFile)) {
+    try {
+      const response = await axios.get(overpassUrl);
+      if (response.status === 200) {
+        fs.writeFileSync(osmFile, response.data);
+      } else {
+        throw new Error(
+          `Failed to download OpenStreetMap data: ${overpassUrl} (Status code: ${response.status})`,
+        );
+      }
+    } catch (error) {
+      throw new Error(`Error downloading OpenStreetMap data: ${overpassUrl}`);
+    }
+  } else {
+    console.log(`OpenStreetMap data already exists: ${osmFile}`);
+  }
+
+  console.log(`OpenStreetMap data downloaded!`);
+
+  // Convert OSM XML data to OSM JSON using xmldom
+  // In the future, we might want to use a more robust OSM parser like
+  // https://github.com/tyrasd/osmtogeojson/blob/gh-pages/parse_osmxml.js
+  const parser = new xmldom.DOMParser();
+  const osmData = parser.parseFromString(
+    fs.readFileSync(`${outputDir}/data.osm`, "utf-8"),
+  );
+
+  // Convert OSM JSON to GeoJSON
+  const geojson = osmtogeojson(osmData);
+
+  // Filter out lines and points only
+  geojson.features = geojson.features.filter(
+    (feature) =>
+      feature.geometry.type === "LineString" ||
+      feature.geometry.type === "Point",
+  );
+
+  fs.writeFileSync(
+    `${outputDir}/openstreetmap.geojson`,
+    JSON.stringify(geojson, null, 4),
+  );
+  console.log(
+    `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
+  );
 };

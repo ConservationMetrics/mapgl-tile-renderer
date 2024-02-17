@@ -2046,3 +2046,98 @@ export const basicMapStyle = (style, tileSize) => {
 
   return styleObject;
 };
+
+export const openStreetMapStyle = (style, tileSize) => {
+  const styleObject = {
+    version: 8,
+    sources: {
+      [style]: {
+        type: "raster",
+        scheme: "xyz",
+        tilejson: "2.2.0",
+        tiles: ["sources/{z}/{x}/{y}.jpg"],
+        tileSize: tileSize,
+      },
+      osm: {
+        type: "geojson",
+        attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+        data: `openstreetmap.geojson`,
+      },
+    },
+    glyphs:
+      "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
+    layers: [
+      {
+        id: "background",
+        type: "background",
+        paint: {
+          "background-color": "#f9f9f9",
+        },
+      },
+      {
+        id: style,
+        type: "raster",
+        source: style,
+        paint: {},
+      },
+      // Style OSM data
+      {
+        id: "osm-lines",
+        type: "line",
+        source: "osm",
+        "source-layer": "lines",
+        minzoom: 8,
+        filter: ["in", "$type", "LineString", "MultiLineString"],
+        paint: {
+          "line-width": 2,
+          "line-color": [
+            "case",
+            ["has", "waterway"],
+            "#0000ff", // blue if waterway property exists
+            ["has", "highway"],
+            "#a52a2a", // brown if highway property exists
+            ["has", "boundary"],
+            "#ffa500", // orange if boundary property exists
+            "rgba(0,0,0,0)", // transparent if none of the above
+          ],
+        },
+      },
+      {
+        id: "osm-points",
+        type: "circle",
+        source: "osm",
+        "source-layer": "points",
+        minzoom: 8,
+        filter: ["==", "$type", "Point"],
+        paint: {
+          "circle-radius": 6,
+          "circle-color": "#ffffff",
+          "circle-stroke-color": "#000000",
+          "circle-stroke-width": 1,
+        },
+      },
+      {
+        id: "osm-point-labels",
+        type: "symbol",
+        source: "osm",
+        "source-layer": "points",
+        minzoom: 12,
+        filter: ["==", "$type", "Point"],
+        layout: {
+          "text-field": "{name}",
+          "text-font": ["Noto Sans Medium"],
+          "text-size": ["interpolate", ["linear"], ["zoom"], 8, 12, 16, 24],
+          "text-offset": [0, 1.5],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#000000",
+          "text-halo-color": "#ffffff",
+          "text-halo-width": 1,
+        },
+      },
+    ],
+  };
+
+  return styleObject;
+};

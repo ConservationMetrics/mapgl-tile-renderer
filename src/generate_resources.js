@@ -8,14 +8,26 @@ import {
   validateMinMaxValues,
 } from "./tile_calculations.js";
 import { renderTile } from "./render_map.js";
-import { basicMapStyle, protomapsStyle } from "./map_styles.js";
+import {
+  basicMapStyle,
+  openStreetMapStyle,
+  protomapsStyle,
+} from "./map_styles.js";
 
 // Generate a MapGL style JSON object from a remote source
 // and an additional source.
-export const generateStyle = (style, overlay, tileSize, tempDir) => {
+export const generateStyle = (
+  style,
+  overlay,
+  openStreetMap,
+  tileSize,
+  tempDir,
+) => {
   let styleObject;
   if (style === "protomaps") {
     styleObject = protomapsStyle(tempDir);
+  } else if (openStreetMap) {
+    styleObject = openStreetMapStyle(style, tileSize);
   } else {
     styleObject = basicMapStyle(style, tileSize);
   }

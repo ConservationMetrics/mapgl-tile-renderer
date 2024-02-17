@@ -19,9 +19,11 @@
     "axios": "^1.6.5",
     "commander": "^11.1.0",
     "fs": "^0.0.1-security",
+    "osmtogeojson": "^3.0.0-beta.5",
     "p-limit": "^5.0.0",
     "path": "^0.12.7",
-    "sharp": "^0.33.2"
+    "sharp": "^0.33.2",
+    "xmldom": "^0.6.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.9",
