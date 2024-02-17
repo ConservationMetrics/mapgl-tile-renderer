@@ -21,6 +21,15 @@ const isOnlineURL = (url) => url.match(HTTP_REGEX);
 const resolveNamefromURL = (url) => url.split("://")[1].split("/")[0];
 const resolveNamefromPMtilesURL = (url) => url.split("pmtiles://")[1];
 
+const PMtilesTypes = {
+  0: "unknown",
+  1: "pbf",
+  2: "png",
+  3: "jpeg",
+  4: "webp",
+  5: "avif",
+};
+
 // Resolve a URL of a local mbtiles file to a file path
 // Expected to follow this format "mbtiles://<service_name>/*"
 const resolvePMTilesURL = (sourceDir, url) => {
@@ -149,7 +158,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   const metadata = await pmtiles.getMetadata();
 
   //Add missing metadata from header
-  metadata["format"] = getPmtilesTileType(header.tileType).type;
+  metadata["format"] = PMtilesTypes[header.tileType];
   metadata["minzoom"] = header.minZoom;
   metadata["maxzoom"] = header.maxZoom;
 
@@ -495,35 +504,4 @@ async function readFileBytes(fd, buffer, offset) {
       resolve();
     });
   });
-}
-
-function getPmtilesTileType(typenum) {
-  let head = {};
-  let tileType;
-  switch (typenum) {
-    case 0:
-      tileType = "Unknown";
-      break;
-    case 1:
-      tileType = "pbf";
-      head["Content-Type"] = "application/x-protobuf";
-      break;
-    case 2:
-      tileType = "png";
-      head["Content-Type"] = "image/png";
-      break;
-    case 3:
-      tileType = "jpeg";
-      head["Content-Type"] = "image/jpeg";
-      break;
-    case 4:
-      tileType = "webp";
-      head["Content-Type"] = "image/webp";
-      break;
-    case 5:
-      tileType = "avif";
-      head["Content-Type"] = "image/avif";
-      break;
-  }
-  return { type: tileType, header: head };
 }
