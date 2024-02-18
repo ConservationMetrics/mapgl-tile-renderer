@@ -63,7 +63,7 @@ const getLocalSpriteImage = (styleDir, url, callback) => {
       callback(err);
       return null;
     }
-    callback(null, data);
+    callback(null, { data });
     return null;
   });
 };
