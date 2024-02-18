@@ -43,6 +43,11 @@
       "pre-commit": "lint-staged"
     }
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(pmtiles)/)"
+    ]
+  },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx,json,css}": [
       "prettier --write ./src",
