@@ -152,7 +152,7 @@ test("Generates MBTiles from self-provided style with MBTiles source that uses f
 test("Generates MBTiles from self-provided style with PMTiles source that uses font glyphs", async () => {
   await initiateRendering(
     "self",
-    "./tests/fixtures/alert/style-with-tiles-fonts.json",
+    "./tests/fixtures/alert/style-with-pmtiles-fonts.json",
     "./tests/fixtures/alert/sources",
     null,
     null,
