@@ -111,7 +111,7 @@ export const generateMBTiles = async (
   outputFilename,
 ) => {
   const tempPath = `${tempDir}/${outputFilename}.mbtiles`;
-  console.log(`Generating MBTiles file: ${tempPath}`);
+  console.log(`Generating MBTiles file...`);
 
   let numberOfTiles = 0;
   let fileSize = 0;
@@ -248,8 +248,8 @@ export const generateMBTiles = async (
   // Return with success status
   return {
     errorMessage: null,
-    filename: `${outputFilename}.mbtiles`,
-    filesize: fileSize,
+    fileLocation: outputPath,
+    fileSize: fileSize,
     numberOfTiles,
   };
 };
