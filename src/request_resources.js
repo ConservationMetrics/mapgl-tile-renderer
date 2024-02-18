@@ -132,15 +132,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   const service = resolveNamefromPMtilesURL(url);
 
   //Open the pmtiles file
-  let pmtiles;
-  if (isOnlineURL(pmtilesFile)) {
-    const source = new FetchSource(pmtilesFile);
-    pmtiles = new PMTiles(source);
-  } else {
-    const fd = fs.openSync(pmtilesFile, "r");
-    const source = new PMTilesFileSource(fd);
-    pmtiles = new PMTiles(source);
-  }
+  const pmtiles = openPMtiles(pmtilesFile);
 
   //Get PMtiles header information
   const header = await pmtiles.getHeader();
@@ -149,9 +141,7 @@ const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   const ext = header.tileType === 1 ? ".pbf" : "";
 
   //Close the pmtiles file to prevent too many open files
-  if (pmtiles.source.fd) {
-    fs.closeSync(pmtiles.source.fd);
-  }
+  closePMtiles(pmtiles);
 
   //Add missing metadata from header
   if (
@@ -243,23 +233,13 @@ const getPMTiles = async (sourceDir, url, callback) => {
   );
 
   //Open the pmtiles file
-  let pmtiles;
-  if (isOnlineURL(pmtilesFile)) {
-    const source = new FetchSource(pmtilesFile);
-    pmtiles = new PMTiles(source);
-  } else {
-    const fd = fs.openSync(pmtilesFile, "r");
-    const source = new PMTilesFileSource(fd);
-    pmtiles = new PMTiles(source);
-  }
+  const pmtiles = openPMtiles(pmtilesFile);
 
   //Get the requested tile
   let zxyTile = await pmtiles.getZxy(z, x, y);
 
   //Close the pmtiles file to prevent too many open files
-  if (pmtiles.source.fd) {
-    fs.closeSync(pmtiles.source.fd);
-  }
+  closePMtiles(pmtiles);
 
   //Return the tile data
   if (zxyTile && zxyTile.data) {
@@ -490,4 +470,23 @@ async function readFileBytes(fd, buffer, offset) {
       resolve();
     });
   });
+}
+
+function openPMtiles(pmtilesFile) {
+  let pmtiles;
+  if (isOnlineURL(pmtilesFile)) {
+    const source = new FetchSource(pmtilesFile);
+    pmtiles = new PMTiles(source);
+  } else {
+    const fd = fs.openSync(pmtilesFile, "r");
+    const source = new PMTilesFileSource(fd);
+    pmtiles = new PMTiles(source);
+  }
+  return pmtiles;
+}
+
+function closePMtiles(pmtiles) {
+  if (pmtiles.source.fd) {
+    fs.closeSync(pmtiles.source.fd);
+  }
 }
