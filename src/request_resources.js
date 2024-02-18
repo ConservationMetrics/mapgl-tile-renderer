@@ -25,7 +25,7 @@ const resolveNamefromPMtilesURL = (url) => url.split("pmtiles://")[1];
 // Expected to follow this format "pmtiles://<service_name>/*" for local files or "pmtiles://https://foo.lan/filename.pmtiles/*" for a url file
 const resolvePMTilesURL = (sourceDir, url) => {
   /*
-   * @param {String} sourceDir - path containing mbtiles files
+   * @param {String} sourceDir - path containing pmtiles files
    * @param {String} url - url of a data source in style.json file.
    */
 
@@ -124,7 +124,7 @@ const getLocalGlyph = (styleDir, url, callback) => {
 // Given a URL to a pmtiles file, get the TileJSON for that to load correct tiles.
 const getPMTilesTileJSON = async (sourceDir, url, callback) => {
   /*
-   * @param {String} sourceDir - path containing mbtiles files.
+   * @param {String} sourceDir - path containing pmtiles files.
    * @param {String} url - url of a data source in style.json file.
    * @param {function} callback - function to call with (err, {data}).
    */
@@ -472,6 +472,7 @@ async function readFileBytes(fd, buffer, offset) {
   });
 }
 
+// open the pmtiles file or url
 function openPMtiles(pmtilesFile) {
   let pmtiles;
   if (isOnlineURL(pmtilesFile)) {
@@ -485,6 +486,7 @@ function openPMtiles(pmtilesFile) {
   return pmtiles;
 }
 
+// close the pmtiles file
 function closePMtiles(pmtiles) {
   if (pmtiles.source.fd) {
     fs.closeSync(pmtiles.source.fd);
