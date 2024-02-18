@@ -149,6 +149,32 @@ test("Generates MBTiles from self-provided style with MBTiles source that uses f
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
+test("Generates MBTiles from self-provided style with PMTiles source that uses font glyphs", async () => {
+  await initiateRendering(
+    "self",
+    "./tests/fixtures/alert/style-with-tiles-fonts.json",
+    "./tests/fixtures/alert/sources",
+    null,
+    null,
+    null,
+    null,
+    null,
+    [-54.28772, 3.1146, -54.0363, 3.35025],
+    0,
+    5,
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.mbtiles to be greater than 69632 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBeGreaterThan(69632)
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
 test("Generates MBTiles from self-provided style with XYZ dir source", async () => {
   await initiateRendering(
     "self",
