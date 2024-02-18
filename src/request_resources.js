@@ -71,12 +71,6 @@ const getLocalSpriteImage = (styleDir, url, callback) => {
 // Given a URL to a local sprite JSON, get the JSON data.
 const getLocalSpriteJSON = (styleDir, url, callback) => {
   const spriteJsonPath = path.join(styleDir, `${url}`);
-
-  // TODO: currently, any styles with sprites defined will
-  // fail to render. The callback in this function does
-  // correctly return a buffer of the sprite JSON, but
-  // Maplibre just hangs when trying to render it.
-  // No errors are thrown, and the process never exits.
   fs.readFile(spriteJsonPath, (err, data) => {
     if (err) {
       callback(err);
