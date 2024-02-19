@@ -64,6 +64,8 @@ Common options:
 * `-b` or `--bounds`: Bounding box in WSEN format, comma separated (required)
 * `-Z` or `--maxzoom`: Maximum zoom level (required)
 * `-z` or `--minzoom`: Minimum zoom level (optional, 0 if not provided)
+* `-r` or `--ratio`: Output pixel ratio (optional, 1 if not provided)
+* `-t` or `--tiletype`: Output Tile type (jpg, png, or webp) (optional, jpg if not provided)
 * `-o` or `--outputdir`: Output directory (optional, "outputs/" if not provided)
 * `-f` or `--filename`: Name of the output MBTiles file (optional, "output" if not provided)
 
