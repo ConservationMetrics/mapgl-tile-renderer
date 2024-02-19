@@ -67,28 +67,9 @@ export const generateStyle = (
 
 // Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
 export const generateImage = async (buffer, width, height, ratio, tiletype) => {
-  // Un-premultiply pixel values
-  // Mapbox GL buffer contains premultiplied values, which are not handled
-  // correctly by sharp https://github.com/mapbox/mapbox-gl-native/issues/9124
-  // since we are dealing with 8-bit RGBA values, normalize alpha onto 0-255
-  // scale and divide it out of RGB values
-
-  for (let i = 0; i < buffer.length; i += 4) {
-    const alpha = buffer[i + 3];
-    const norm = alpha / 255;
-    if (alpha === 0) {
-      buffer[i] = 0;
-      buffer[i + 1] = 0;
-      buffer[i + 2] = 0;
-    } else {
-      buffer[i] /= norm;
-      buffer[i + 1] = buffer[i + 1] / norm;
-      buffer[i + 2] = buffer[i + 2] / norm;
-    }
-  }
-
   const image = sharp(buffer, {
     raw: {
+      premultiplied: true,
       width: width * ratio,
       height: height * ratio,
       channels: 4,
