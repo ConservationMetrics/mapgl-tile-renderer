@@ -66,7 +66,7 @@ export const generateStyle = (
 };
 
 // Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
-export const generateJPG = async (buffer, width, height, ratio) => {
+export const generateImage = async (buffer, width, height, ratio, tiletype) => {
   // Un-premultiply pixel values
   // Mapbox GL buffer contains premultiplied values, which are not handled
   // correctly by sharp https://github.com/mapbox/mapbox-gl-native/issues/9124
@@ -87,15 +87,22 @@ export const generateJPG = async (buffer, width, height, ratio) => {
     }
   }
 
-  return sharp(buffer, {
+  const image = sharp(buffer, {
     raw: {
       width: width * ratio,
       height: height * ratio,
       channels: 4,
     },
-  })
-    .jpeg()
-    .toBuffer();
+  });
+
+  switch (tiletype) {
+    case "jpg":
+      return image.jpeg().toBuffer();
+    case "png":
+      return image.png().toBuffer();
+    case "webp":
+      return image.webp().toBuffer();
+  }
 };
 
 // Generate MBTiles file from a given style, bounds, and zoom range
@@ -104,11 +111,13 @@ export const generateMBTiles = async (
   styleDir,
   sourceDir,
   bounds,
+  ratio,
   minZoom,
   maxZoom,
   tempDir,
   outputDir,
   outputFilename,
+  tiletype,
 ) => {
   const tempPath = `${tempDir}/${outputFilename}.mbtiles`;
   console.log(`Generating MBTiles file: ${tempPath}`);
@@ -183,6 +192,8 @@ export const generateMBTiles = async (
               styleObject,
               styleDir,
               sourceDir,
+              ratio,
+              tiletype,
               zoom,
               x,
               y,
