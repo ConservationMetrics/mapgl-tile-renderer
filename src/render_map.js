@@ -59,10 +59,10 @@ export const renderTile = async (
 
   const image = await generateImage(
     buffer,
+    tiletype,
     tileSize,
     tileSize,
     ratio,
-    tiletype,
   );
 
   return image;

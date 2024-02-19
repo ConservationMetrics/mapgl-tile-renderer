@@ -66,7 +66,7 @@ export const generateStyle = (
 };
 
 // Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
-export const generateImage = async (buffer, width, height, ratio, tiletype) => {
+export const generateImage = async (buffer, tiletype, width, height, ratio) => {
   const image = sharp(buffer, {
     raw: {
       premultiplied: true,
