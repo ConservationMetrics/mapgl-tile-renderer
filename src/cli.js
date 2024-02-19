@@ -78,8 +78,6 @@ program
 program.parse(process.argv);
 const options = program.opts();
 
-console.log(options);
-
 const {
   style,
   stylelocation: styleLocation,
