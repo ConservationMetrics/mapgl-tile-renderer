@@ -20,10 +20,12 @@ export const initiateRendering = async (
   openStreetMap,
   overlay,
   bounds,
+  ratio,
   minZoom,
   maxZoom,
   outputDir,
   outputFilename,
+  tiletype,
 ) => {
   console.log("Initiating rendering...");
 
@@ -161,11 +163,13 @@ export const initiateRendering = async (
     styleDir,
     sourceDir,
     bounds,
+    ratio,
     minZoom,
     maxZoom,
     tempDir,
     outputDir,
     outputFilename,
+    tiletype,
   );
 
   console.log(

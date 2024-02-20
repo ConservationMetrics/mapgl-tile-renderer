@@ -2,7 +2,7 @@ import maplibre from "@maplibre/maplibre-gl-native";
 
 import { calculateNormalizedCenterCoords } from "./tile_calculations.js";
 import { requestHandler } from "./request_resources.js";
-import { generateJPG } from "./generate_resources.js";
+import { generateImage } from "./generate_resources.js";
 
 // Render the map, returning a Promise.
 const renderMap = (map, options) => {
@@ -23,6 +23,8 @@ export const renderTile = async (
   styleObject,
   styleDir,
   sourceDir,
+  ratio,
+  tiletype,
   zoom,
   x,
   y,
@@ -38,7 +40,8 @@ export const renderTile = async (
   // MapLibre native documentation: https://github.com/maplibre/maplibre-native/blob/main/platform/node/README.md
   const map = new maplibre.Map({
     request: requestHandler(styleDir, sourceDir),
-    ratio: 1,
+    ratio: ratio,
+    mode: "tile",
   });
 
   map.load(styleObject);
@@ -54,7 +57,13 @@ export const renderTile = async (
   // Clean up the map instance to free resources
   map.release();
 
-  const jpeg = await generateJPG(buffer, tileSize, tileSize, 1);
+  const image = await generateImage(
+    buffer,
+    tiletype,
+    tileSize,
+    tileSize,
+    ratio,
+  );
 
-  return jpeg;
+  return image;
 };
