@@ -54,16 +54,6 @@ program
   )
   .option("-r, --ratio <number>", "Map pixel ratio (default 1)", Math.floor, 1)
   .option(
-    "-o, --outputdir <type>",
-    "Output directory (default 'outputs/')",
-    "outputs",
-  )
-  .option(
-    "-f, --filename <type>",
-    "Output filename (default 'output')",
-    "output",
-  )
-  .option(
     "-t, --tiletype <type>",
     "Tile type (jpg, png, or webp)",
     (type) => {
@@ -73,6 +63,16 @@ program
       return type;
     },
     "jpg",
+  )
+  .option(
+    "-o, --outputdir <type>",
+    "Output directory (default 'outputs/')",
+    "outputs",
+  )
+  .option(
+    "-f, --filename <type>",
+    "Output filename (default 'output')",
+    "output",
   );
 
 program.parse(process.argv);
@@ -88,12 +88,12 @@ const {
   openstreetmap: openStreetMap,
   overlay,
   bounds,
-  ratio,
   minzoom: minZoom,
   maxzoom: maxZoom,
+  ratio,
+  tiletype,
   outputdir: outputDir,
   filename: outputFilename,
-  tiletype,
 } = options;
 
 validateInputOptions(
@@ -106,10 +106,8 @@ validateInputOptions(
   openStreetMap,
   overlay,
   bounds,
-  ratio,
   minZoom,
   maxZoom,
-  tiletype,
 );
 
 console.log("\n\n-------- Rendering map tiles with Maplibre GL --------");
@@ -128,9 +126,9 @@ console.log("Bounding box: %j", bounds);
 console.log("Min zoom: %j", minZoom);
 console.log("Max zoom: %j", maxZoom);
 console.log("Ratio: %j", ratio);
+console.log("Output tile type: %j", tiletype);
 console.log("Output directory: %j", outputDir);
 console.log("Output MBTiles filename: %j", outputFilename);
-console.log("Output Tile Type: %j", tiletype);
 console.log("------------------------------------------------------");
 
 const renderResult = await initiateRendering(
@@ -143,12 +141,12 @@ const renderResult = await initiateRendering(
   openStreetMap,
   overlay,
   bounds,
-  ratio,
   minZoom,
   maxZoom,
+  ratio,
+  tiletype,
   outputDir,
   outputFilename,
-  tiletype,
 );
 
 // output the render result to console

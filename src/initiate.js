@@ -20,12 +20,12 @@ export const initiateRendering = async (
   openStreetMap,
   overlay,
   bounds,
-  ratio,
   minZoom,
   maxZoom,
+  ratio,
+  tiletype,
   outputDir,
   outputFilename,
-  tiletype,
 ) => {
   console.log("Initiating rendering...");
 
@@ -163,13 +163,13 @@ export const initiateRendering = async (
     styleDir,
     sourceDir,
     bounds,
-    ratio,
     minZoom,
     maxZoom,
+    ratio,
+    tiletype,
     tempDir,
     outputDir,
     outputFilename,
-    tiletype,
   );
 
   console.log(
@@ -181,8 +181,8 @@ export const initiateRendering = async (
     style: style,
     status: "Success",
     errorMessage: generateResult.errorMessage,
-    filename: generateResult.filename,
-    filesize: generateResult.filesize,
+    fileLocation: generateResult.fileLocation,
+    fileSize: generateResult.fileSize,
     numberOfTiles: generateResult.numberOfTiles,
     workBegun,
     workEnded: new Date().toISOString(),

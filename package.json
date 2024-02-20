@@ -10,7 +10,7 @@
     "test": "jest --coverage --silent"
   },
   "bin": {
-    "mapgl-tile-renderer": "./src/cli.js"
+    "mapgl-tile-renderer": "src/cli.js"
   },
   "dependencies": {
     "@azure/storage-queue": "^12.16.0",
@@ -54,6 +54,9 @@
       "git add"
     ]
   },
-  "repository": "https://github.com/conservationmetrics/mapgl-tile-renderer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/conservationmetrics/mapgl-tile-renderer.git"
+  },
   "license": "MIT"
 }

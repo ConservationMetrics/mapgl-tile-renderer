@@ -92,16 +92,16 @@ export const generateMBTiles = async (
   styleDir,
   sourceDir,
   bounds,
-  ratio,
   minZoom,
   maxZoom,
+  ratio,
+  tiletype,
   tempDir,
   outputDir,
   outputFilename,
-  tiletype,
 ) => {
   const tempPath = `${tempDir}/${outputFilename}.mbtiles`;
-  console.log(`Generating MBTiles file: ${tempPath}`);
+  console.log(`Generating MBTiles file...`);
 
   let numberOfTiles = 0;
   let fileSize = 0;
@@ -240,8 +240,8 @@ export const generateMBTiles = async (
   // Return with success status
   return {
     errorMessage: null,
-    filename: `${outputFilename}.mbtiles`,
-    filesize: fileSize,
+    fileLocation: outputPath,
+    fileSize: fileSize,
     numberOfTiles,
   };
 };

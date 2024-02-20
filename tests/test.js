@@ -110,6 +110,8 @@ test("Generates MBTiles from self-provided style with MBTiles and GeoJSON source
     [-54.28772, 3.1146, -54.0363, 3.35025],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -136,6 +138,8 @@ test("Generates MBTiles from self-provided style with MBTiles source that uses f
     [-54.28772, 3.1146, -54.0363, 3.35025],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -162,6 +166,8 @@ test("Generates MBTiles from self-provided style with PMTiles source that uses f
     [-54.28772, 3.1146, -54.0363, 3.35025],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -188,6 +194,8 @@ test("Generates MBTiles from self-provided style with XYZ dir source", async () 
     [12.7814, 67.8263, 14.5282, 68.3551],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -214,6 +222,8 @@ test("Generates MBTiles from Bing with overlay GeoJSON", async () => {
     [-79, 37, -77, 38],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -241,6 +251,8 @@ test("Generates MBTiles from Bing with OpenStreetMap overlay", async () => {
     [-54.9528992176,4.651819884,-54.9391663074,4.6655074239],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -267,6 +279,8 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
     [-79, 37, -77, 38],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -293,6 +307,8 @@ test("Generates MBTiles from Esri", async () => {
     [-79, 37, -77, 38],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -319,6 +335,8 @@ test("Generates MBTiles from Google", async () => {
     [-79, 37, -77, 38],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
@@ -345,6 +363,8 @@ testProtomaps("Generates MBTiles from Protomaps", async () => {
     [-79, 37, -77, 38],
     0,
     5,
+    1,
+    "jpg",
     tempDir,
     "output"
   );
