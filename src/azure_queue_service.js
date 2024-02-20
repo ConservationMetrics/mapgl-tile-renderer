@@ -46,6 +46,8 @@ const processQueueMessages = async () => {
       bounds,
       minZoom,
       maxZoom,
+      ratio,
+      tiletype,
       outputFilename;
     let boundsArray = [];
     const outputDir = "/maps"; // TODO: Get this from environment variable (or confirm that we are happy with this default value)
@@ -69,6 +71,8 @@ const processQueueMessages = async () => {
         bounds,
         minZoom = 0,
         maxZoom,
+        ratio = 1,
+        tiletype = "jpg",
         outputFilename = "output",
       } = options);
 
@@ -111,6 +115,8 @@ const processQueueMessages = async () => {
         boundsArray,
         minZoom,
         maxZoom,
+        ratio,
+        tiletype,
         outputDir,
         outputFilename,
       );
