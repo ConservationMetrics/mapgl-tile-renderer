@@ -126,7 +126,7 @@ export const generateMBTiles = async (
       } else {
         let metadata = {
           name: outputFilename,
-          format: "jpg",
+          format: tiletype,
           minzoom: minZoom,
           maxzoom: maxZoom,
           type: "overlay",
