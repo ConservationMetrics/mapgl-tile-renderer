@@ -1,0 +1,61 @@
+name: Generate Tiles from Input
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Tile name'
+        default: 'partner'
+        required: true
+      style:
+        description: 'Map style to be used for tile generation (self, mapbox, bing, planet, or esri)'
+        default: 'bing'
+        required: true
+      bounds:
+        description: 'Geographical bounds for the tile generation in "minLongitude,minLatitude,maxLongitude,maxLatitude" format'
+        default: '-54.28772,3.11460,-54.03630,3.35025'
+        required: true
+      zoom_level:
+        description: 'Zoom level for which the tiles will be generated'
+        default: '15'
+        required: true
+      monthyear:
+        description: 'Month and year for which the tiles are generated, in YYYY-MM format'
+        required: false
+      mapbox_style:
+        description: 'Mapbox style in the format <yourusername>/<styleid>'
+        required: false
+      apiKeySecret:
+        description: 'Api key secret name, defaults to API_KEY'
+        required: false
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate Tile Command
+        id: generate-tile-command
+        run: |
+          TILE_NAME="${{ github.event.inputs.name }}"
+          STYLE="${{ github.event.inputs.style }}"
+          BOUNDS="${{ github.event.inputs.bounds }}"
+          ZOOM_LEVEL="${{ github.event.inputs.zoom_level }}"
+          COMMAND="--style $STYLE -Z $ZOOM_LEVEL --bounds $BOUNDS -f $TILE_NAME"
+          if [ -n "${{ github.event.inputs.apiKeySecret }}" ]; then
+            API_KEY=${!API_KEY_SECRET}
+            COMMAND+=" --apikey $API_KEY"
+          fi
+          if [ -n "${{ github.event.inputs.monthyear }}" ]; then COMMAND+=" --monthyear $MONTHYEAR"; fi
+          if [ -n "${{ github.event.inputs.mapbox_style }}" ]; then COMMAND+=" --mapboxstyle $MAPBOX_STYLE"; fi
+          echo "COMMAND=$COMMAND" >> $GITHUB_ENV
+      - name: Scrape tiles
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs communityfirst/mapgl-tile-renderer:main ${{ env.COMMAND }}
+      - name: Upload mbtiles file as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.name }}.mbtiles
+          path: outputs/*.mbtiles
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
+          retention-days: 90
