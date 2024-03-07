@@ -159,6 +159,21 @@ For Azure Storage Queue (and other queue services in the future), mapgl-tile-ren
 }
 ```
 
+## Running with Github Actions
+
+To use the Github Actions workflow defined in `.github/workflows/gen-tiles-input.yml` for generating tiles, follow these steps:
+
+1. Fork the repository containing the workflow file.
+2. Navigate to your forked repository on Github.
+3. Click on the "Actions" tab.
+4. You will see a list of available workflows. Click on the "Generate Tiles from Input" workflow.
+5. Click on the "Run workflow" dropdown button.
+6. Fill in the required input fields such as `Tile name`, `Map style`, `Geographical bounds`, `Maximum zoom level`, and optionally, `Minimum zoom level`. Additional optional fields include `Month and year` for the tiles, `Mapbox style`, `Overlay` (a GeoJSON object for a feature layer), and `Api key`.
+7. After providing the necessary information in the input fields, click on the "Run workflow" button to initiate the tile generation process.
+8. The workflow will execute the steps defined in `gen-tiles-input.yml` and upon completion, the generated tiles will be available as artifacts in the workflow run.
+
+Make sure to review the `gen-tiles-input.yml` file to understand the inputs and outputs of the workflow.
+
 # For developers
 
 Mapgl-tile-renderer uses [Maplibre-GL Native](https://www.npmjs.com/package/@maplibre/maplibre-gl-native) to render tiles, [Sharp](https://www.npmjs.com/package/sharp) to save them as an image, and Mapbox's [mbtiles Node package](https://www.npmjs.com/package/@mapbox/mbtiles) to compile them into an MBTiles database (which is a SQLite file).

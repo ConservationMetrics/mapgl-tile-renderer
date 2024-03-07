@@ -5,7 +5,7 @@ on:
     inputs:
       name:
         description: 'Tile name'
-        default: 'partner'
+        default: 'my-map'
         required: true
       style:
         description: 'Map style to be used for tile generation (self, mapbox, bing, planet, or esri)'
@@ -15,18 +15,25 @@ on:
         description: 'Geographical bounds for the tile generation in "minLongitude,minLatitude,maxLongitude,maxLatitude" format'
         default: '-54.28772,3.11460,-54.03630,3.35025'
         required: true
-      zoom_level:
-        description: 'Zoom level for which the tiles will be generated'
+      maxzoom:
+        description: 'Maximum zoom level for which the tiles will be generated'
         default: '15'
         required: true
+      minzoom:
+        description: 'Minimum zoom level for which the tiles will be generated'
+        default: '0'
+        required: false
       monthyear:
         description: 'Month and year for which the tiles are generated, in YYYY-MM format'
         required: false
       mapbox_style:
         description: 'Mapbox style in the format <yourusername>/<styleid>'
         required: false
+      overlay:
+        description: 'GeoJSON object for a feature layer to overlay on top of the online source'
+        required: false
       apiKeySecret:
-        description: 'Api key secret name, defaults to API_KEY'
+        description: 'Api key'
         required: false
 jobs:
   build-and-deploy:
@@ -40,14 +47,17 @@ jobs:
           TILE_NAME="${{ github.event.inputs.name }}"
           STYLE="${{ github.event.inputs.style }}"
           BOUNDS="${{ github.event.inputs.bounds }}"
-          ZOOM_LEVEL="${{ github.event.inputs.zoom_level }}"
-          COMMAND="--style $STYLE -Z $ZOOM_LEVEL --bounds $BOUNDS -f $TILE_NAME"
+          MAXZOOM="${{ github.event.inputs.maxzoom }}"
+          MINZOOM="${{ github.event.inputs.minzoom }}"
+          COMMAND="--style $STYLE -Z $MAXZOOM --bounds $BOUNDS -f $TILE_NAME"
+          if [ -n "$MINZOOM" ]; then COMMAND+=" -z $MINZOOM"; fi
           if [ -n "${{ github.event.inputs.apiKeySecret }}" ]; then
             API_KEY=${!API_KEY_SECRET}
             COMMAND+=" --apikey $API_KEY"
           fi
           if [ -n "${{ github.event.inputs.monthyear }}" ]; then COMMAND+=" --monthyear $MONTHYEAR"; fi
           if [ -n "${{ github.event.inputs.mapbox_style }}" ]; then COMMAND+=" --mapboxstyle $MAPBOX_STYLE"; fi
+          if [ -n "${{ github.event.inputs.overlay }}" ]; then COMMAND+=" --overlay '${{ github.event.inputs.overlay }}'"; fi
           echo "COMMAND=$COMMAND" >> $GITHUB_ENV
       - name: Scrape tiles
         run: |
