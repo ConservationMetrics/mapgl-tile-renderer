@@ -1,0 +1,74 @@
+name: Generate Tiles from Input
+
+on:
+  workflow_dispatch:
+    inputs:
+      style:
+        description: 'Map style to be used for tile generation. See readme for options.'
+        default: 'bing'
+        required: true
+      bounds:
+        description: 'Geographical bounds for the tile generation in "minLongitude,minLatitude,maxLongitude,maxLatitude" format'
+        default: '-54.28772,3.11460,-54.03630,3.35025'
+        required: true
+      maxzoom:
+        description: 'Maximum zoom level for which the tiles will be generated'
+        default: '15'
+        required: true
+      minzoom:
+        description: 'Minimum zoom level (optional, 0 if not provided)'
+        required: false
+      monthyear:
+        description: 'For Planet style, month and year for which the tiles are generated, in YYYY-MM format'
+        required: false
+      mapbox_style:
+        description: 'For Mapbox style, in the format <yourusername>/<styleid>'
+        required: false
+      openstreetmap:
+        description: 'Overlay OSM vector data on top of your imagery'
+        required: false
+      overlay:
+        description: 'GeoJSON object for a feature layer to overlay on top of the online source'
+        required: false
+      apiKeySecret:
+        description: 'API key'
+        required: false
+      filename:
+        description: 'Name of the output MBTiles file (optional, "output" if not provided)'
+        required: false
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate Tile Command
+        id: generate-tile-command
+        run: |
+          FILENAME="${{ github.event.inputs.filename }}"
+          STYLE="${{ github.event.inputs.style }}"
+          BOUNDS="${{ github.event.inputs.bounds }}"
+          MAXZOOM="${{ github.event.inputs.maxzoom }}"
+          MINZOOM="${{ github.event.inputs.minzoom }}"
+          COMMAND="--style $STYLE -Z $MAXZOOM --bounds $BOUNDS"
+          if [ -n "$FILENAME" ]; then COMMAND+=" -f $FILENAME"; fi
+          if [ -n "$OPENSTREETMAP" ]; then COMMAND+=" -O $OPENSTREETMAP"; fi
+          if [ -n "$MINZOOM" ]; then COMMAND+=" -z $MINZOOM"; fi
+          if [ -n "${{ github.event.inputs.apiKeySecret }}" ]; then
+            API_KEY=${!API_KEY_SECRET}
+            COMMAND+=" --apikey $API_KEY"
+          fi
+          if [ -n "${{ github.event.inputs.monthyear }}" ]; then COMMAND+=" --monthyear $MONTHYEAR"; fi
+          if [ -n "${{ github.event.inputs.mapbox_style }}" ]; then COMMAND+=" --mapboxstyle $MAPBOX_STYLE"; fi
+          if [ -n "${{ github.event.inputs.overlay }}" ]; then COMMAND+=" --overlay '${{ github.event.inputs.overlay }}'"; fi
+          echo "COMMAND=$COMMAND" >> $GITHUB_ENV
+      - name: Scrape tiles
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs communityfirst/mapgl-tile-renderer:main ${{ env.COMMAND }}
+      - name: Upload mbtiles file as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.event.inputs.name }}.mbtiles
+          path: outputs/*.mbtiles
+          if-no-files-found: error # 'warn' or 'ignore' are also available, 'error' will fail the step
+          retention-days: 90
