@@ -3,12 +3,8 @@ name: Generate Tiles from Input
 on:
   workflow_dispatch:
     inputs:
-      name:
-        description: 'Tile name'
-        default: 'my-map'
-        required: true
       style:
-        description: 'Map style to be used for tile generation (self, mapbox, bing, planet, or esri)'
+        description: 'Map style to be used for tile generation. See readme for options.'
         default: 'bing'
         required: true
       bounds:
@@ -20,20 +16,31 @@ on:
         default: '15'
         required: true
       minzoom:
-        description: 'Minimum zoom level for which the tiles will be generated'
-        default: '0'
+        description: 'Minimum zoom level (optional, 0 if not provided)'
         required: false
       monthyear:
-        description: 'Month and year for which the tiles are generated, in YYYY-MM format'
+        description: 'For Planet style, month and year for which the tiles are generated, in YYYY-MM format'
         required: false
       mapbox_style:
-        description: 'Mapbox style in the format <yourusername>/<styleid>'
+        description: 'For Mapbox style, in the format <yourusername>/<styleid>'
+        required: false
+      openstreetmap:
+        description: 'Overlay OSM vector data on top of your imagery'
         required: false
       overlay:
         description: 'GeoJSON object for a feature layer to overlay on top of the online source'
         required: false
+      ratio:
+        description: 'Output pixel ratio (optional, 1 if not provided)'
+        required: false
+      tiletype:
+        description: 'Output tile type (jpg, png, or webp) (optional, jpg if not provided)'
+        required: false
       apiKeySecret:
-        description: 'Api key'
+        description: 'API key'
+        required: false
+      filename:
+        description: 'Name of the output MBTiles file (optional, "output" if not provided)'
         required: false
 jobs:
   build-and-deploy:
@@ -44,12 +51,16 @@ jobs:
       - name: Generate Tile Command
         id: generate-tile-command
         run: |
-          TILE_NAME="${{ github.event.inputs.name }}"
+          FILENAME="${{ github.event.inputs.filename }}"
           STYLE="${{ github.event.inputs.style }}"
           BOUNDS="${{ github.event.inputs.bounds }}"
           MAXZOOM="${{ github.event.inputs.maxzoom }}"
           MINZOOM="${{ github.event.inputs.minzoom }}"
-          COMMAND="--style $STYLE -Z $MAXZOOM --bounds $BOUNDS -f $TILE_NAME"
+          COMMAND="--style $STYLE -Z $MAXZOOM --bounds $BOUNDS"
+          if [ -n "$FILENAME" ]; then COMMAND+=" -f $FILENAME"; fi
+          if [ -n "$OPENSTREETMAP" ]; then COMMAND+=" -O $OPENSTREETMAP"; fi
+          if [ -n "$RATIO" ]; then COMMAND+=" -r $RATIO"; fi
+          if [ -n "$TILETYPE" ]; then COMMAND+=" -t $TILETYPE"; fi
           if [ -n "$MINZOOM" ]; then COMMAND+=" -z $MINZOOM"; fi
           if [ -n "${{ github.event.inputs.apiKeySecret }}" ]; then
             API_KEY=${!API_KEY_SECRET}

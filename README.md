@@ -57,7 +57,7 @@ If using any of the imagery online styles ("bing", "esri", "google", "mapbox-sat
 If your style is `mapbox`:
 * `-m` or `--mapboxstyle` in the format `<yourusername>/<styleid>`
 
-If your style is `planet-monthly-visual`:
+If your style is `planet`:
 * `-p` or `--monthyear`: The month and year (in YYYY-MM format) of the Planet Monthly Visual Basemap to use
 
 Common options:
@@ -168,7 +168,7 @@ To use the Github Actions workflow defined in `.github/workflows/gen-tiles-input
 3. Click on the "Actions" tab.
 4. You will see a list of available workflows. Click on the "Generate Tiles from Input" workflow.
 5. Click on the "Run workflow" dropdown button.
-6. Fill in the required input fields such as `Tile name`, `Map style`, `Geographical bounds`, `Maximum zoom level`, and optionally, `Minimum zoom level`. Additional optional fields include `Month and year` for the tiles, `Mapbox style`, `Overlay` (a GeoJSON object for a feature layer), and `Api key`.
+6. Fill in the required and optional input fields. See [CLI options](#cli-options) above for the list of fields.
 7. After providing the necessary information in the input fields, click on the "Run workflow" button to initiate the tile generation process.
 8. The workflow will execute the steps defined in `gen-tiles-input.yml` and upon completion, the generated tiles will be available as artifacts in the workflow run.
 
