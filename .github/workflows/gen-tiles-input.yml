@@ -30,12 +30,6 @@ on:
       overlay:
         description: 'GeoJSON object for a feature layer to overlay on top of the online source'
         required: false
-      ratio:
-        description: 'Output pixel ratio (optional, 1 if not provided)'
-        required: false
-      tiletype:
-        description: 'Output tile type (jpg, png, or webp) (optional, jpg if not provided)'
-        required: false
       apiKeySecret:
         description: 'API key'
         required: false
@@ -59,8 +53,6 @@ jobs:
           COMMAND="--style $STYLE -Z $MAXZOOM --bounds $BOUNDS"
           if [ -n "$FILENAME" ]; then COMMAND+=" -f $FILENAME"; fi
           if [ -n "$OPENSTREETMAP" ]; then COMMAND+=" -O $OPENSTREETMAP"; fi
-          if [ -n "$RATIO" ]; then COMMAND+=" -r $RATIO"; fi
-          if [ -n "$TILETYPE" ]; then COMMAND+=" -t $TILETYPE"; fi
           if [ -n "$MINZOOM" ]; then COMMAND+=" -z $MINZOOM"; fi
           if [ -n "${{ github.event.inputs.apiKeySecret }}" ]; then
             API_KEY=${!API_KEY_SECRET}
