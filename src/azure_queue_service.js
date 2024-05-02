@@ -48,9 +48,9 @@ const processQueueMessages = async () => {
       maxZoom,
       ratio,
       tiletype,
+      outputDir,
       outputFilename;
     let boundsArray = [];
-    const outputDir = "/maps"; // TODO: Get this from environment variable (or confirm that we are happy with this default value)
 
     // Decode, parse, and validate the message
     try {
@@ -68,6 +68,7 @@ const processQueueMessages = async () => {
         monthYear,
         overlay,
         openStreetMap,
+        outputDir = "maps/",
         bounds,
         minZoom = 0,
         maxZoom,
