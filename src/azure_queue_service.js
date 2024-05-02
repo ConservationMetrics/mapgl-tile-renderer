@@ -68,7 +68,7 @@ const processQueueMessages = async () => {
         monthYear,
         overlay,
         openStreetMap,
-        outputDir = "maps/",
+        outputDir = "/maps",
         bounds,
         minZoom = 0,
         maxZoom,

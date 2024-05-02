@@ -14,8 +14,8 @@ This tool can be used in the following ways:
 
 * Via CLI (npm, Node.js or Docker)
 * Using a [Github template](https://github.com/digidem/map-template) to generate tiles using a `manifest.json`.
-* As a task worker service to poll a queue for new requests. 
-  * Currently supported: Azure Storage Queue. 
+* As a task worker service to poll a queue for new requests, and update a database table with the render results. 
+  * Currently supported: Azure Storage Queue and PostgreSQL. 
   * The tool may be extended with RabbitMQ for self-hosting in the future.
 
 To install the tool using npm, run:
@@ -146,7 +146,9 @@ docker run -it --rm -v "$(pwd)":/app/outputs/ mapgl-tile-renderer --style "mapbo
 
 ## Azure Storage Queue example usage
 
-For Azure Storage Queue (and other queue services in the future), mapgl-tile-renderer expects a message with a JSON body, composed of the input options:
+mapgl-tile-renderer is set up to listen for messages from a queue service, as submitted via [map-packer](https://github.com/conservationMetrics/map-packer/), and update a PostgreSQL table with the render results.
+
+For Azure Storage Queue (and other queue services in the future), mapgl-tile-renderer expects a message with a JSON body, composed of the various input options. Example:
 
 ```json
 {
@@ -155,9 +157,12 @@ For Azure Storage Queue (and other queue services in the future), mapgl-tile-ren
   "bounds": "-79,37,-77,38",
   "minZoom": 0,
   "maxZoom": 8,
-  "output": "bing"
+  "outputFilename": "bing"
+  "outputDir": "/maps"
 }
 ```
+
+Note that `outputDir` likely needs to be a volume mount directory on your mapgl-tile-renderer container, so that it can be accessed by map-packer or other tools for sharing and downloading. 
 
 ## Running with Github Actions
 
