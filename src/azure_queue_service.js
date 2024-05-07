@@ -1,5 +1,5 @@
 import { QueueServiceClient } from "@azure/storage-queue";
-import { Client } from "pg";
+import pg from "pg";
 
 import {
   parseListToFloat,
@@ -10,7 +10,8 @@ import { initiateRendering } from "./initiate.js";
 
 // Make db connection
 const connectionString = process.env["CONNECTION_STRING"];
-const client = new Client({
+
+const client = new pg.Client({
   connectionString: connectionString,
 });
 client.connect();
