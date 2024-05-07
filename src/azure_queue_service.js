@@ -59,6 +59,7 @@ const processQueueMessages = async () => {
       outputDir,
       outputFilename;
     let boundsArray = [];
+    let requestId;
 
     // Decode, parse, and validate the message
     try {
@@ -85,6 +86,8 @@ const processQueueMessages = async () => {
         outputFilename = "output",
       } = options);
 
+      requestId = options.requestId;
+
       boundsArray = parseListToFloat(bounds);
 
       validateInputOptions(
@@ -102,7 +105,7 @@ const processQueueMessages = async () => {
       );
     } catch (error) {
       renderResult = handleError(error, "badRequest");
-      await writeRenderResult(renderResult, message);
+      await writeRenderResult(renderResult, message, requestId);
       continue;
     }
 
@@ -128,15 +131,15 @@ const processQueueMessages = async () => {
     } catch (error) {
       renderResult = handleError(error, "internalServerError");
     } finally {
-      await writeRenderResult(renderResult, message);
+      await writeRenderResult(renderResult, message, requestId);
     }
   }
 };
 
-const writeRenderResult = async (renderResult, message) => {
+const writeRenderResult = async (renderResult, message, requestId) => {
   if (renderResult) {
     console.log(
-      `Writing render result to database for requestId: ${message.requestId}`,
+      `Writing render result to database for requestId: ${requestId}`,
     );
 
     let updateDbRenderRequest = `UPDATE ${db_table} SET `;
@@ -167,7 +170,7 @@ const writeRenderResult = async (renderResult, message) => {
     await client.query(updateDbRenderRequest, params);
 
     console.log(
-      `Render result written to database for requestId: ${message.requestId}`,
+      `Render result written to database for requestId: ${requestId}`,
     );
   }
   // Delete message from queue
