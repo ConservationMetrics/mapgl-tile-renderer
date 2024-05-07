@@ -161,7 +161,7 @@ const writeRenderResult = async (renderResult, message, requestId) => {
     // Remove space and comma from last column
     updateDbRenderRequest = updateDbRenderRequest.slice(0, -2);
     updateDbRenderRequest += ` WHERE id = $${count}`;
-    params.push(message.requestId);
+    params.push(requestId);
 
     // Let's log the SQL query and parameters for debugging
     console.log(updateDbRenderRequest);
