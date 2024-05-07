@@ -1,4 +1,5 @@
 import { QueueServiceClient } from "@azure/storage-queue";
+import { Client } from "pg";
 
 import {
   parseListToFloat,
@@ -7,16 +8,22 @@ import {
 } from "./utils.js";
 import { initiateRendering } from "./initiate.js";
 
+// Make db connection
+const connectionString = process.env["CONNECTION_STRING"];
+const client = new Client({
+  connectionString: connectionString,
+});
+client.connect();
+
+const db_table = process.env["DB_TABLE"];
+
 // Connection string and queue names
 const connStr = process.env["QueueConnectionString"];
 const sourceQueueName = "mappacker-requests";
-const destinationQueueName = "jg-mp-test-out";
 
 // Create QueueClients
 const queueServiceClient = QueueServiceClient.fromConnectionString(connStr);
 const sourceQueueClient = queueServiceClient.getQueueClient(sourceQueueName);
-const destinationQueueClient =
-  queueServiceClient.getQueueClient(destinationQueueName);
 
 const processQueueMessages = async () => {
   while (true) {
@@ -94,11 +101,7 @@ const processQueueMessages = async () => {
       );
     } catch (error) {
       renderResult = handleError(error, "badRequest");
-      await sendCompletionMessage(
-        renderResult,
-        destinationQueueClient,
-        message,
-      );
+      await writeRenderResult(renderResult, message);
       continue;
     }
 
@@ -124,20 +127,37 @@ const processQueueMessages = async () => {
     } catch (error) {
       renderResult = handleError(error, "internalServerError");
     } finally {
-      await sendCompletionMessage(
-        renderResult,
-        destinationQueueClient,
-        message,
-      );
+      await writeRenderResult(renderResult, message);
     }
   }
 };
 
-const sendCompletionMessage = async (renderResult, queueClient, message) => {
+const writeRenderResult = async (renderResult, message) => {
   if (renderResult) {
-    const completionMessage = JSON.stringify(renderResult);
-    await queueClient.sendMessage(completionMessage);
+    let updateDbRenderRequest = `UPDATE ${db_table} SET `;
+    let params = [];
+    let count = 1;
+
+    for (let key in renderResult) {
+      // If the renderResult property is not null or undefined,
+      // add a clause to the SQL query to update the corresponding column
+      // and add the property value to the parameters array
+      if (renderResult[key] !== null && renderResult[key] !== undefined) {
+        // All keys converted to lowercase match the db column names
+        updateDbRenderRequest += `${key.toLowerCase()} = $${count}, `;
+        params.push(renderResult[key]);
+        count++;
+      }
+    }
+
+    // Remove space and comma from last column
+    updateDbRenderRequest = updateDbRenderRequest.slice(0, -2);
+    updateDbRenderRequest += ` WHERE id = $${count}`;
+    params.push(message.requestId);
+
+    await client.query(updateDbRenderRequest, params);
   }
+  // Delete message from queue
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
 };
 

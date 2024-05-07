@@ -9,19 +9,19 @@ export const handleError = (error, type) => {
   if (type === "badRequest") {
     // Something was caller's fault. They need to fix something then retry.
     return {
-      status: "BadRequest",
-      errorMessage: `${error.message}`,
+      status: "FAILED",
+      errorMessage: `BadRequest: ${error.message}`,
     };
   } else if (type === "internalServerError") {
     return {
       // Something was our fault. It's out of the caller's control.
-      status: "InternalServerError",
-      errorMessage: `${error.message}`,
+      status: "FAILED",
+      errorMessage: `InternalServerError: ${error.message}`,
     };
   } else {
     return {
-      status: "UnknownError",
-      errorMessage: `${error.message}`,
+      status: "FAILED",
+      errorMessage: `UnknownError: ${error.message}`,
     };
   }
 };
