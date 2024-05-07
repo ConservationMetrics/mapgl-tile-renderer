@@ -179,7 +179,7 @@ export const initiateRendering = async (
   // if successful, return the render result
   return {
     style: style,
-    status: "Success",
+    status: "SUCCEEDED",
     errorMessage: generateResult.errorMessage,
     fileLocation: generateResult.fileLocation,
     fileSize: generateResult.fileSize,

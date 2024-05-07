@@ -22,6 +22,7 @@
     "osmtogeojson": "^3.0.0-beta.5",
     "p-limit": "^5.0.0",
     "path": "^0.12.7",
+    "pg": "^8.11.5",
     "pmtiles": "3.0.3",
     "sharp": "^0.33.2",
     "xmldom": "^0.6.0"
