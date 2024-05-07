@@ -182,6 +182,7 @@ export const initiateRendering = async (
     status: "SUCCEEDED",
     errorMessage: generateResult.errorMessage,
     fileLocation: generateResult.fileLocation,
+    filename: generateResult.filename,
     fileSize: generateResult.fileSize,
     numberOfTiles: generateResult.numberOfTiles,
     workBegun,

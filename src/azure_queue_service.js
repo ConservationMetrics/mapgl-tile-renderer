@@ -136,11 +136,13 @@ const processQueueMessages = async () => {
   }
 };
 
+function camelToSnakeCase(str) {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
 const writeRenderResult = async (renderResult, message, requestId) => {
   if (renderResult) {
-    console.log(
-      `Writing render result to database for requestId: ${requestId}`,
-    );
+    console.log(`Writing render result to database..`);
 
     let updateDbRenderRequest = `UPDATE ${db_table} SET `;
     let params = [];
@@ -151,8 +153,9 @@ const writeRenderResult = async (renderResult, message, requestId) => {
       // add a clause to the SQL query to update the corresponding column
       // and add the property value to the parameters array
       if (renderResult[key] !== null && renderResult[key] !== undefined) {
-        // All keys converted to lowercase match the db column names
-        updateDbRenderRequest += `${key.toLowerCase()} = $${count}, `;
+        // Convert camelCase to snake_case for db column names
+        let snakeCaseKey = camelToSnakeCase(key);
+        updateDbRenderRequest += `${snakeCaseKey} = $${count}, `;
         params.push(renderResult[key]);
         count++;
       }
@@ -163,14 +166,10 @@ const writeRenderResult = async (renderResult, message, requestId) => {
     updateDbRenderRequest += ` WHERE id = $${count}`;
     params.push(requestId);
 
-    // Let's log the SQL query and parameters for debugging
-    console.log(updateDbRenderRequest);
-    console.log(params);
-
     await client.query(updateDbRenderRequest, params);
 
     console.log(
-      `Render result written to database for requestId: ${requestId}`,
+      `Render result has successfully been successfully to database!`,
     );
   }
   // Delete message from queue
