@@ -134,6 +134,10 @@ const processQueueMessages = async () => {
 
 const writeRenderResult = async (renderResult, message) => {
   if (renderResult) {
+    console.log(
+      `Writing render result to database for requestId: ${message.requestId}`,
+    );
+
     let updateDbRenderRequest = `UPDATE ${db_table} SET `;
     let params = [];
     let count = 1;
@@ -155,7 +159,15 @@ const writeRenderResult = async (renderResult, message) => {
     updateDbRenderRequest += ` WHERE id = $${count}`;
     params.push(message.requestId);
 
+    // Let's log the SQL query and parameters for debugging
+    console.log(updateDbRenderRequest);
+    console.log(params);
+
     await client.query(updateDbRenderRequest, params);
+
+    console.log(
+      `Render result written to database for requestId: ${message.requestId}`,
+    );
   }
   // Delete message from queue
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
