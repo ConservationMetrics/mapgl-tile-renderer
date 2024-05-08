@@ -4,7 +4,6 @@ import axios from "axios";
 import pLimit from "p-limit";
 import sax from "sax";
 import osmtogeojson from "osmtogeojson";
-import xmldom from "xmldom";
 
 import {
   convertCoordinatesToTiles,
