@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import pLimit from "p-limit";
-import sax from "sax";
 import osmtogeojson from "osmtogeojson";
 
 import {
@@ -333,35 +332,29 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
 
   console.log(`OpenStreetMap data downloaded!`);
 
-  // Convert OSM XML data to OSM JSON using xmldom
-  console.log(`Converting OpenStreetMap data to GeoJSON...`);
+  // Convert OSM XML data to OSM JSON using parse_osmxml
+  const parse_osmxml = (await import("osmtogeojson/parse_osmxml.js")).default;
+  const osmData = fs.readFileSync(`${outputDir}/data.osm`, "utf-8");
 
-  const parser = sax.createStream(true);
-  let osmData = "";
+  // Use the parser's method to parse the XML string
+  parse_osmxml.parseFromString(osmData);
+  const osmJson = parse_osmxml.getJSON();
 
-  parser.on("text", (text) => {
-    osmData += text;
-  });
+  // Convert OSM JSON to GeoJSON
+  const geojson = osmtogeojson(osmJson);
 
-  parser.on("end", () => {
-    // Convert OSM JSON to GeoJSON
-    const geojson = osmtogeojson(osmData);
+  // Filter out lines and points only
+  geojson.features = geojson.features.filter(
+    (feature) =>
+      feature.geometry.type === "LineString" ||
+      feature.geometry.type === "Point",
+  );
 
-    // Filter out lines and points only
-    geojson.features = geojson.features.filter(
-      (feature) =>
-        feature.geometry.type === "LineString" ||
-        feature.geometry.type === "Point",
-    );
-
-    fs.writeFileSync(
-      `${outputDir}/openstreetmap.geojson`,
-      JSON.stringify(geojson, null, 4),
-    );
-    console.log(
-      `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
-    );
-  });
-
-  fs.createReadStream(`${outputDir}/data.osm`).pipe(parser);
+  fs.writeFileSync(
+    `${outputDir}/openstreetmap.geojson`,
+    JSON.stringify(geojson, null, 4),
+  );
+  console.log(
+    `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
+  );
 };
