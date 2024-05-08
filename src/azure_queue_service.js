@@ -1,5 +1,5 @@
 import { QueueServiceClient } from "@azure/storage-queue";
-import { Client } from "pg";
+import pg from "pg";
 
 import {
   parseListToFloat,
@@ -10,7 +10,8 @@ import { initiateRendering } from "./initiate.js";
 
 // Make db connection
 const connectionString = process.env["CONNECTION_STRING"];
-const client = new Client({
+
+const client = new pg.Client({
   connectionString: connectionString,
 });
 client.connect();
@@ -58,6 +59,7 @@ const processQueueMessages = async () => {
       outputDir,
       outputFilename;
     let boundsArray = [];
+    let requestId;
 
     // Decode, parse, and validate the message
     try {
@@ -84,6 +86,8 @@ const processQueueMessages = async () => {
         outputFilename = "output",
       } = options);
 
+      requestId = options.requestId;
+
       boundsArray = parseListToFloat(bounds);
 
       validateInputOptions(
@@ -101,7 +105,7 @@ const processQueueMessages = async () => {
       );
     } catch (error) {
       renderResult = handleError(error, "badRequest");
-      await writeRenderResult(renderResult, message);
+      await writeRenderResult(renderResult, message, requestId);
       continue;
     }
 
@@ -127,13 +131,19 @@ const processQueueMessages = async () => {
     } catch (error) {
       renderResult = handleError(error, "internalServerError");
     } finally {
-      await writeRenderResult(renderResult, message);
+      await writeRenderResult(renderResult, message, requestId);
     }
   }
 };
 
-const writeRenderResult = async (renderResult, message) => {
+function camelToSnakeCase(str) {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+const writeRenderResult = async (renderResult, message, requestId) => {
   if (renderResult) {
+    console.log(`Writing render result to database..`);
+
     let updateDbRenderRequest = `UPDATE ${db_table} SET `;
     let params = [];
     let count = 1;
@@ -143,8 +153,9 @@ const writeRenderResult = async (renderResult, message) => {
       // add a clause to the SQL query to update the corresponding column
       // and add the property value to the parameters array
       if (renderResult[key] !== null && renderResult[key] !== undefined) {
-        // All keys converted to lowercase match the db column names
-        updateDbRenderRequest += `${key.toLowerCase()} = $${count}, `;
+        // Convert camelCase to snake_case for db column names
+        let snakeCaseKey = camelToSnakeCase(key);
+        updateDbRenderRequest += `${snakeCaseKey} = $${count}, `;
         params.push(renderResult[key]);
         count++;
       }
@@ -153,9 +164,13 @@ const writeRenderResult = async (renderResult, message) => {
     // Remove space and comma from last column
     updateDbRenderRequest = updateDbRenderRequest.slice(0, -2);
     updateDbRenderRequest += ` WHERE id = $${count}`;
-    params.push(message.requestId);
+    params.push(requestId);
 
     await client.query(updateDbRenderRequest, params);
+
+    console.log(
+      `Render result has successfully been successfully to database!`,
+    );
   }
   // Delete message from queue
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);

@@ -3,7 +3,6 @@ import path from "path";
 import axios from "axios";
 import pLimit from "p-limit";
 import osmtogeojson from "osmtogeojson";
-import xmldom from "xmldom";
 
 import {
   convertCoordinatesToTiles,
@@ -331,30 +330,34 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
     console.log(`OpenStreetMap data already exists: ${osmFile}`);
   }
 
-  console.log(`OpenStreetMap data downloaded!`);
+  console.log(`OpenStreetMap data downloaded! Converting to GeoJSON...`);
 
-  // Convert OSM XML data to OSM JSON using xmldom
-  // In the future, we might want to use a more robust OSM parser like
-  // https://github.com/tyrasd/osmtogeojson/blob/gh-pages/parse_osmxml.js
-  const parser = new xmldom.DOMParser();
-  const osmData = parser.parseFromString(
-    fs.readFileSync(`${outputDir}/data.osm`, "utf-8"),
-  );
+  try {
+    // Convert OSM XML data to OSM JSON using parse_osmxml
+    const parse_osmxml = (await import("osmtogeojson/parse_osmxml.js")).default;
+    const osmData = fs.readFileSync(`${outputDir}/data.osm`, "utf-8");
 
-  // Convert OSM JSON to GeoJSON
-  const geojson = osmtogeojson(osmData);
+    // Use the parser's method to parse the XML string
+    parse_osmxml.parseFromString(osmData);
+    const osmJson = parse_osmxml.getJSON();
 
-  // Filter out lines and points only
-  geojson.features = geojson.features.filter(
-    (feature) =>
-      feature.geometry.type === "LineString" ||
-      feature.geometry.type === "Point",
-  );
+    // Convert OSM JSON to GeoJSON
+    const geojson = osmtogeojson(osmJson);
 
-  fs.writeFileSync(
-    `${outputDir}/openstreetmap.geojson`,
-    JSON.stringify(geojson, null, 4),
-  );
+    // Filter out lines and points only
+    geojson.features = geojson.features.filter(
+      (feature) =>
+        feature.geometry.type === "LineString" ||
+        feature.geometry.type === "Point",
+    );
+
+    fs.writeFileSync(
+      `${outputDir}/openstreetmap.geojson`,
+      JSON.stringify(geojson, null, 4),
+    );
+  } catch (error) {
+    throw new Error(`Error converting OpenStreetMap data to GeoJSON: ${error}`);
+  }
   console.log(
     `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
   );

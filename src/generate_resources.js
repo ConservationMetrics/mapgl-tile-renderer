@@ -100,7 +100,8 @@ export const generateMBTiles = async (
   outputDir,
   outputFilename,
 ) => {
-  const tempPath = `${tempDir}/${outputFilename}.mbtiles`;
+  const outputMBTiles = `${outputFilename}.mbtiles`;
+  const tempPath = `${tempDir}/${outputMBTiles}`;
   console.log(`Generating MBTiles file...`);
 
   let numberOfTiles = 0;
@@ -211,7 +212,7 @@ export const generateMBTiles = async (
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
-  const outputPath = `${outputDir}/${outputFilename}.mbtiles`;
+  const outputPath = `${outputDir}/${outputMBTiles}`;
 
   try {
     const readStream = fs.createReadStream(tempPath);
@@ -240,7 +241,8 @@ export const generateMBTiles = async (
   // Return with success status
   return {
     errorMessage: null,
-    fileLocation: outputPath,
+    fileLocation: outputDir,
+    filename: outputMBTiles,
     fileSize: fileSize,
     numberOfTiles,
   };
