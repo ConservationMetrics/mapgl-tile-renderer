@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import axios from "axios";
 import pLimit from "p-limit";
+import sax from "sax";
 import osmtogeojson from "osmtogeojson";
 import xmldom from "xmldom";
 
@@ -334,28 +335,34 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
   console.log(`OpenStreetMap data downloaded!`);
 
   // Convert OSM XML data to OSM JSON using xmldom
-  // In the future, we might want to use a more robust OSM parser like
-  // https://github.com/tyrasd/osmtogeojson/blob/gh-pages/parse_osmxml.js
-  const parser = new xmldom.DOMParser();
-  const osmData = parser.parseFromString(
-    fs.readFileSync(`${outputDir}/data.osm`, "utf-8"),
-  );
+  console.log(`Converting OpenStreetMap data to GeoJSON...`);
 
-  // Convert OSM JSON to GeoJSON
-  const geojson = osmtogeojson(osmData);
+  const parser = sax.createStream(true);
+  let osmData = "";
 
-  // Filter out lines and points only
-  geojson.features = geojson.features.filter(
-    (feature) =>
-      feature.geometry.type === "LineString" ||
-      feature.geometry.type === "Point",
-  );
+  parser.on("text", (text) => {
+    osmData += text;
+  });
 
-  fs.writeFileSync(
-    `${outputDir}/openstreetmap.geojson`,
-    JSON.stringify(geojson, null, 4),
-  );
-  console.log(
-    `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
-  );
+  parser.on("end", () => {
+    // Convert OSM JSON to GeoJSON
+    const geojson = osmtogeojson(osmData);
+
+    // Filter out lines and points only
+    geojson.features = geojson.features.filter(
+      (feature) =>
+        feature.geometry.type === "LineString" ||
+        feature.geometry.type === "Point",
+    );
+
+    fs.writeFileSync(
+      `${outputDir}/openstreetmap.geojson`,
+      JSON.stringify(geojson, null, 4),
+    );
+    console.log(
+      `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
+    );
+  });
+
+  fs.createReadStream(`${outputDir}/data.osm`).pipe(parser);
 };
