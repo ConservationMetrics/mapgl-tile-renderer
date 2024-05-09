@@ -57,11 +57,11 @@ resource "azurerm_container_app" "mapgl_tile_renderer" {
       memory = "0.5Gi"
 
       env {
-        name  = "QueueName"
+        name  = "QUEUE_NAME"
         value = "mappacker-requests"
       }
       env {
-        name  = "QueueConnectionString"
+        name  = "QUEUE_CONNECTION_STROMG"
         value = data.azurerm_storage_account.this.primary_connection_string
       }
 

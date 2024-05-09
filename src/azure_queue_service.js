@@ -9,7 +9,7 @@ import {
 import { initiateRendering } from "./initiate.js";
 
 // Make db connection
-const connectionString = process.env["CONNECTION_STRING"];
+const connectionString = process.env["DB_CONNECTION_STRING"];
 
 const client = new pg.Client({
   connectionString: connectionString,
@@ -19,8 +19,8 @@ client.connect();
 const db_table = process.env["DB_TABLE"];
 
 // Connection string and queue names
-const connStr = process.env["QueueConnectionString"];
-const sourceQueueName = "mappacker-requests";
+const connStr = process.env["QUEUE_CONNECTION_STRING"];
+const sourceQueueName = process.env["QUEUE_NAME"];
 
 // Create QueueClients
 const queueServiceClient = QueueServiceClient.fromConnectionString(connStr);
