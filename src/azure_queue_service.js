@@ -168,9 +168,7 @@ const writeRenderResult = async (renderResult, message, requestId) => {
 
     await client.query(updateDbRenderRequest, params);
 
-    console.log(
-      `Render result has successfully been successfully to database!`,
-    );
+    console.log(`Render result has successfully been written to database!`);
   }
   // Delete message from queue
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);

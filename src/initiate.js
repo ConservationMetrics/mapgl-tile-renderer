@@ -92,9 +92,7 @@ export const initiateRendering = async (
       try {
         await requestOpenStreetMapData(bounds, tempDir);
       } catch (error) {
-        throw new Error(
-          `Error downloading OpenStreetMap data: ${error.message}`,
-        );
+        throw new Error(error.message);
       }
     }
 
