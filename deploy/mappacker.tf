@@ -51,34 +51,42 @@ resource "azurerm_container_app" "mapgl_tile_renderer" {
 
   template {
     container {
-      name   = "mbgl-tile-renderer"
+      name   = "mapgl-tile-renderer"
       image  = var.tile_renderer_docker_image
-      cpu    = "0.25"
-      memory = "0.5Gi"
+      cpu    = "2"
+      memory = "4Gi"
 
       env {
         name  = "QUEUE_NAME"
         value = "mappacker-requests"
       }
       env {
-        name  = "QUEUE_CONNECTION_STROMG"
+        name  = "QUEUE_CONNECTION_STRING"
         value = data.azurerm_storage_account.this.primary_connection_string
+      }
+      env {
+        name  = "DB_CONNECTION_STRING"
+        value = ""
+      }
+      env {
+        name  = "DB_TABLE"
+        value = "offline_maps"
       }
 
       volume_mounts {
-        name = "mappacker-maps"
+        name = "mappacker-offlinemaps"
         path = "/maps/"
       }
     }
 
     volume {
-      name         = "mappacker-maps"
-      storage_name = "mappacker-maps"
+      name         = "mappacker-offlinemaps"
+      storage_name = "mappacker-offlinemaps"
       storage_type = "AzureFile"
     }
 
     min_replicas = 0
-    max_replicas = 5
+    max_replicas = 3
 
     azure_queue_scale_rule {
       name         = "scale-when-there-is-work"
