@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 import { QueueServiceClient } from "@azure/storage-queue";
 import pg from "pg";
 
@@ -41,104 +44,151 @@ const processQueueMessages = async () => {
       continue;
     }
 
-    // Initialize variables with default or null values
-    let renderResult;
-    let decodedMessageText = "";
-    let options = {};
-    let style,
+    // Decode and parse the message
+    let decodedMessageText = Buffer.from(
+      message.messageText,
+      "base64",
+    ).toString("utf8");
+    console.log(`Received queue message: '${decodedMessageText}'`);
+
+    let options = JSON.parse(decodedMessageText);
+    let type = options.type;
+
+    if (type === "new_request") {
+      await handleNewRequest(options, message);
+    } else if (type === "delete_request") {
+      await handleDeleteRequest(options, message);
+    } else {
+      console.log(`Unknown request type: '${type}'`);
+      let renderResult = handleError(
+        new Error(`Unknown request type: '${type}'`),
+        "badRequest",
+      );
+      await writeRenderResult(renderResult, message, options.requestId);
+      await sourceQueueClient.deleteMessage(
+        message.messageId,
+        message.popReceipt,
+      );
+    }
+  }
+};
+
+const handleNewRequest = async (options, message) => {
+  // Initialize variables with default or null values
+  let renderResult;
+  let style,
+    apiKey,
+    mapboxStyle,
+    monthYear,
+    overlay,
+    openStreetMap,
+    bounds,
+    minZoom,
+    maxZoom,
+    ratio,
+    tiletype,
+    outputDir,
+    outputFilename;
+  let boundsArray = [];
+  let requestId;
+
+  try {
+    ({
+      style,
       apiKey,
       mapboxStyle,
       monthYear,
       overlay,
       openStreetMap,
+      outputDir = "/maps",
       bounds,
+      minZoom = 0,
+      maxZoom,
+      ratio = 1,
+      tiletype = "jpg",
+      outputFilename = "output",
+    } = options);
+
+    requestId = options.requestId;
+
+    boundsArray = parseListToFloat(bounds);
+
+    validateInputOptions(
+      style,
+      null,
+      null,
+      apiKey,
+      mapboxStyle,
+      monthYear,
+      openStreetMap,
+      overlay,
+      boundsArray,
+      minZoom,
+      maxZoom,
+    );
+  } catch (error) {
+    renderResult = handleError(error, "badRequest");
+    await writeRenderResult(renderResult, message, requestId);
+    return;
+  }
+
+  // Initiate rendering
+  try {
+    renderResult = await initiateRendering(
+      style,
+      null,
+      null,
+      apiKey,
+      mapboxStyle,
+      monthYear,
+      openStreetMap,
+      overlay,
+      boundsArray,
       minZoom,
       maxZoom,
       ratio,
       tiletype,
       outputDir,
-      outputFilename;
-    let boundsArray = [];
-    let requestId;
-
-    // Decode, parse, and validate the message
-    try {
-      decodedMessageText = Buffer.from(message.messageText, "base64").toString(
-        "utf8",
-      );
-      console.log(`Received queue message: '${decodedMessageText}'`);
-
-      options = JSON.parse(decodedMessageText);
-
-      ({
-        style,
-        apiKey,
-        mapboxStyle,
-        monthYear,
-        overlay,
-        openStreetMap,
-        outputDir = "/maps",
-        bounds,
-        minZoom = 0,
-        maxZoom,
-        ratio = 1,
-        tiletype = "jpg",
-        outputFilename = "output",
-      } = options);
-
-      requestId = options.requestId;
-
-      boundsArray = parseListToFloat(bounds);
-
-      validateInputOptions(
-        style,
-        null,
-        null,
-        apiKey,
-        mapboxStyle,
-        monthYear,
-        openStreetMap,
-        overlay,
-        boundsArray,
-        minZoom,
-        maxZoom,
-      );
-    } catch (error) {
-      renderResult = handleError(error, "badRequest");
-      await writeRenderResult(renderResult, message, requestId);
-      continue;
-    }
-
-    // Initiate rendering
-    try {
-      renderResult = await initiateRendering(
-        style,
-        null,
-        null,
-        apiKey,
-        mapboxStyle,
-        monthYear,
-        openStreetMap,
-        overlay,
-        boundsArray,
-        minZoom,
-        maxZoom,
-        ratio,
-        tiletype,
-        outputDir,
-        outputFilename,
-      );
-    } catch (error) {
-      renderResult = handleError(error, "internalServerError");
-    } finally {
-      await writeRenderResult(renderResult, message, requestId);
-    }
+      outputFilename,
+    );
+  } catch (error) {
+    renderResult = handleError(error, "internalServerError");
+  } finally {
+    await writeRenderResult(renderResult, message, requestId);
   }
 };
 
-function camelToSnakeCase(str) {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
+const handleDeleteRequest = async (options, message) => {
+  const requestId = options.requestId;
+  const outputFilename = options.outputFilename;
+  const outputDir = options.outputDir;
+
+  // Delete file from volume mounted to the container
+  const filePath = path.join(outputDir, outputFilename);
+
+  try {
+    fs.unlinkSync(filePath);
+    console.log(`File ${filePath} has been successfully deleted!`);
+  } catch (error) {
+    console.error(`Error deleting file ${filePath}: ${error}`);
+  }
+
+  // Delete the database row associated with the requestId
+  try {
+    let deleteDbRenderRequest = `DELETE FROM ${db_table} WHERE id = $1`;
+    await client.query(deleteDbRenderRequest, [requestId]);
+    console.log(
+      `Request with id ${requestId} has been successfully deleted from the database!`,
+    );
+  } catch (error) {
+    console.error(
+      `Error deleting request with id ${requestId} from the database: ${error}`,
+    );
+  }
+
+  // Delete message from queue
+  await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
+};
 
 const writeRenderResult = async (renderResult, message, requestId) => {
   if (renderResult) {
@@ -173,5 +223,9 @@ const writeRenderResult = async (renderResult, message, requestId) => {
   // Delete message from queue
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
 };
+
+function camelToSnakeCase(str) {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
 
 processQueueMessages();
