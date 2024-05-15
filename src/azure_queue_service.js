@@ -54,7 +54,7 @@ const processQueueMessages = async () => {
     let options = JSON.parse(decodedMessageText);
     let type = options.type;
 
-    if (type === "new_request") {
+    if (type === "new_request" || type === "resubmit_request") {
       await handleNewRequest(options, message);
     } else if (type === "delete_request") {
       await handleDeleteRequest(options, message);
