@@ -2103,20 +2103,6 @@ export const openStreetMapStyle = (style, tileSize) => {
         },
       },
       {
-        id: "osm-points",
-        type: "circle",
-        source: "osm",
-        "source-layer": "points",
-        minzoom: 8,
-        filter: ["==", "$type", "Point"],
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#ffffff",
-          "circle-stroke-color": "#000000",
-          "circle-stroke-width": 1,
-        },
-      },
-      {
         id: "osm-point-labels",
         type: "symbol",
         source: "osm",
@@ -2133,7 +2119,7 @@ export const openStreetMapStyle = (style, tileSize) => {
         paint: {
           "text-color": "#000000",
           "text-halo-color": "#ffffff",
-          "text-halo-width": 1,
+          "text-halo-width": 2,
         },
       },
     ],
