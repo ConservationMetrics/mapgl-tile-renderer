@@ -126,6 +126,10 @@ const handleNewRequest = async (options, message) => {
       minZoom,
       maxZoom,
     );
+
+    // Update the request status to PROCESSING
+    let updateStatusQuery = `UPDATE ${db_table} SET status = 'PROCESSING' WHERE id = $1`;
+    await client.query(updateStatusQuery, [requestId]);
   } catch (error) {
     renderResult = handleError(error, "badRequest");
     await writeRenderResult(renderResult, message, requestId);
