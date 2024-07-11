@@ -30,6 +30,7 @@ This tool can be used in the following ways:
 * Planet PlanetScope monthly visual basemap (via NICFI) - [Terms of Use](https://developers.planet.com/docs/basemaps/tile-services/)
 * Protomaps - [Terms of Use](https://protomaps.com/faq)
 * Stadia Maps - [Terms of Use](https://docs.stadiamaps.com/limits/)
+* Thunderforest - [Terms of use](https://www.thunderforest.com/terms/)
 
 Please see the CLI options below for information on how to leverage these API sources. 
 
@@ -48,7 +49,7 @@ $ npm install -g mapgl-tile-renderer
 
 ## CLI options
 
-* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet", "protomaps", "stadia-alidade-satellite", "stadia-stamen-terrain"
+* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet", "protomaps", "stadia-alidade-satellite", "stadia-stamen-terrain", "thunderforest-landscape"
 
 If using a self-provided style (`--style self`):
 * `--stylelocation`: Location of your provided map style
@@ -58,7 +59,7 @@ If using an online style (`--style` with any online style name):
 * `-a` or `--overlay`: (Optional) Provide a GeoJSON object for a feature layer to overlay on top of the online source
 * `-k` or `--apikey`: (Optional) API key that may be required for your online source
 
-If using any of the imagery online styles ("bing", "esri", "google", "mapbox-satellite", or "planet"):
+If using any of the imagery online styles without labels ("bing", "esri", "google", "mapbox-satellite", or "planet"):
 * `-O` or `--openstreetmap`: (Optional) Overlay OSM vector data on top of your imagery. Currently mapped: hydrology, roads, and points of interest (with labels). This is a boolean variable; set to "true" if you want to use this.
 
 If your style is `mapbox`:

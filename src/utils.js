@@ -38,6 +38,7 @@ const validOnlineStyles = [
   "protomaps",
   "stadia-alidade-satellite",
   "stadia-stamen-terrain",
+  "thunderforest-landscape",
 ];
 
 export const validateInputOptions = (
@@ -75,7 +76,8 @@ export const validateInputOptions = (
       style === "planet" ||
       style === "protomaps" ||
       style === "stadia-alidade-satellite" ||
-      style === "stadia-stamen-terrain") &&
+      style === "stadia-stamen-terrain" ||
+      style === "thunderforest-landscape") &&
     !apiKey
   ) {
     raiseError(`You must provide an API key for ${style}`);
