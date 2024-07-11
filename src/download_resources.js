@@ -120,6 +120,13 @@ const downloadOnlineTiles = async (
       sourceName = "Stadia Maps Stamen Terrain";
       sourceFormat = "jpg";
       break;
+    case "thunderforest-landscape":
+      sourceUrl = `https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${apiKey}`;
+      sourceAttribution =
+        "Maps © Thunderforest, Data © OpenStreetMap contributors";
+      sourceName = "Thunderforest Landscape";
+      sourceFormat = "jpg";
+      break;
     default:
       throw new Error("Invalid source provided");
   }

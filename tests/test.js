@@ -18,13 +18,14 @@ const tempDir = path.join(os.tmpdir());
 // Load MAPBOX_API_TOKEN from .env.test
 // Create this file if wanting to test Mapbox
 dotenv.config();
-const { MAPBOX_TOKEN, PLANET_TOKEN, PROTOMAPS_TOKEN, STADIA_TOKEN } = process.env;
+const { MAPBOX_TOKEN, PLANET_TOKEN, PROTOMAPS_TOKEN, STADIA_TOKEN, THUNDERFOREST_TOKEN } = process.env;
 
 const tokens = {
   MAPBOX_TOKEN,
   PLANET_TOKEN,
   PROTOMAPS_TOKEN,
-  STADIA_TOKEN
+  STADIA_TOKEN,
+  THUNDERFOREST_TOKEN
 };
 
 Object.entries(tokens).forEach(([key, value]) => {
@@ -37,6 +38,7 @@ const testMapbox = skipIf(!MAPBOX_TOKEN);
 const testPlanet = skipIf(!PLANET_TOKEN);
 const testProtomaps = skipIf(!PROTOMAPS_TOKEN);
 const testStadia = skipIf(!STADIA_TOKEN);
+const testThunderforest = skipIf(!THUNDERFOREST_TOKEN);
 
 // Mock p-limit because it's an ESM module that doesn't work well with jest
 jest.mock("p-limit", () => () => async (fn) => {
@@ -289,7 +291,7 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
-testStadia("Generates MBTiles from Mapbox Satellite", async () => {
+testStadia("Generates MBTiles from Stadia (Stamen Terrain style)", async () => {
   await initiateRendering(
     "stadia-stamen-terrain",
     null,
@@ -317,6 +319,34 @@ testStadia("Generates MBTiles from Mapbox Satellite", async () => {
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
+testThunderforest("Generates MBTiles from Thunderforest (Landscape style)", async () => {
+  await initiateRendering(
+    "thunderforest-landscape",
+    null,
+    null,
+    THUNDERFOREST_TOKEN,
+    null,
+    null,
+    null,
+    null,
+    [-79, 37, -77, 38],
+    0,
+    5,
+    1,
+    "jpg",
+    tempDir,
+    "output"
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  // Expect output.mbtiles to be greater than 69632 bytes
+  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+  expect(stats.size).toBeGreaterThan(69632)
+
+  fs.unlinkSync(`${tempDir}/output.mbtiles`);
+}, 10000); // Thunderforest API is slow
+
 test("Generates MBTiles from Esri", async () => {
   await initiateRendering(
     "esri",
@@ -336,7 +366,7 @@ test("Generates MBTiles from Esri", async () => {
     "output"
   );
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
