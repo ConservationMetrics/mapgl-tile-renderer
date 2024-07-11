@@ -34,6 +34,7 @@ const processQueueMessages = async () => {
     // Receive message
     const response = await sourceQueueClient.receiveMessages({
       visibilityTimeout: 2 * 60 * 60,
+      numberOfMessages: 1, // This is the default
     });
     const message = response.receivedMessageItems[0];
 
@@ -65,10 +66,6 @@ const processQueueMessages = async () => {
         "badRequest",
       );
       await writeRenderResult(renderResult, message, options.requestId);
-      await sourceQueueClient.deleteMessage(
-        message.messageId,
-        message.popReceipt,
-      );
     }
   }
 };
