@@ -45,27 +45,32 @@ const processQueueMessages = async () => {
       continue;
     }
 
-    // Decode and parse the message
-    let decodedMessageText = Buffer.from(
-      message.messageText,
-      "base64",
-    ).toString("utf8");
-    console.log(`Received queue message: '${decodedMessageText}'`);
+    try {
+      // Decode and parse the message
+      let decodedMessageText = Buffer.from(
+        message.messageText,
+        "base64",
+      ).toString("utf8");
+      console.log(`Received queue message: '${decodedMessageText}'`);
 
-    let options = JSON.parse(decodedMessageText);
-    let type = options.type;
+      let options = JSON.parse(decodedMessageText);
+      let type = options.type;
 
-    if (type === "new_request" || type === "resubmit_request") {
-      await handleNewRequest(options, message);
-    } else if (type === "delete_request") {
-      await handleDeleteRequest(options, message);
-    } else {
-      console.log(`Unknown request type: '${type}'`);
-      let renderResult = handleError(
-        new Error(`Unknown request type: '${type}'`),
-        "badRequest",
-      );
-      await writeRenderResult(renderResult, message, options.requestId);
+      if (type === "new_request" || type === "resubmit_request") {
+        await handleNewRequest(options, message);
+      } else if (type === "delete_request") {
+        await handleDeleteRequest(options, message);
+      } else {
+        console.log(`Unknown request type: '${type}'`);
+        let renderResult = handleError(
+          new Error(`Unknown request type: '${type}'`),
+          "badRequest",
+        );
+        await writeRenderResult(renderResult, message, options.requestId);
+      }
+    } catch (error) {
+      console.error(`Error processing message: ${error}`);
+      await sourceQueueClient.deleteMessage(message.messageId, message.pop);
     }
   }
 };
