@@ -36,6 +36,8 @@ const validOnlineStyles = [
   "mapbox-satellite",
   "planet",
   "protomaps",
+  "stadia-alidade-satellite",
+  "stadia-stamen-terrain",
 ];
 
 export const validateInputOptions = (
@@ -71,7 +73,9 @@ export const validateInputOptions = (
     (style === "mapbox" ||
       style === "mapbox-satellite" ||
       style === "planet" ||
-      style === "protomaps") &&
+      style === "protomaps" ||
+      style === "stadia-alidade-satellite" ||
+      style === "stadia-stamen-terrain") &&
     !apiKey
   ) {
     raiseError(`You must provide an API key for ${style}`);
@@ -108,7 +112,6 @@ export const validateInputOptions = (
 
   if (
     openStreetMap &&
-    style !== "mapbox" &&
     style !== "mapbox-satellite" &&
     style !== "google" &&
     style !== "planet" &&
@@ -140,7 +143,7 @@ export const validateInputOptions = (
   if (bounds !== null) {
     if (bounds.length !== 4) {
       raiseError(
-        `Bounds must be west,south,east,north.  Invalid value found: ${[
+        `Bounds must be west,south,east,north. Invalid value found: ${[
           ...bounds,
         ]}`,
       );
@@ -149,7 +152,7 @@ export const validateInputOptions = (
     bounds.forEach((b) => {
       if (!Number.isFinite(b)) {
         raiseError(
-          `Bounds must be valid floating point values.  Invalid value found: ${[
+          `Bounds must be valid floating point values. Invalid value found: ${[
             ...bounds,
           ]}`,
         );

@@ -7,7 +7,7 @@ import { initiateRendering } from "./initiate.js";
 
 program
   .name("mapgl-tile-renderer")
-  .description("Render styled Maplibre GL map tiles")
+  .description("Render styled MapGL map tiles")
   .requiredOption("-s ,--style <type>", `Specify the style source`)
   .option(
     "-l, --stylelocation <type>",

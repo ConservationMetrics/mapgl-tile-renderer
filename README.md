@@ -4,7 +4,7 @@
 
 This headless Node.js MapGL renderer can be used to generate styled raster tiles in an MBTiles format. It can work with self-provided tilesets and a stylesheet, or an online API source with optional GeoJSON and OpenStreetMap data overlays. 
 
-The motivation to build this utility is to create offline background maps for use in mobile data collection applications, such as [Mapeo](https://mapeo.app/) and [ODK Collect](https://getodk.org/) / [KoboToolbox Collect](https://www.kobotoolbox.org/), or other offline-compatible tools that can work with self-hosted maps like [Terrastories](https://terrastories.app/). However, it can be helpful for any use case where having self-hosted raster MBTiles is a requirement.
+The motivation to build this utility is to create offline background maps for use in mobile data collection applications, such as [Mapeo](https://mapeo.app/), [ODK Collect](https://getodk.org/), [Kobo Collect](https://www.kobotoolbox.org/), [Locus Map](https://www.locusmap.app/) or other offline-compatible tools that can work with self-hosted tiles like [Terrastories](https://terrastories.app/). However, it can be helpful for any use case where having self-hosted raster MBTiles is a requirement.
 
 This tool started as an extension of [mbgl-renderer](https://github.com/consbio/mbgl-renderer), which was built to export single static map images. Our thanks go out to the contributors of that project.
 
@@ -20,16 +20,20 @@ This tool can be used in the following ways:
 
 ## Supported online API sources
 
-> ❗️ To use these services, you are responsible for providing your own API token. In doing so, please carefully consult the terms of service and API limitations for each service.
+> ❗️ To use these services, you are responsible for providing your own API token, and abiding by the service's terms of use. In doing so, please carefully consult the terms of service and API limitations for each service.
 
 * Bing Imagery (Virtual Earth) - [Terms of Use](https://www.microsoft.com/en-us/maps/bing-maps/product)
 * ESRI World Imagery - [Terms of use](https://www.arcgis.com/home/item.html?id=226d23f076da478bba4589e7eae95952)
 * Google Hybrid - [Terms of Use](https://developers.google.com/maps/documentation/tile/policies)
 * Mapbox - [Terms of Use](https://www-mapbox.webflow.io/pricing#tile)
-* Mapbox Satellite - [Terms of Use](https://www-mapbox.webflow.io/pricing#tile)
 * Overpass (to overlay OpenStreetMap data on top of imagery sources) - [Terms of Use](https://wiki.openstreetmap.org/wiki/Overpass_API)
 * Planet PlanetScope monthly visual basemap (via NICFI) - [Terms of Use](https://developers.planet.com/docs/basemaps/tile-services/)
 * Protomaps - [Terms of Use](https://protomaps.com/faq)
+* Stadia Maps - [Terms of Use](https://docs.stadiamaps.com/limits/)
+
+Please see the CLI options below for information on how to leverage these API sources. 
+
+If you would like to request the addition of an online API source that is not currently supported, please [file an issue](https://github.com/ConservationMetrics/mapgl-tile-renderer/issues) or submit a PR.
 
 Note that depending on your bounding box and maximum zoom level, this tool has the capability to send a lot of requests. You can use a utility like the [Mapbox offline tile count estimator](https://docs.mapbox.com/playground/offline-estimator/) to ensure that your request will be reasonable, and in the case of any API sources with a freemium API limit, won't end up costing you.
 
@@ -44,7 +48,7 @@ $ npm install -g mapgl-tile-renderer
 
 ## CLI options
 
-* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet", "protomaps"
+* `-s` or `--style`: Specify the style source. Use "self" for a self-provided style or one of the following for an online source: "bing", "esri", "google", "mapbox", "mapbox-satellite", "planet", "protomaps", "stadia-alidade-satellite", "stadia-stamen-terrain"
 
 If using a self-provided style (`--style self`):
 * `--stylelocation`: Location of your provided map style
@@ -136,7 +140,7 @@ docker run -it --rm -v "$(pwd)":/app/outputs/ mapgl-tile-renderer --style "mapbo
 
 ## Task worker listening to message queue
 
-mapgl-tile-renderer can be configured as a task worker that listens for messages from a queue service, as submitted via [map-packer](https://github.com/conservationMetrics/map-packer/). Upon retrieval of a message, the tool will initiate rendering, store the file on the container (ideally a volume mount location), and update a PostgreSQL table with the render results.
+mapgl-tile-renderer can be configured as a task worker that listens for messages from a queue service, as submitted via a tool like [map-packer](https://github.com/conservationMetrics/map-packer/). Upon retrieval of a message, the tool will initiate rendering, store the file on the container (ideally a volume mount location), and update a PostgreSQL table with the render results.
 
 To set up mapgl-tile-renderer as a task worker, deploy the Docker image and provide the following environmental variables:
 
@@ -161,7 +165,7 @@ For Azure Storage Queue (and other queue services in the future), mapgl-tile-ren
 
 Note that `outputDir` likely needs to be a volume mount directory on your mapgl-tile-renderer container, so that it can be accessed by map-packer or other tools for sharing and downloading. 
 
-For more information on the complete flow wherein mapgl-tile-renderer is deployed as a task worker, see the [map-packer](https://github.com/conservationMetrics/map-packer/) documentation.
+For more information on the complete flow where mapgl-tile-renderer is deployed as a task worker, see the [map-packer](https://github.com/conservationMetrics/map-packer/) documentation.
 
 ## Running with Github Actions
 
@@ -188,7 +192,7 @@ Three easy ways to examine and inspect the MBTiles:
 
 ## Formats other than MBTiles
 
-In the future, we may decide to extend this tool to support creating raster tiles in a different format, such as [PMTiles](https://github.com/protomaps/PMTiles). However, for the time being, you can use tools like [go-pmtiles](https://github.com/protomaps/go-pmtiles) to convert the MBTiles outputs generated by this tool.
+In the future, we may decide to extend this tool to support creating raster tiles in a different format, such as XYZ or [PMTiles](https://github.com/protomaps/PMTiles). However, for the time being, you can use tools like [tippecanoe](https://github.com/felt/tippecanoe) or [go-pmtiles](https://github.com/protomaps/go-pmtiles) to convert the MBTiles outputs generated by this tool.
 
 # For developers
 
@@ -209,4 +213,4 @@ To run tests and view coverage, run:
 npm run test
 ```
 
-To run tests that require a Mapbox or Planet access token, create a `.env.test` file and add MAPBOX_TOKEN, PLANET_TOKEN, and PROTOMAPS_TOKEN vars with your own token. (If not provided, tests requiring these will be skipped.)
+To run tests that require an access token, create a `.env.test` file and add the respective token vars (e.g. MAPBOX_TOKEN, PLANET_TOKEN, PROTOMAPS_TOKEN, STADIA_TOKEN). If not provided, tests requiring these will be skipped.

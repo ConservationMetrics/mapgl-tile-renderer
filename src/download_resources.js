@@ -103,9 +103,22 @@ const downloadOnlineTiles = async (
       break;
     case "protomaps":
       sourceUrl = `https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=${apiKey}`;
-      sourceAttribution = "Protomaps";
-      sourceName = "Protomaps © OpenStreetMap";
+      sourceAttribution = "Protomaps © OpenStreetMap";
+      sourceName = "Protomaps";
       sourceFormat = "mvt";
+      break;
+    case "stadia-alidade-satellite":
+      sourceUrl = `https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}.jpg?api_key=${apiKey}`;
+      sourceAttribution =
+        "© Stadia Maps © OpenMapTiles © OpenStreetMap © CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data)";
+      sourceName = "Stadia Maps Alidade Satellite";
+      sourceFormat = "jpg";
+      break;
+    case "stadia-stamen-terrain":
+      sourceUrl = `https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.jpg?api_key=${apiKey}`;
+      sourceAttribution = "© Stadia Maps © OpenMapTiles © OpenStreetMap";
+      sourceName = "Stadia Maps Stamen Terrain";
+      sourceFormat = "jpg";
       break;
     default:
       throw new Error("Invalid source provided");
