@@ -91,6 +91,7 @@ const handleNewRequest = async (options, message) => {
     tiletype,
     outputDir,
     outputFilename;
+  thumbnail;
   let boundsArray = [];
   let requestId;
 
@@ -109,6 +110,7 @@ const handleNewRequest = async (options, message) => {
       ratio = 1,
       tiletype = "jpg",
       outputFilename = "output",
+      thumbnail = false,
     } = options);
 
     requestId = options.requestId;
@@ -156,6 +158,7 @@ const handleNewRequest = async (options, message) => {
       tiletype,
       outputDir,
       outputFilename,
+      thumbnail,
     );
   } catch (error) {
     renderResult = handleError(error, "internalServerError");
