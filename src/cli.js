@@ -73,6 +73,12 @@ program
     "-f, --filename <type>",
     "Output filename (default 'output')",
     "output",
+  )
+  .option(
+    "-T, --thumbnail <boolean>",
+    "Generate a thumbnail image with bounding box overlaid. Set to 'true' or 'false' (default 'false')",
+    (value) => value.toLowerCase() === "true",
+    false,
   );
 
 program.parse(process.argv);
@@ -94,6 +100,7 @@ const {
   tiletype,
   outputdir: outputDir,
   filename: outputFilename,
+  thumbnail,
 } = options;
 
 validateInputOptions(
@@ -129,6 +136,7 @@ console.log("Ratio: %j", ratio);
 console.log("Output tile type: %j", tiletype);
 console.log("Output directory: %j", outputDir);
 console.log("Output MBTiles filename: %j", outputFilename);
+console.log("Generate thumbnail: %j", thumbnail);
 console.log("------------------------------------------------------");
 
 const renderResult = await initiateRendering(
@@ -147,6 +155,7 @@ const renderResult = await initiateRendering(
   tiletype,
   outputDir,
   outputFilename,
+  thumbnail,
 );
 
 // output the render result to console

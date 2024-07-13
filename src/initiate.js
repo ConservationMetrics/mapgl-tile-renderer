@@ -2,7 +2,11 @@ import os from "os";
 import fs from "fs";
 import path from "path";
 
-import { generateStyle, generateMBTiles } from "./generate_resources.js";
+import {
+  generateStyle,
+  generateMBTiles,
+  generateThumbnail,
+} from "./generate_resources.js";
 import {
   requestOnlineTiles,
   requestOpenStreetMapData,
@@ -26,6 +30,7 @@ export const initiateRendering = async (
   tiletype,
   outputDir,
   outputFilename,
+  thumbnail,
 ) => {
   console.log("Initiating rendering...");
 
@@ -156,6 +161,20 @@ export const initiateRendering = async (
     });
   }
 
+  // Generate thumbnail, if requested
+  if (thumbnail) {
+    await generateThumbnail(
+      styleObject,
+      styleDir,
+      sourceDir,
+      bounds,
+      ratio,
+      outputDir,
+      outputFilename,
+    );
+  }
+
+  // Generate MBTiles file
   let generateResult = await generateMBTiles(
     styleObject,
     styleDir,

@@ -7,7 +7,7 @@ import {
   calculateTileRangeForBounds,
   validateMinMaxValues,
 } from "./tile_calculations.js";
-import { renderTile } from "./render_map.js";
+import { renderTile, renderThumbnail } from "./render_map.js";
 import {
   basicMapStyle,
   openStreetMapStyle,
@@ -65,7 +65,7 @@ export const generateStyle = (
   return styleObject;
 };
 
-// Convert premultiplied image buffer from Mapbox GL to RGBA PNG format
+// Convert premultiplied image buffer from MapGL to RGBA PNG format
 export const generateImage = async (buffer, tiletype, width, height, ratio) => {
   const image = sharp(buffer, {
     raw: {
@@ -84,6 +84,31 @@ export const generateImage = async (buffer, tiletype, width, height, ratio) => {
     case "webp":
       return image.webp().toBuffer();
   }
+};
+
+// Generate a thumbnail image for the style and bounds
+export const generateThumbnail = async (
+  styleObject,
+  styleDir,
+  sourceDir,
+  bounds,
+  ratio,
+  outputDir,
+  outputFilename,
+) => {
+  const thumbnailBuffer = await renderThumbnail(
+    styleObject,
+    styleDir,
+    sourceDir,
+    bounds,
+    ratio,
+  );
+
+  const outputPath = path.join(outputDir, `${outputFilename}-thumbnail.jpg`);
+
+  fs.writeFileSync(outputPath, thumbnailBuffer);
+
+  console.log(`Thumbnail generated at ${outputPath}`);
 };
 
 // Generate MBTiles file from a given style, bounds, and zoom range
