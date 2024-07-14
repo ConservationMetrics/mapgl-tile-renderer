@@ -233,8 +233,8 @@ const writeRenderResult = async (renderResult, message, requestId) => {
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
 };
 
-function camelToSnakeCase(str) {
+const camelToSnakeCase = (str) => {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
+};
 
 processQueueMessages();
