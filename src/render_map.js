@@ -26,7 +26,10 @@ export const renderThumbnail = async (
   bounds,
   ratio,
 ) => {
-  const tileSize = 512;
+  // Here, we use a 1:2 aspect ratio for the thumbnail
+  const width = 512;
+  const height = width / 2;
+
   const center = [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
 
   // Add bounding box as a source to the styleObject
@@ -81,13 +84,13 @@ export const renderThumbnail = async (
   const buffer = await renderMap(map, {
     zoom: 4, // Adjust zoom level as needed
     center: center,
-    height: tileSize,
-    width: tileSize,
+    width: width,
+    height: height,
   });
 
   map.release();
 
-  const image = await generateImage(buffer, "jpg", tileSize, tileSize, ratio);
+  const image = await generateImage(buffer, "jpg", width, height, ratio);
 
   return image;
 };
