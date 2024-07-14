@@ -161,9 +161,10 @@ export const initiateRendering = async (
     });
   }
 
+  let thumbnailFilename;
   // Generate thumbnail, if requested
   if (thumbnail) {
-    await generateThumbnail(
+    thumbnailFilename = await generateThumbnail(
       styleObject,
       styleDir,
       sourceDir,
@@ -202,6 +203,7 @@ export const initiateRendering = async (
     filename: generateResult.filename,
     fileSize: generateResult.fileSize,
     numberOfTiles: generateResult.numberOfTiles,
+    thumbnailFilename: thumbnailFilename,
     workBegun,
     workEnded: new Date().toISOString(),
   };

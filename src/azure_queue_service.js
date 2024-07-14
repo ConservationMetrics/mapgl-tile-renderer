@@ -90,8 +90,8 @@ const handleNewRequest = async (options, message) => {
     ratio,
     tiletype,
     outputDir,
-    outputFilename;
-  thumbnail;
+    outputFilename,
+    thumbnail;
   let boundsArray = [];
   let requestId;
 

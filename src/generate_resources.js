@@ -104,11 +104,14 @@ export const generateThumbnail = async (
     ratio,
   );
 
-  const outputPath = path.join(outputDir, `${outputFilename}-thumbnail.jpg`);
+  const thumbnailFilename = `${outputFilename}-thumbnail.jpg`;
+  const outputPath = path.join(outputDir, thumbnailFilename);
 
   fs.writeFileSync(outputPath, thumbnailBuffer);
 
   console.log(`Thumbnail generated at ${outputPath}`);
+
+  return thumbnailFilename;
 };
 
 // Generate MBTiles file from a given style, bounds, and zoom range
