@@ -76,6 +76,7 @@ Common options:
 * `-t` or `--tiletype`: Output tile type (jpg, png, or webp) (optional, jpg if not provided)
 * `-o` or `--outputdir`: Output directory (optional, "outputs/" if not provided)
 * `-f` or `--filename`: Name of the output MBTiles file (optional, "output" if not provided)
+* `-T` or `--thumbnail`: Optionally, generate a thumbnail of your style with a bounding box overlaid (false if not provided)
 
 ## CLI example usage
 

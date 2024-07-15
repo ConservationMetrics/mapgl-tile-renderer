@@ -18,6 +18,80 @@ const renderMap = (map, options) => {
   });
 };
 
+// Render a thumbnail image for the style and bounds
+export const renderThumbnail = async (
+  styleObject,
+  styleDir,
+  sourceDir,
+  bounds,
+  ratio,
+) => {
+  const imageSize = 512;
+  const center = [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
+
+  // Add bounding box as a source to the styleObject
+  styleObject.sources["bounding-box"] = {
+    type: "geojson",
+    data: {
+      type: "Feature",
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [bounds[0], bounds[1]],
+            [bounds[0], bounds[3]],
+            [bounds[2], bounds[3]],
+            [bounds[2], bounds[1]],
+            [bounds[0], bounds[1]],
+          ],
+        ],
+      },
+    },
+  };
+
+  // Add bounding box style to the styleObject
+  styleObject.layers.push({
+    id: "bounding-box",
+    type: "fill",
+    source: "bounding-box",
+    paint: {
+      "fill-color": "#3BB2D0",
+      "fill-opacity": 0.4,
+    },
+  });
+
+  styleObject.layers.push({
+    id: "bounding-box-border",
+    type: "line",
+    source: "bounding-box",
+    paint: {
+      "line-color": "#3BB2D0",
+      "line-width": 2,
+      "line-dasharray": [2, 2], // This creates a dotted line
+    },
+  });
+
+  const map = new maplibre.Map({
+    request: requestHandler(styleDir, sourceDir),
+    ratio: ratio,
+  });
+
+  map.load(styleObject);
+
+  const buffer = await renderMap(map, {
+    zoom: 4, // Adjust zoom level as needed
+    center: center,
+    height: imageSize,
+    width: imageSize,
+  });
+
+  map.release();
+
+  const image = await generateImage(buffer, "jpg", imageSize, imageSize, ratio);
+
+  return image;
+};
+
 // Render map tile for a given style, zoom level, and tile coordinates
 export const renderTile = async (
   styleObject,

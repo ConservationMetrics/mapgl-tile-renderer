@@ -95,7 +95,7 @@ test("Generates a MapGL style JSON object from Esri and overlay", async () => {
   expect(styleObject).toEqual(expectedStyleObject);
 });
 
-test("Generates MBTiles from self-provided style with MBTiles and GeoJSON source", async () => {
+test("Generates MBTiles and thumbnail from self-provided style with MBTiles and GeoJSON source", async () => {
   await initiateRendering(
     "self",
     "./tests/fixtures/alert/style-with-geojson.json",
@@ -111,7 +111,8 @@ test("Generates MBTiles from self-provided style with MBTiles and GeoJSON source
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
+    true
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -120,7 +121,11 @@ test("Generates MBTiles from self-provided style with MBTiles and GeoJSON source
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
   expect(stats.size).toBeGreaterThan(69632)
 
+  // Expect output-thumbnail.jpg to exist
+  expect(fs.existsSync(`${tempDir}/output-thumbnail.jpg`)).toBe(true);
+
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
+  fs.unlinkSync(`${tempDir}/output-thumbnail.jpg`);
 });
 
 test("Generates MBTiles from self-provided style with MBTiles source that uses font glyphs", async () => {

@@ -90,7 +90,8 @@ const handleNewRequest = async (options, message) => {
     ratio,
     tiletype,
     outputDir,
-    outputFilename;
+    outputFilename,
+    thumbnail;
   let boundsArray = [];
   let requestId;
 
@@ -109,6 +110,7 @@ const handleNewRequest = async (options, message) => {
       ratio = 1,
       tiletype = "jpg",
       outputFilename = "output",
+      thumbnail = false,
     } = options);
 
     requestId = options.requestId;
@@ -156,6 +158,7 @@ const handleNewRequest = async (options, message) => {
       tiletype,
       outputDir,
       outputFilename,
+      thumbnail,
     );
   } catch (error) {
     renderResult = handleError(error, "internalServerError");
@@ -230,8 +233,8 @@ const writeRenderResult = async (renderResult, message, requestId) => {
   await sourceQueueClient.deleteMessage(message.messageId, message.popReceipt);
 };
 
-function camelToSnakeCase(str) {
+const camelToSnakeCase = (str) => {
   return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
-}
+};
 
 processQueueMessages();
