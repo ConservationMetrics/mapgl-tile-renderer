@@ -1,5 +1,12 @@
 // Retrieved from https://maps.protomaps.com/
-export const protomapsStyle = (tempDir) => {
+export const protomapsStyle = (tempDir, style, generateThumbnail, apiKey) => {
+  const sourceConfig = mapStyleSources[style];
+  const sourceUrl = generateThumbnail
+    ? typeof sourceConfig.sourceUrl === "function"
+      ? sourceConfig.sourceUrl(apiKey, monthYear)
+      : sourceConfig.sourceUrl
+    : `${tempDir}/sources/protomaps-tiles.json`;
+
   const styleObject = {
     version: 8,
     sources: {
@@ -7,7 +14,7 @@ export const protomapsStyle = (tempDir) => {
         type: "vector",
         attribution:
           '<a href="https://github.com/protomaps/basemaps">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        url: `${tempDir}/sources/protomaps-tiles.json`,
+        url: sourceUrl,
       },
     },
     layers: [
@@ -2015,7 +2022,20 @@ export const protomapsStyle = (tempDir) => {
   return styleObject;
 };
 
-export const basicMapStyle = (style, tileSize) => {
+export const basicMapStyle = (
+  style,
+  tileSize,
+  generateThumbnail,
+  apiKey,
+  monthYear,
+) => {
+  const sourceConfig = mapStyleSources[style];
+  const sourceUrl = generateThumbnail
+    ? typeof sourceConfig.sourceUrl === "function"
+      ? sourceConfig.sourceUrl(apiKey, monthYear)
+      : sourceConfig.sourceUrl
+    : `sources/{z}/{x}/{y}.jpg`;
+
   const styleObject = {
     version: 8,
     sources: {
@@ -2023,7 +2043,7 @@ export const basicMapStyle = (style, tileSize) => {
         type: "raster",
         scheme: "xyz",
         tilejson: "2.2.0",
-        tiles: ["sources/{z}/{x}/{y}.jpg"],
+        tiles: [sourceUrl],
         tileSize: tileSize,
       },
     },
@@ -2047,7 +2067,20 @@ export const basicMapStyle = (style, tileSize) => {
   return styleObject;
 };
 
-export const openStreetMapStyle = (style, tileSize) => {
+export const openStreetMapStyle = (
+  style,
+  tileSize,
+  generateThumbnail,
+  apiKey,
+  monthYear,
+) => {
+  const sourceConfig = mapStyleSources[style];
+  const sourceUrl = generateThumbnail
+    ? typeof sourceConfig.sourceUrl === "function"
+      ? sourceConfig.sourceUrl(apiKey, monthYear)
+      : sourceConfig.sourceUrl
+    : `sources/{z}/{x}/{y}.jpg`;
+
   const styleObject = {
     version: 8,
     sources: {
@@ -2055,7 +2088,7 @@ export const openStreetMapStyle = (style, tileSize) => {
         type: "raster",
         scheme: "xyz",
         tilejson: "2.2.0",
-        tiles: ["sources/{z}/{x}/{y}.jpg"],
+        tiles: [sourceUrl],
         tileSize: tileSize,
       },
       osm: {
@@ -2126,4 +2159,78 @@ export const openStreetMapStyle = (style, tileSize) => {
   };
 
   return styleObject;
+};
+
+export const mapStyleSources = {
+  google: {
+    sourceUrl: `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`,
+    sourceAttribution: "© Google",
+    sourceName: "Google Hybrid",
+    sourceFormat: "jpg",
+  },
+  esri: {
+    sourceUrl:
+      "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    sourceAttribution: "© ESRI",
+    sourceName: "ESRI World Imagery",
+    sourceFormat: "jpg",
+  },
+  bing: {
+    sourceUrl: "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1",
+    sourceAttribution: "© Microsoft (Bing Maps)",
+    sourceName: "Bing Maps Satellite",
+    sourceFormat: "jpg",
+  },
+  mapbox: {
+    sourceUrl: (mapboxStyle, apiKey) =>
+      `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`,
+    sourceAttribution: "© Mapbox",
+    sourceName: "Mapbox Custom Style",
+    sourceFormat: "jpg",
+  },
+  "mapbox-satellite": {
+    sourceUrl: (apiKey) =>
+      `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=${apiKey}`,
+    sourceAttribution: "© Mapbox",
+    sourceName: "Mapbox Satellite",
+    sourceFormat: "jpg",
+  },
+  planet: {
+    sourceUrl: (monthYear, apiKey) =>
+      `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_${monthYear}_mosaic/gmap/{z}/{x}/{y}?api_key=${apiKey}`,
+    sourceAttribution: "© Planet Labs",
+    sourceName: (monthYear) =>
+      `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`,
+    sourceFormat: "jpg",
+  },
+  protomaps: {
+    sourceUrl: (apiKey) =>
+      `https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=${apiKey}`,
+    sourceAttribution: "Protomaps © OpenStreetMap",
+    sourceName: "Protomaps",
+    sourceFormat: "mvt",
+  },
+  "stadia-alidade-satellite": {
+    sourceUrl: (apiKey) =>
+      `https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}.jpg?api_key=${apiKey}`,
+    sourceAttribution:
+      "© Stadia Maps © OpenMapTiles © OpenStreetMap © CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data)",
+    sourceName: "Stadia Maps Alidade Satellite",
+    sourceFormat: "jpg",
+  },
+  "stadia-stamen-terrain": {
+    sourceUrl: (apiKey) =>
+      `https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.jpg?api_key=${apiKey}`,
+    sourceAttribution: "© Stadia Maps © OpenMapTiles © OpenStreetMap",
+    sourceName: "Stadia Maps Stamen Terrain",
+    sourceFormat: "jpg",
+  },
+  "thunderforest-landscape": {
+    sourceUrl: (apiKey) =>
+      `https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${apiKey}`,
+    sourceAttribution:
+      "Maps © Thunderforest, Data © OpenStreetMap contributors",
+    sourceName: "Thunderforest Landscape",
+    sourceFormat: "jpg",
+  },
 };

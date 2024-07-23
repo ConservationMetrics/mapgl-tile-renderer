@@ -8,6 +8,7 @@ import {
   convertCoordinatesToTiles,
   validateMinMaxValues,
 } from "./tile_calculations.js";
+import { mapStyleSources } from "./map_styles.js";
 
 // Download XYZ tile
 export const downloadOnlineXyzTile = async (
@@ -65,67 +66,26 @@ const downloadOnlineTiles = async (
 
   switch (style) {
     case "google":
-      sourceUrl = `https://mt0.google.com/vt?lyrs=s&x={x}&y={y}&z={z}`;
-      sourceAttribution = "© Google";
-      sourceName = "Google Hybrid";
-      sourceFormat = "jpg";
-      break;
     case "esri":
-      sourceUrl =
-        "https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      sourceAttribution = "© ESRI";
-      sourceName = "ESRI World Imagery";
-      sourceFormat = "jpg";
-      break;
     case "bing":
-      sourceUrl = "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=1";
-      sourceAttribution = "© Microsoft (Bing Maps)";
-      sourceName = "Bing Maps Satellite";
-      sourceFormat = "jpg";
-      break;
     case "mapbox":
-      sourceUrl = `https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/{z}/{x}/{y}?access_token=${apiKey}`;
-      sourceAttribution = "© Mapbox";
-      sourceName = "Mapbox Custom Style";
-      sourceFormat = "jpg";
-      break;
     case "mapbox-satellite":
-      sourceUrl = `https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=${apiKey}`;
-      sourceAttribution = "© Mapbox";
-      sourceName = "Mapbox Satellite";
-      sourceFormat = "jpg";
-      break;
     case "planet":
-      sourceUrl = `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_${monthYear}_mosaic/gmap/{z}/{x}/{y}?api_key=${apiKey}`;
-      sourceAttribution = "© Planet Labs";
-      sourceName = `Planet Planetscope Monthly Visual Basemap, ${monthYear} (made available through NICFI)`;
-      sourceFormat = "jpg";
-      break;
     case "protomaps":
-      sourceUrl = `https://api.protomaps.com/tiles/v3/{z}/{x}/{y}.mvt?key=${apiKey}`;
-      sourceAttribution = "Protomaps © OpenStreetMap";
-      sourceName = "Protomaps";
-      sourceFormat = "mvt";
-      break;
     case "stadia-alidade-satellite":
-      sourceUrl = `https://tiles.stadiamaps.com/tiles/alidade_satellite/{z}/{x}/{y}.jpg?api_key=${apiKey}`;
-      sourceAttribution =
-        "© Stadia Maps © OpenMapTiles © OpenStreetMap © CNES, Distribution Airbus DS, © Airbus DS, © PlanetObserver (Contains Copernicus Data)";
-      sourceName = "Stadia Maps Alidade Satellite";
-      sourceFormat = "jpg";
-      break;
     case "stadia-stamen-terrain":
-      sourceUrl = `https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.jpg?api_key=${apiKey}`;
-      sourceAttribution = "© Stadia Maps © OpenMapTiles © OpenStreetMap";
-      sourceName = "Stadia Maps Stamen Terrain";
-      sourceFormat = "jpg";
-      break;
     case "thunderforest-landscape":
-      sourceUrl = `https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=${apiKey}`;
-      sourceAttribution =
-        "Maps © Thunderforest, Data © OpenStreetMap contributors";
-      sourceName = "Thunderforest Landscape";
-      sourceFormat = "jpg";
+      const source = mapStyleSources[style];
+      sourceUrl =
+        typeof source.sourceUrl === "function"
+          ? source.sourceUrl(apiKey)
+          : source.sourceUrl;
+      sourceAttribution = source.sourceAttribution;
+      sourceName =
+        typeof source.sourceName === "function"
+          ? source.sourceName(monthYear)
+          : source.sourceName;
+      sourceFormat = source.sourceFormat;
       break;
     default:
       throw new Error("Invalid source provided");

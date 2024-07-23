@@ -12,24 +12,45 @@ import {
   basicMapStyle,
   openStreetMapStyle,
   protomapsStyle,
+  mapStyleSources,
 } from "./map_styles.js";
 
-// Generate a MapGL style JSON object from a remote source
-// and an additional source.
+// Generate a MapGL style JSON object
 export const generateStyle = (
   style,
   overlay,
   openStreetMap,
   tileSize,
   tempDir,
+  generateThumbnail,
+  apiKey,
+  monthYear,
 ) => {
   let styleObject;
   if (style === "protomaps") {
-    styleObject = protomapsStyle(tempDir);
+    styleObject = protomapsStyle(
+      tempDir,
+      style,
+      generateThumbnail,
+      apiKey,
+      monthYear,
+    );
   } else if (openStreetMap) {
-    styleObject = openStreetMapStyle(style, tileSize);
+    styleObject = openStreetMapStyle(
+      style,
+      tileSize,
+      generateThumbnail,
+      apiKey,
+      monthYear,
+    );
   } else {
-    styleObject = basicMapStyle(style, tileSize);
+    styleObject = basicMapStyle(
+      style,
+      tileSize,
+      generateThumbnail,
+      apiKey,
+      monthYear,
+    );
   }
   // For now, we are styling an additional source with a
   // transparent red fill and red outline. In the future
@@ -254,12 +275,12 @@ export const generateMBTiles = async (
       console.error(`Error writing MBTiles file: ${err}`);
     });
 
-    writeStream.on("close", () => {
-      // Delete the temporary tiles directory and style
-      if (tempDir !== null) {
-        fs.promises.rm(tempDir, { recursive: true });
-      }
-    });
+    // writeStream.on("close", () => {
+    //   // Delete the temporary tiles directory and style
+    //   if (tempDir !== null) {
+    //     fs.promises.rm(tempDir, { recursive: true });
+    //   }
+    // });
 
     readStream.pipe(writeStream);
   } catch (error) {

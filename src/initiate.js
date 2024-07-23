@@ -47,6 +47,8 @@ export const initiateRendering = async (
 
   let styleObject = null;
   let styleDir = null;
+  let tileSize = null;
+  let generateThumbnailStyle = false;
 
   // If the style is self-hosted, let's read the style from the file.
   if (style === "self") {
@@ -102,7 +104,6 @@ export const initiateRendering = async (
     }
 
     // Set the tileSize of the online source. Mapbox Raster API provides 512px tiles.
-    let tileSize;
     if (style === "mapbox" || style === "mapbox-satellite") {
       tileSize = 512;
     } else {
@@ -118,6 +119,7 @@ export const initiateRendering = async (
           openStreetMap,
           tileSize,
           tempDir,
+          generateThumbnailStyle,
         );
         fs.writeFileSync(
           `${tempDir}/style.json`,
@@ -164,8 +166,36 @@ export const initiateRendering = async (
   let thumbnailFilename;
   // Generate thumbnail, if requested
   if (thumbnail) {
+    // Generate a style for the thumbnail using the online source directly
+    let thumbnailStyleObject;
+    if (style !== "self") {
+      try {
+        thumbnailStyleObject = generateStyle(
+          style,
+          overlay,
+          openStreetMap,
+          tileSize,
+          tempDir,
+          (generateThumbnailStyle = true),
+          apiKey,
+          monthYear,
+        );
+        fs.writeFileSync(
+          `${tempDir}/style-thumbnail.json`,
+          JSON.stringify(thumbnailStyleObject, null, 2),
+        );
+        console.log("Stylesheet generated and saved!");
+      } catch (error) {
+        throw new Error(
+          `Error generating and saving the stylesheet: ${error.message}`,
+        );
+      }
+    } else {
+      thumbnailStyleObject = styleObject;
+    }
+
     thumbnailFilename = await generateThumbnail(
-      styleObject,
+      thumbnailStyleObject,
       styleDir,
       sourceDir,
       bounds,
