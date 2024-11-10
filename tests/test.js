@@ -18,19 +18,27 @@ const tempDir = path.join(os.tmpdir());
 // Load MAPBOX_API_TOKEN from .env.test
 // Create this file if wanting to test Mapbox
 dotenv.config();
-const { MAPBOX_TOKEN, PLANET_TOKEN, PROTOMAPS_TOKEN, STADIA_TOKEN, THUNDERFOREST_TOKEN } = process.env;
+const {
+  MAPBOX_TOKEN,
+  PLANET_TOKEN,
+  PROTOMAPS_TOKEN,
+  STADIA_TOKEN,
+  THUNDERFOREST_TOKEN,
+} = process.env;
 
 const tokens = {
   MAPBOX_TOKEN,
   PLANET_TOKEN,
   PROTOMAPS_TOKEN,
   STADIA_TOKEN,
-  THUNDERFOREST_TOKEN
+  THUNDERFOREST_TOKEN,
 };
 
 Object.entries(tokens).forEach(([key, value]) => {
   if (!value) {
-    console.warn(`${key} environment variable is missing; tests that require this token will be skipped`);
+    console.warn(
+      `${key} environment variable is missing; tests that require this token will be skipped`,
+    );
   }
 });
 
@@ -51,7 +59,7 @@ test("Generates a MapGL style JSON object from Esri and overlay", async () => {
     '{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"coordinates":[[[-78.52421524895288,37.84166911915864],[-78.52421524895288,37.42437630967217],[-78.05117693229629,37.42437630967217],[-78.05117693229629,37.84166911915864],[-78.52421524895288,37.84166911915864]]],"type":"Polygon"}}]}',
     null,
     256,
-    null
+    null,
   );
 
   const expectedStyleObject = {
@@ -112,14 +120,14 @@ test("Generates MBTiles and thumbnail from self-provided style with MBTiles and 
     "jpg",
     tempDir,
     "output",
-    true
+    true,
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   // Expect output-thumbnail.jpg to exist
   expect(fs.existsSync(`${tempDir}/output-thumbnail.jpg`)).toBe(true);
@@ -144,14 +152,14 @@ test("Generates MBTiles from self-provided style with MBTiles source that uses f
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -172,14 +180,14 @@ test("Generates MBTiles from self-provided style with PMTiles source that uses f
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -200,14 +208,14 @@ test("Generates MBTiles from self-provided style with XYZ dir source", async () 
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -228,14 +236,14 @@ test("Generates MBTiles from Bing with overlay GeoJSON", async () => {
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -250,13 +258,13 @@ test("Generates MBTiles from Bing with OpenStreetMap overlay", async () => {
     null,
     true,
     null,
-    [-54.9528992176,4.651819884,-54.9391663074,4.6655074239],
+    [-54.9528992176, 4.651819884, -54.9391663074, 4.6655074239],
     0,
     5,
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -284,14 +292,14 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -312,45 +320,49 @@ testStadia("Generates MBTiles from Stadia (Stamen Terrain style)", async () => {
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
-testThunderforest("Generates MBTiles from Thunderforest (Landscape style)", async () => {
-  await initiateRendering(
-    "thunderforest-landscape",
-    null,
-    null,
-    THUNDERFOREST_TOKEN,
-    null,
-    null,
-    null,
-    null,
-    [-79, 37, -77, 38],
-    0,
-    5,
-    1,
-    "jpg",
-    tempDir,
-    "output"
-  );
+testThunderforest(
+  "Generates MBTiles from Thunderforest (Landscape style)",
+  async () => {
+    await initiateRendering(
+      "thunderforest-landscape",
+      null,
+      null,
+      THUNDERFOREST_TOKEN,
+      null,
+      null,
+      null,
+      null,
+      [-79, 37, -77, 38],
+      0,
+      5,
+      1,
+      "jpg",
+      tempDir,
+      "output",
+    );
 
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-  // Expect output.mbtiles to be greater than 69632 bytes
-  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+    // Expect output.mbtiles to be greater than 69632 bytes
+    const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+    expect(stats.size).toBeGreaterThan(69632);
 
-  fs.unlinkSync(`${tempDir}/output.mbtiles`);
-}, 10000); // Thunderforest API is slow
+    fs.unlinkSync(`${tempDir}/output.mbtiles`);
+  },
+  10000,
+); // Thunderforest API is slow
 
 test("Generates MBTiles from Esri", async () => {
   await initiateRendering(
@@ -368,14 +380,14 @@ test("Generates MBTiles from Esri", async () => {
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -396,14 +408,14 @@ test("Generates MBTiles from Google", async () => {
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -424,14 +436,14 @@ testProtomaps("Generates MBTiles from Protomaps", async () => {
     1,
     "jpg",
     tempDir,
-    "output"
+    "output",
   );
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632)
+  expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
@@ -454,7 +466,7 @@ describe("downloadOnlineXyzTile tests", () => {
       "mapbox",
       `https://api.mapbox.com/v4/mapbox.satellite/0/0/0.jpg?access_token=${MAPBOX_TOKEN}`,
       `${tempDir}/mapbox_satellite_0_0_0.jpg`,
-      MAPBOX_TOKEN
+      MAPBOX_TOKEN,
     );
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     fs.unlinkSync(`${tempDir}/mapbox_satellite_0_0_0.jpg`);
@@ -465,10 +477,10 @@ describe("downloadOnlineXyzTile tests", () => {
       "mapbox",
       "https://api.mapbox.com/v4/mapbox.satellite/0/0/0.jpg?access_token=pk.ey",
       `${tempDir}/mapbox_satellite_0_0_0.jpg`,
-      "pk.ey"
+      "pk.ey",
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Error downloading tile")
+      expect.stringContaining("Error downloading tile"),
     );
   });
 
@@ -477,7 +489,7 @@ describe("downloadOnlineXyzTile tests", () => {
       "planet",
       `https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_2023-12_mosaic/gmap/0/0/0.jpg?api_key=${PLANET_TOKEN}`,
       `${tempDir}/planet_medres_visual_2023-12_mosaic_0_0_0.jpg`,
-      PLANET_TOKEN
+      PLANET_TOKEN,
     );
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     fs.unlinkSync(`${tempDir}/planet_medres_visual_2023-12_mosaic_0_0_0.jpg`);
@@ -488,10 +500,10 @@ describe("downloadOnlineXyzTile tests", () => {
       "planet",
       "https://tiles.planet.com/basemaps/v1/planet-tiles/planet_medres_visual_2023-12_mosaic/gmap/0/0/0.jpg?api_key=pk.ey",
       `${tempDir}/planet_medres_visual_2023-12_mosaic_0_0_0.jpg`,
-      "pk.ey"
+      "pk.ey",
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Error downloading tile")
+      expect.stringContaining("Error downloading tile"),
     );
   });
 });
@@ -523,7 +535,9 @@ describe("requestOpenStreetMapData tests", () => {
         </way>
       </osm>
     `;
-    jest.spyOn(axios, 'get').mockResolvedValue({ status: 200, data: fakeOsmData });
+    jest
+      .spyOn(axios, "get")
+      .mockResolvedValue({ status: 200, data: fakeOsmData });
   });
 
   afterEach(() => {
@@ -551,28 +565,28 @@ describe("requestOpenStreetMapData tests", () => {
 describe("validateMinMaxValues tests", () => {
   test("Throws error when one or more tile coordinates are NaN", () => {
     expect(() => validateMinMaxValues(NaN, 0, 0, 0)).toThrow(
-      "One or more tile coordinates are NaN"
+      "One or more tile coordinates are NaN",
     );
     expect(() => validateMinMaxValues(0, NaN, 0, 0)).toThrow(
-      "One or more tile coordinates are NaN"
+      "One or more tile coordinates are NaN",
     );
     expect(() => validateMinMaxValues(0, 0, NaN, 0)).toThrow(
-      "One or more tile coordinates are NaN"
+      "One or more tile coordinates are NaN",
     );
     expect(() => validateMinMaxValues(0, 0, 0, NaN)).toThrow(
-      "One or more tile coordinates are NaN"
+      "One or more tile coordinates are NaN",
     );
   });
 
   test("Throws error when minX is greater than maxX", () => {
     expect(() => validateMinMaxValues(5, 0, 4, 0)).toThrow(
-      "minX cannot be greater than maxX"
+      "minX cannot be greater than maxX",
     );
   });
 
   test("Throws error when minY is greater than maxY", () => {
     expect(() => validateMinMaxValues(0, 5, 0, 4)).toThrow(
-      "minY cannot be greater than maxY"
+      "minY cannot be greater than maxY",
     );
   });
 });

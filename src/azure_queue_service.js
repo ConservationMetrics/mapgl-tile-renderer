@@ -173,9 +173,8 @@ const handleDeleteRequest = async (options, message) => {
   const outputDir = options.outputDir;
 
   // Delete file from volume mounted to the container
+  const filePath = path.join(outputDir, outputFilename);
   try {
-    const filePath = path.join(outputDir, outputFilename);
-
     fs.unlinkSync(filePath);
     console.log(`File ${filePath} has been successfully deleted!`);
   } catch (error) {

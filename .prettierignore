@@ -1,5 +1,6 @@
 node_modules
 outputs
-tests
+coverage
+tests/fixtures
 .github
 *.md

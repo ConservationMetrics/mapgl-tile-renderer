@@ -202,7 +202,7 @@ const downloadOnlineTiles = async (
           }
         } else {
           totalTileCount++;
-          zoomLevelSpinner.info(`File already exists: ${filename}`);
+          spinner.info(`File already exists: ${filename}`);
           continue;
         }
 
@@ -262,7 +262,7 @@ const downloadOnlineTiles = async (
         );
       }
     } catch (error) {
-      throw new Error(`Error downloading tiles.json: ${tileJsonUrl}`);
+      throw new Error(`Error downloading tiles.json: ${tileJsonUrl}: ${error}`);
     }
 
     const tilesJsonFilePath = path.join(xyzOutputDir, "protomaps-tiles.json");
@@ -271,7 +271,9 @@ const downloadOnlineTiles = async (
       fs.writeFileSync(tilesJsonFilePath, JSON.stringify(tilesJson, null, 4));
       console.log("protomaps-tiles.json file generated!");
     } catch (error) {
-      throw new Error(`Error writing tiles.json file: ${tilesJsonFilePath}`);
+      throw new Error(
+        `Error writing tiles.json file: ${tilesJsonFilePath}: ${error}`,
+      );
     }
   }
 
@@ -281,7 +283,9 @@ const downloadOnlineTiles = async (
     fs.writeFileSync(metadataFilePath, JSON.stringify(metadata, null, 4));
     console.log("Metadata file generated!");
   } catch (error) {
-    throw new Error(`Error writing metadata file: ${metadataFilePath}`);
+    throw new Error(
+      `Error writing metadata file: ${metadataFilePath}: ${error}`,
+    );
   }
 
   console.log(
@@ -354,7 +358,9 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
       }
     } catch (error) {
       spinner.fail(`Error downloading OpenStreetMap data: ${overpassUrl}`);
-      throw new Error(`Error downloading OpenStreetMap data: ${overpassUrl}`);
+      throw new Error(
+        `Error downloading OpenStreetMap data: ${overpassUrl}: ${error}`,
+      );
     }
   } else {
     spinner.info(`OpenStreetMap data already exists: ${osmFile}`);
@@ -388,7 +394,9 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
     spinner.succeed("OpenStreetMap data successfully converted to GeoJSON!");
   } catch (error) {
     spinner.fail("Error converting OpenStreetMap data to GeoJSON");
-    throw new Error(`Error converting OpenStreetMap data to GeoJSON: ${error}`);
+    throw new Error(
+      `Error converting OpenStreetMap data to GeoJSON: ${error}: ${error}`,
+    );
   }
   console.log(
     `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m\n`,

@@ -130,7 +130,7 @@ export const validateInputOptions = (
     try {
       JSON.parse(overlay);
     } catch (e) {
-      raiseError("Overlay must be a valid JSON object");
+      raiseError(`Overlay must be a valid JSON object. Error: ${e.message}`);
     }
   }
 
