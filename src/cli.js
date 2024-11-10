@@ -117,7 +117,7 @@ validateInputOptions(
   maxZoom,
 );
 
-console.log("\n\n-------- Rendering map tiles with Maplibre GL --------");
+console.log("\n======== Rendering map tiles with MapLibre GL ========");
 
 console.log("Map style: %j", style);
 if (styleLocation)
@@ -137,7 +137,7 @@ console.log("Output tile type: %j", tiletype);
 console.log("Output directory: %j", outputDir);
 console.log("Output MBTiles filename: %j", outputFilename);
 console.log("Generate thumbnail: %j", thumbnail);
-console.log("------------------------------------------------------");
+console.log("======================================================\n");
 
 const renderResult = await initiateRendering(
   style,
@@ -158,5 +158,19 @@ const renderResult = await initiateRendering(
   thumbnail,
 );
 
-// output the render result to console
-console.log("Render result:", renderResult);
+console.log("\n======== Render Result ========");
+console.log("Style: %j", renderResult.style);
+console.log("Status: %j", renderResult.status);
+if (renderResult.errorMessage) {
+  console.log("Error message: %j", renderResult.errorMessage);
+}
+console.log("File location: %j", renderResult.fileLocation);
+console.log("Filename: %j", renderResult.filename);
+console.log("File size: %j", renderResult.fileSize);
+console.log("Number of tiles: %j", renderResult.numberOfTiles);
+if (renderResult.thumbnailFilename) {
+  console.log("Thumbnail filename: %j", renderResult.thumbnailFilename);
+}
+console.log("Work begun: %j", renderResult.workBegun);
+console.log("Work ended: %j", renderResult.workEnded);
+console.log("================================");

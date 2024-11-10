@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import axios from "axios";
+import ora from "ora";
 import pLimit from "p-limit";
 import osmtogeojson from "osmtogeojson";
 
@@ -136,7 +137,7 @@ const downloadOnlineTiles = async (
     fs.mkdirSync(xyzOutputDir, { recursive: true });
   }
 
-  console.log(`Downloading XYZ tiles from ${sourceName}...`);
+  console.log(`\nDownloading XYZ tiles from ${sourceName}...`);
 
   const limit = pLimit(5);
 
@@ -144,6 +145,8 @@ const downloadOnlineTiles = async (
 
   // Iterate over zoom levels and tiles
   for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
+    const spinner = ora(`Downloading tiles for zoom level ${zoom}...`).start();
+
     let { x: minX, y: maxY } = convertCoordinatesToTiles(
       bounds[0],
       bounds[1],
@@ -199,7 +202,7 @@ const downloadOnlineTiles = async (
           }
         } else {
           totalTileCount++;
-          console.log(`File already exists: ${filename}`);
+          zoomLevelSpinner.info(`File already exists: ${filename}`);
           continue;
         }
 
@@ -219,9 +222,9 @@ const downloadOnlineTiles = async (
     // for a specific zoom level for some unforeseen reason. We might still want to continue
     // generating an MBTiles in that case, so we log a warning instead of throwing an exception.
     if (tileCount === 0) {
-      console.warn(`\x1b[33mNo tiles downloaded for zoom level ${zoom}\x1b[0m`);
+      spinner.warn(`No tiles downloaded for zoom level ${zoom}`);
     } else {
-      console.log(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
+      spinner.succeed(`Zoom level ${zoom} downloaded with ${tileCount} tiles`);
     }
   }
 
@@ -282,7 +285,7 @@ const downloadOnlineTiles = async (
   }
 
   console.log(
-    `\x1b[32mXYZ tiles successfully downloaded from ${sourceName}!\x1b[0m`,
+    `\x1b[32mXYZ tiles successfully downloaded from ${sourceName}!\x1b[0m\n`,
   );
 };
 
@@ -329,7 +332,9 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  console.log(`Downloading OpenStreetMap data from Overpass API...`);
+  const spinner = ora(
+    "Downloading OpenStreetMap data from Overpass API...",
+  ).start();
 
   const osmFile = `${outputDir}/data.osm`;
 
@@ -338,19 +343,24 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
       const response = await axios.get(overpassUrl);
       if (response.status === 200) {
         fs.writeFileSync(osmFile, response.data);
+        spinner.succeed("OpenStreetMap data downloaded!");
       } else {
+        spinner.fail(
+          `Failed to download OpenStreetMap data: ${overpassUrl} (Status code: ${response.status})`,
+        );
         throw new Error(
           `Failed to download OpenStreetMap data: ${overpassUrl} (Status code: ${response.status})`,
         );
       }
     } catch (error) {
+      spinner.fail(`Error downloading OpenStreetMap data: ${overpassUrl}`);
       throw new Error(`Error downloading OpenStreetMap data: ${overpassUrl}`);
     }
   } else {
-    console.log(`OpenStreetMap data already exists: ${osmFile}`);
+    spinner.info(`OpenStreetMap data already exists: ${osmFile}`);
   }
 
-  console.log(`OpenStreetMap data downloaded! Converting to GeoJSON...`);
+  spinner.start("Converting OpenStreetMap data to GeoJSON...");
 
   try {
     // Convert OSM XML data to OSM JSON using parse_osmxml
@@ -375,10 +385,12 @@ export const requestOpenStreetMapData = async (bounds, tempDir) => {
       `${outputDir}/openstreetmap.geojson`,
       JSON.stringify(geojson, null, 4),
     );
+    spinner.succeed("OpenStreetMap data successfully converted to GeoJSON!");
   } catch (error) {
+    spinner.fail("Error converting OpenStreetMap data to GeoJSON");
     throw new Error(`Error converting OpenStreetMap data to GeoJSON: ${error}`);
   }
   console.log(
-    `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m`,
+    `\x1b[32mOpenStreetMap data successfully downloaded and converted to GeoJSON!\x1b[0m\n`,
   );
 };

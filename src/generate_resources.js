@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
+import ora from "ora";
 import MBTiles from "@mapbox/mbtiles";
 
 import {
@@ -130,7 +131,7 @@ export const generateMBTiles = async (
 ) => {
   const outputMBTiles = `${outputFilename}.mbtiles`;
   const tempPath = `${tempDir}/${outputMBTiles}`;
-  console.log(`Generating MBTiles file...`);
+  console.log(`\nGenerating MBTiles file...`);
 
   let numberOfTiles = 0;
   let fileSize = 0;
@@ -184,7 +185,7 @@ export const generateMBTiles = async (
 
     // Iterate over zoom levels
     for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
-      console.log(`Rendering zoom level ${zoom}...`);
+      const spinner = ora(`Rendering zoom level ${zoom}...`).start();
       // Calculate tile range for this zoom level based on bounds
       const { minX, minY, maxX, maxY } = calculateTileRangeForBounds(
         bounds,
@@ -217,10 +218,11 @@ export const generateMBTiles = async (
             // Increment the number of tiles
             numberOfTiles++;
           } catch (error) {
-            console.error(`Error rendering tile ${zoom}/${x}/${y}: ${error}`);
+            spinner.fail(`Error rendering tile ${zoom}/${x}/${y}: ${error}`);
           }
         }
       }
+      spinner.succeed(`Zoom level ${zoom} rendered`);
     }
 
     // Finish writing and close the MBTiles file
