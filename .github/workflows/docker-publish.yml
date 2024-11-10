@@ -68,7 +68,7 @@ jobs:
         run: |
           docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs ${{ steps.meta.outputs.tags }} --style protomaps --apikey ${{ secrets.PROTOMAPS_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5 -f protomaps-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
       - name: Upload mbtiles artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: mbtiles-${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
           path: outputs/*.mbtiles

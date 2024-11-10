@@ -1,6 +1,6 @@
 {
   "name": "mapgl-tile-renderer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A tile renderer for Maplibre GL JS",
   "type": "module",
   "main": "./src/cli.js",
