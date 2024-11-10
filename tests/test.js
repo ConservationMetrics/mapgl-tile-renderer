@@ -304,33 +304,37 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
 });
 
-testStadia("Generates MBTiles from Stadia (Stamen Terrain style)", async () => {
-  await initiateRendering(
-    "stadia-stamen-terrain",
-    null,
-    null,
-    STADIA_TOKEN,
-    null,
-    null,
-    null,
-    null,
-    [-79, 37, -77, 38],
-    0,
-    5,
-    1,
-    "jpg",
-    tempDir,
-    "output",
-  );
+testStadia(
+  "Generates MBTiles from Stadia (Stamen Terrain style)",
+  async () => {
+    await initiateRendering(
+      "stadia-stamen-terrain",
+      null,
+      null,
+      STADIA_TOKEN,
+      null,
+      null,
+      null,
+      null,
+      [-79, 37, -77, 38],
+      0,
+      5,
+      1,
+      "jpg",
+      tempDir,
+      "output",
+    );
 
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-  // Expect output.mbtiles to be greater than 69632 bytes
-  const stats = fs.statSync(`${tempDir}/output.mbtiles`);
-  expect(stats.size).toBeGreaterThan(69632);
+    // Expect output.mbtiles to be greater than 69632 bytes
+    const stats = fs.statSync(`${tempDir}/output.mbtiles`);
+    expect(stats.size).toBeGreaterThan(69632);
 
-  fs.unlinkSync(`${tempDir}/output.mbtiles`);
-});
+    fs.unlinkSync(`${tempDir}/output.mbtiles`);
+  },
+  10000,
+); // Stadia API is slow
 
 testThunderforest(
   "Generates MBTiles from Thunderforest (Landscape style)",
