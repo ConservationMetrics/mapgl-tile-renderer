@@ -152,6 +152,7 @@ test("Generates MBTiles from self-provided style with MBTiles source that uses f
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
