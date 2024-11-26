@@ -118,6 +118,7 @@ test("Generates MBTiles and thumbnail from self-provided style with MBTiles and 
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
     true,
@@ -179,6 +180,7 @@ test("Generates MBTiles from self-provided style with PMTiles source that uses f
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -207,6 +209,7 @@ test("Generates MBTiles from self-provided style with XYZ dir source", async () 
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -235,6 +238,7 @@ test("Generates MBTiles from Bing with overlay GeoJSON", async () => {
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -263,6 +267,7 @@ test("Generates MBTiles from Bing with OpenStreetMap overlay", async () => {
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -291,6 +296,7 @@ testMapbox("Generates MBTiles from Mapbox Satellite", async () => {
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -321,6 +327,7 @@ testStadia(
       5,
       1,
       "jpg",
+      null,
       tempDir,
       "output",
     );
@@ -353,6 +360,7 @@ testThunderforest(
       5,
       1,
       "jpg",
+      null,
       tempDir,
       "output",
     );
@@ -383,6 +391,7 @@ test("Generates MBTiles from Esri", async () => {
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -411,6 +420,7 @@ test("Generates MBTiles from Google", async () => {
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -439,6 +449,7 @@ testProtomaps("Generates MBTiles from Protomaps", async () => {
     5,
     1,
     "jpg",
+    null,
     tempDir,
     "output",
   );
@@ -450,6 +461,35 @@ testProtomaps("Generates MBTiles from Protomaps", async () => {
   expect(stats.size).toBeGreaterThan(69632);
 
   fs.unlinkSync(`${tempDir}/output.mbtiles`);
+});
+
+test("Generates SMP from Bing", async () => {
+  await initiateRendering(
+    "bing",
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    [-79, 37, -77, 38],
+    0,
+    5,
+    1,
+    "jpg",
+    "smp",
+    tempDir,
+    "output",
+  );
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Expect output.smp to be greater than 69632 bytes
+  const stats = fs.statSync(`${tempDir}/output.smp`);
+  expect(stats.size).toBeGreaterThan(69632);
+
+  fs.unlinkSync(`${tempDir}/output.smp`);
 });
 
 describe("downloadOnlineXyzTile tests", () => {
