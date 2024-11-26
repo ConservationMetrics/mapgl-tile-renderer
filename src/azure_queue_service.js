@@ -89,6 +89,7 @@ const handleNewRequest = async (options, message) => {
     maxZoom,
     ratio,
     tiletype,
+    format,
     outputDir,
     outputFilename,
     thumbnail;
@@ -109,6 +110,7 @@ const handleNewRequest = async (options, message) => {
       maxZoom,
       ratio = 1,
       tiletype = "jpg",
+      format = "mbtiles",
       outputFilename = "output",
       thumbnail = false,
     } = options);
@@ -156,6 +158,7 @@ const handleNewRequest = async (options, message) => {
       maxZoom,
       ratio,
       tiletype,
+      format,
       outputDir,
       outputFilename,
       thumbnail,

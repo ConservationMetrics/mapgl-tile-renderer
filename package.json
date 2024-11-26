@@ -1,7 +1,7 @@
 {
   "name": "mapgl-tile-renderer",
   "version": "1.1.2",
-  "description": "A tile renderer for Maplibre GL JS",
+  "description": "A headless tile renderer for Maplibre GL JS",
   "type": "module",
   "main": "./src/cli.js",
   "scripts": {
@@ -28,7 +28,8 @@
     "path": "^0.12.7",
     "pg": "^8.11.5",
     "pmtiles": "3.0.3",
-    "sharp": "^0.33.2"
+    "sharp": "^0.33.2",
+    "styled-map-package": "git+https://github.com/digidem/styled-map-package.git"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
