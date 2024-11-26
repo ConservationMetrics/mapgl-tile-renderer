@@ -15,8 +15,8 @@ import { skipIf } from "./utils.js";
 
 const tempDir = path.join(os.tmpdir());
 
-// Load MAPBOX_API_TOKEN from .env.test
-// Create this file if wanting to test Mapbox
+// Load API tokens from .env.test
+// Create this file if wanting to test any service that requires a token
 dotenv.config();
 const {
   MAPBOX_TOKEN,
