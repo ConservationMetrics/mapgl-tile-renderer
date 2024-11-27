@@ -187,11 +187,15 @@ Make sure to review the `gen-tiles-input.yml` file to understand the inputs and 
 
 ## Inspect the outputs
 
-Three easy ways to examine and inspect the MBTiles:
+To examine and inspect MBTiles files:
 
-1. Upload them to a [Felt](https://felt.com) map.
-2. Use the [mbview](https://github.com/mapbox/mbview) tool to view them in the browser.
-3. Load them in [QGIS](https://qgis.org).
+1. Load them in [QGIS](https://qgis.org).
+2. Open them in this [MBTiles Viewer](https://mbtiles-viewer.pages.dev/) webpage.
+3. Upload them to a [Felt](https://felt.com) map.
+
+To examine and inspect SMP files:
+
+1. Open them in this [SMP Viewer](https://smp-viewer.pages.dev/) webpage.
 
 ## Formats other than MBTiles or SMP
 
