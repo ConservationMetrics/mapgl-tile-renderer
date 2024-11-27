@@ -65,6 +65,17 @@ program
     "jpg",
   )
   .option(
+    "-F, --format <type>",
+    "Output format (mbtiles or smp, default 'mbtiles')",
+    (format) => {
+      if (!["mbtiles", "smp"].includes(format)) {
+        throw new Error("Invalid format type");
+      }
+      return format;
+    },
+    "mbtiles",
+  )
+  .option(
     "-o, --outputdir <type>",
     "Output directory (default 'outputs/')",
     "outputs",
@@ -98,6 +109,7 @@ const {
   maxzoom: maxZoom,
   ratio,
   tiletype,
+  format,
   outputdir: outputDir,
   filename: outputFilename,
   thumbnail,
@@ -133,10 +145,11 @@ console.log("Bounding box: %j", bounds);
 console.log("Min zoom: %j", minZoom);
 console.log("Max zoom: %j", maxZoom);
 console.log("Ratio: %j", ratio);
+console.log("Generate thumbnail: %j", thumbnail);
+console.log("Format: %j", format);
 console.log("Output tile type: %j", tiletype);
 console.log("Output directory: %j", outputDir);
 console.log("Output MBTiles filename: %j", outputFilename);
-console.log("Generate thumbnail: %j", thumbnail);
 console.log("======================================================\n");
 
 const renderResult = await initiateRendering(
@@ -153,6 +166,7 @@ const renderResult = await initiateRendering(
   maxZoom,
   ratio,
   tiletype,
+  format,
   outputDir,
   outputFilename,
   thumbnail,

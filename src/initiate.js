@@ -4,7 +4,7 @@ import path from "path";
 
 import {
   generateStyle,
-  generateMBTiles,
+  generateTileFile,
   generateThumbnail,
 } from "./generate_resources.js";
 import {
@@ -28,6 +28,7 @@ export const initiateRendering = async (
   maxZoom,
   ratio,
   tiletype,
+  format,
   outputDir,
   outputFilename,
   thumbnail,
@@ -175,8 +176,8 @@ export const initiateRendering = async (
     );
   }
 
-  // Generate MBTiles file
-  let generateResult = await generateMBTiles(
+  // Generate Tile file (MBTiles or SMP)
+  let generateResult = await generateTileFile(
     styleObject,
     styleDir,
     sourceDir,
@@ -185,13 +186,14 @@ export const initiateRendering = async (
     maxZoom,
     ratio,
     tiletype,
+    format,
     tempDir,
     outputDir,
     outputFilename,
   );
 
   console.log(
-    `\x1b[32m${outputFilename}.mbtiles has been successfully generated!\x1b[0m`,
+    `\x1b[32m${generateResult.filename} has been successfully generated!\x1b[0m`,
   );
 
   // if successful, return the render result

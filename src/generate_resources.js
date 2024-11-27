@@ -3,6 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import ora from "ora";
 import MBTiles from "@mapbox/mbtiles";
+import fromMBTiles from "styled-map-package/from-mbtiles";
 
 import {
   calculateTileRangeForBounds,
@@ -115,8 +116,8 @@ export const generateThumbnail = async (
   return thumbnailFilename;
 };
 
-// Generate MBTiles file from a given style, bounds, and zoom range
-export const generateMBTiles = async (
+// Generate MBTiles or SMP file from a given style, bounds, and zoom range
+export const generateTileFile = async (
   styleObject,
   styleDir,
   sourceDir,
@@ -125,6 +126,7 @@ export const generateMBTiles = async (
   maxZoom,
   ratio,
   tiletype,
+  format,
   tempDir,
   outputDir,
   outputFilename,
@@ -136,7 +138,6 @@ export const generateMBTiles = async (
   let numberOfTiles = 0;
   let fileSize = 0;
 
-  // Create a new MBTiles file
   const mbtiles = await new Promise((resolve, reject) => {
     new MBTiles(`${tempPath}?mode=rwc`, (error, mbtiles) => {
       if (error) {
@@ -238,13 +239,30 @@ export const generateMBTiles = async (
     throw new Error(`Error writing MBTiles file: ${error}`);
   }
 
-  // Move the generated MBTiles file to the output directory
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
-  const outputPath = `${outputDir}/${outputMBTiles}`;
 
-  try {
+  let finalOutputPath;
+  if (format === "smp") {
+    console.log("Converting MBTiles to SMP...");
+
+    const mbTilesInputPath = path.join(tempDir, `${outputFilename}.mbtiles`);
+    const smpOutputPath = path.join(outputDir, `${outputFilename}.smp`);
+
+    try {
+      await fromMBTiles(mbTilesInputPath, smpOutputPath);
+      console.log(
+        `\x1b[32m${outputFilename}.smp has been successfully generated!\x1b[0m`,
+      );
+      fileSize = fs.statSync(smpOutputPath).size;
+      fs.unlinkSync(mbTilesInputPath);
+      finalOutputPath = smpOutputPath;
+    } catch (error) {
+      throw new Error(`Error converting MBTiles to SMP: ${error.message}`);
+    }
+  } else {
+    const outputPath = path.join(outputDir, `${outputFilename}.mbtiles`);
     const readStream = fs.createReadStream(tempPath);
     const writeStream = fs.createWriteStream(outputPath);
 
@@ -257,22 +275,19 @@ export const generateMBTiles = async (
     });
 
     writeStream.on("close", () => {
-      // Delete the temporary tiles directory and style
       if (tempDir !== null) {
         fs.promises.rm(tempDir, { recursive: true });
       }
     });
 
     readStream.pipe(writeStream);
-  } catch (error) {
-    throw new Error(`Error moving MBTiles file: ${error}`);
+    finalOutputPath = outputPath;
   }
 
-  // Return with success status
   return {
     errorMessage: null,
     fileLocation: outputDir,
-    filename: outputMBTiles,
+    filename: path.basename(finalOutputPath),
     fileSize: fileSize,
     numberOfTiles,
   };
