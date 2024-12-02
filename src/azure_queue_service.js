@@ -45,6 +45,19 @@ const processQueueMessages = async () => {
       continue;
     }
 
+    // Check dequeueCount
+    // https://learn.microsoft.com/en-us/rest/api/storageservices/get-messages#response-body
+    if (message.dequeueCount > 3) {
+      console.log(
+        `Message processing has been attempted more than 3 times. Deleting message with ID: ${message.messageId}`,
+      );
+      await sourceQueueClient.deleteMessage(
+        message.messageId,
+        message.popReceipt,
+      );
+      continue;
+    }
+
     try {
       // Decode and parse the message
       let decodedMessageText = Buffer.from(
