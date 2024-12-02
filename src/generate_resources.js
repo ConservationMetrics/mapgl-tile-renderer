@@ -252,9 +252,7 @@ export const generateTileFile = async (
 
     try {
       await fromMBTiles(mbTilesInputPath, smpOutputPath);
-      console.log(
-        `\x1b[32m${outputFilename}.smp has been successfully generated!\x1b[0m`,
-      );
+      console.log("SMP conversion successful!");
       fileSize = fs.statSync(smpOutputPath).size;
       fs.unlinkSync(mbTilesInputPath);
       finalOutputPath = smpOutputPath;
