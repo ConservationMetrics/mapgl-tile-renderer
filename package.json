@@ -29,7 +29,8 @@
     "pg": "^8.11.5",
     "pmtiles": "3.0.3",
     "sharp": "^0.33.2",
-    "styled-map-package": "git+https://github.com/digidem/styled-map-package.git"
+    "sqlite3": "^5.1.7",
+    "styled-map-package": "^3.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

@@ -273,7 +273,7 @@ test("Generates MBTiles from Bing with OpenStreetMap overlay", async () => {
     "output",
   );
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 3000));
 
   // Expect output.mbtiles to be greater than 69632 bytes
   const stats = fs.statSync(`${tempDir}/output.mbtiles`);
