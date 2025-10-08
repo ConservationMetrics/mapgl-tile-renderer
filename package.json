@@ -29,6 +29,7 @@
     "pg": "^8.11.5",
     "pmtiles": "3.0.3",
     "sharp": "^0.33.2",
+    "sqlite3": "^5.1.7",
     "styled-map-package": "^3.0.0"
   },
   "devDependencies": {
