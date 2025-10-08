@@ -3,7 +3,7 @@ import path from "path";
 import sharp from "sharp";
 import ora from "ora";
 import MBTiles from "@mapbox/mbtiles";
-import fromMBTiles from "styled-map-package/from-mbtiles";
+import { fromMBTiles } from "styled-map-package/from-mbtiles";
 
 import {
   calculateTileRangeForBounds,
