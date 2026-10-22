@@ -207,9 +207,7 @@ Mapgl-tile-renderer uses [Maplibre-GL Native](https://www.npmjs.com/package/@map
 
 ## Node installation requirements
 
-Node version: 18.17.0 to 20.x.x. 
-
-(Sharp requires 18.17.0 at minimum, and MapLibre Native is [currently only supported on stable releases of Node](https://github.com/maplibre/maplibre-native/issues/1058), 20 being the latest)
+Requires Node.js 22.
 
 
 ## Tests

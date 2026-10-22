@@ -1,12 +1,21 @@
-FROM buildpack-deps:jammy
+FROM buildpack-deps:noble
 
-RUN groupadd --gid 1000 node \
-  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+# Ubuntu 24.04 already ships uid/gid 1000 as the ubuntu user.
+RUN usermod -l node -d /home/node -m ubuntu \
+  && groupmod -n node ubuntu
 
 WORKDIR /app
 
 # Combine update, install and cleanup steps to reduce layer size
 RUN apt-get update && apt-get install -y \
+    libcurl4 \
+    libglx0 \
+    libopengl0 \
+    libjpeg-turbo8 \
+    libuv1 \
+    libwebp7 \
+    libicu74 \
+    libpng16-16 \
     libcurl4-openssl-dev \
     libglfw3-dev \
     libuv1-dev \
@@ -27,7 +36,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY package*.json /app/
 ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION v20.11.0
+ENV NODE_VERSION v22.23.4
 
 # Install nvm, node, npm and cleanup in a single RUN to reduce layer size
 RUN mkdir -p $NVM_DIR \
