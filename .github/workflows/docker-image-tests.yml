@@ -1,0 +1,49 @@
+name: Docker image tests
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - 'main'
+  release:
+    types: [created]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: mapgl-tile-renderer:ci
+      - name: Test run of Docker image with self-provided style
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs mapgl-tile-renderer:ci --style self --stylelocation tests/fixtures/alert/style-with-geojson.json --stylesources tests/fixtures/alert/sources --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -f self-${{ github.sha }}
+      - name: Test run of Docker image with Bing source
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs mapgl-tile-renderer:ci --style bing --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -f bing-${{ github.sha }}
+      - name: Test run of Docker image with Esri source and GeoJSON overlay
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs mapgl-tile-renderer:ci --style esri --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 --overlay '{"type": "FeatureCollection", "name": "alert", "features": [{"geometry": {"coordinates": [[[-54.25348208981326, 3.140689896338671], [-54.25348208981326, 3.140600064810259], [-54.253841415926914, 3.140600064810259], [-54.25348208981326, 3.140689896338671]]], "geodesic": false, "type": "Polygon"}, "id": "-603946+34961", "properties": {"month_detec": "09", "year_detec": "2023"}, "type": "Feature"}]}' -f esri-${{ github.sha }}
+      - name: Test run of Docker image with Mapbox source
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs mapgl-tile-renderer:ci --style mapbox --mapboxstyle ${{ secrets.MAPBOX_STYLE }} --apikey ${{ secrets.MAPBOX_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 10 -f mapbox-${{ github.sha }}
+      - name: Test run of Docker image with Protomaps source
+        run: |
+          docker run --rm -v ${{ github.workspace }}/outputs:/app/outputs mapgl-tile-renderer:ci --style protomaps --apikey ${{ secrets.PROTOMAPS_API_KEY }} --bounds "-54.28772,3.11460,-54.03630,3.35025" -Z 5 -f protomaps-${{ github.sha }}
+      - name: Upload mbtiles artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mbtiles-${{ github.sha }}
+          path: outputs/*.mbtiles
+          if-no-files-found: error
+          retention-days: ${{ github.event_name == 'release' && 90 || 15 }}
